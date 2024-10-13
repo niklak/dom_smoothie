@@ -1,0 +1,6 @@
+[package]
+name = "dom_readability"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
