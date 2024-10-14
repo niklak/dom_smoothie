@@ -4,3 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+dom_query = {path ="../dom_query"}
+tendril = {version = "0.4.3"}
+once_cell = { version = "1" }
+
+regex = {version = "1.11"}
