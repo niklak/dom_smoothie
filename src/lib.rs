@@ -1,4 +1,4 @@
-use std::collections::hash_map::HashMap;
+use std::collections::HashSet;
 
 use dom_query::{Document, NodeData, NodeRef};
 use tendril::StrTendril;
@@ -11,6 +11,25 @@ pub struct Article {
     pub title: StrTendril,
     pub content: StrTendril,
     pub text_content: StrTendril,
+}
+
+#[derive(Debug, Default, Clone)]
+struct MetaData {
+    title: String,
+    byline: String,
+    excerpt: String,
+    site_name: String,
+    date_published: String,
+}
+
+impl MetaData {
+    fn is_empty(&self) -> bool {
+        self.title.is_empty()
+            && self.byline.is_empty()
+            && self.excerpt.is_empty()
+            && self.site_name.is_empty()
+            && self.date_published.is_empty()
+    }
 }
 
 pub struct Readability {
@@ -27,7 +46,6 @@ impl<T: Into<StrTendril>> From<T> for Readability {
 
 impl Readability {
     pub fn prepare(&mut self) {
-
         self.remove_empty_imgs();
 
         // remove scripts
@@ -37,7 +55,7 @@ impl Readability {
         self.doc.select_matcher(&STYLE_MATCHER).remove();
 
         // remove javascript urls
-       self.doc.select_matcher(&UNWANTED_A_MATCHER).remove();
+        self.doc.select_matcher(&UNWANTED_A_MATCHER).remove();
 
         // replace fonts with spans
         self.replace_fonts();
@@ -47,7 +65,82 @@ impl Readability {
     }
 
     pub fn get_title(&self) -> StrTendril {
-        self.doc.select_single_matcher(&TITLE_MATCHER).text()
+        let orig_title = self
+            .doc
+            .select_single_matcher(&TITLE_MATCHER)
+            .text()
+            .trim()
+            .to_string();
+        let mut cur_title = orig_title.to_string();
+        let char_count = orig_title.chars().count();
+        let mut has_hierarchy_sep = false;
+
+        if RX_TITLE_SEP.is_match(&orig_title) {
+            has_hierarchy_sep = RX_HIERARCHY_SEP.is_match(&orig_title);
+
+            let mut parts = RX_TITLE_SEP.splitn(&orig_title, 2);
+
+            if let Some(first) = parts.next() {
+                if first.split_whitespace().count() < 3 {
+                    if let Some(last) = parts.next() {
+                        cur_title = last.trim().to_string();
+                    }
+                } else {
+                    cur_title = first.trim().to_string();
+                }
+            }
+            // Everything below is such a mess
+        } else if cur_title.contains(": ") {
+            let matched = self.doc.select_matcher(&HEADINGS_MATCHER).iter().any(|h| {
+                let text = h.text();
+                text.trim() == cur_title
+            });
+
+            if !matched {
+                if let Some(tmp_title) = orig_title
+                    .rfind(":")
+                    .map(|idx| orig_title[idx + 1..].trim().to_string())
+                {
+                    cur_title = tmp_title;
+                    if cur_title.split_whitespace().count() < 3 {
+                        if let Some(tmp_title) = orig_title
+                            .find(":")
+                            .map(|idx| orig_title[idx + 1..].trim().to_string())
+                        {
+                            cur_title = tmp_title
+                        }
+                    } else if orig_title
+                        .find(":")
+                        .map_or(0, |idx| orig_title[idx + 1..].split_whitespace().count())
+                        > 5
+                    {
+                        cur_title = orig_title.to_string();
+                    }
+                }
+            }
+        } else if !(15..=150).contains(&char_count) {
+            let h1_sel = self.doc.select_single("h1");
+            if !h1_sel.is_empty() {
+                cur_title = self.doc.select_single("h1").text().to_string();
+            }
+        }
+        cur_title = normalize_spaces(&cur_title);
+
+        // If we now have 4 words or fewer as our title, and either no
+        // 'hierarchical' separators (\, /, > or ») were found in the original
+        // title or we decreased the number of words by more than 1 word, use
+        // the original title.
+        let cur_title_wc = cur_title.split_whitespace().count();
+        let orig_wc = RX_TITLE_ANY_SEP
+            .replace_all(&orig_title, "")
+            .split_whitespace()
+            .count();
+
+        if cur_title_wc <= 4 || (!has_hierarchy_sep || cur_title_wc != orig_wc - 1) {
+            cur_title = orig_title;
+        }
+
+        cur_title.into()
     }
 
     fn replace_fonts(&mut self) {
@@ -98,7 +191,7 @@ impl Readability {
                 while let Some(last) = p.last_child() {
                     if is_whitespace(&last) {
                         last.remove_from_parent();
-                    }else {
+                    } else {
                         break;
                     }
                 }
@@ -114,18 +207,20 @@ impl Readability {
         }
     }
 
-    
     fn remove_empty_imgs(&mut self) {
         // TODO: handle noscript images
         for mut sel in self.doc.select_matcher(&IMG_MATCHER).iter() {
             let attrs = sel.attrs();
-            if attrs.iter().map(|a| &a.name.local).any(|k| k =="src" || k =="data-src" || k =="data-srcset" ||k == "srcset") {
+            if attrs
+                .iter()
+                .map(|a| &a.name.local)
+                .any(|k| k == "src" || k == "data-src" || k == "data-srcset" || k == "srcset")
+            {
                 continue;
             }
             sel.remove();
         }
     }
-    
 
     pub fn parse(&mut self) -> Article {
         self.prepare();
@@ -137,24 +232,22 @@ impl Readability {
         }
     }
 
-    pub fn parse_json_ld(&self) -> HashMap<String, String>{
-        let mut meta_data = HashMap::new();
+    fn parse_json_ld(&self) -> Option<MetaData> {
+        // TODO: revise this weird thing
         for sel in self.doc.select_matcher(&JSONLD_MATCHER).iter() {
-            if !meta_data.is_empty() {
-                break;
-            }
+            let mut ld_meta = MetaData::default();
             // TODO: strip CDATA
             let content = sel.text();
 
             let context_val = gjson::get(&content, "@context");
             //TODO: what?
             let is_string = matches!(context_val.kind(), gjson::Kind::String);
-            if !is_string ||  !RX_SCHEMA_ORG.is_match(context_val.str()) {
+            if !is_string || !RX_SCHEMA_ORG.is_match(context_val.str()) {
                 break;
             }
 
-            let mut article_type  = String::new();
-            
+            let mut article_type = String::new();
+
             let type_val = gjson::get(&content, "@type");
 
             if !type_val.exists() {
@@ -162,7 +255,7 @@ impl Readability {
                 if matches!(type_val.kind(), gjson::Kind::String) {
                     article_type = type_val.str().to_string();
                 }
-            }else {
+            } else {
                 article_type = type_val.str().to_string();
             }
 
@@ -174,25 +267,25 @@ impl Readability {
             let headline_val = gjson::get(&content, "headline");
             let name_is_string = matches!(name_val.kind(), gjson::Kind::String);
             let headline_is_string = matches!(headline_val.kind(), gjson::Kind::String);
-            
+
             let name = if name_is_string {
                 name_val.str().trim().to_string()
             } else {
                 String::new()
             };
 
-            let headline = if headline_is_string  {
-                 headline_val.str().trim().to_string()
-            }else {
+            let headline = if headline_is_string {
+                headline_val.str().trim().to_string()
+            } else {
                 String::new()
             };
 
             if name_is_string && headline_is_string && name != headline {
                 todo!();
             } else if name_is_string {
-                meta_data.insert("title".to_string(), name);
+                ld_meta.title = name;
             } else if headline_is_string {
-                meta_data.insert("title".to_string(), headline);
+                ld_meta.title = headline;
             }
 
             //Author
@@ -200,27 +293,45 @@ impl Readability {
             let author_val = gjson::get(&content, "author");
 
             let byline = match author_val.kind() {
-                gjson::Kind::Object => {
-                    Some(author_val.get("name").str().trim().to_string())
-                },
+                gjson::Kind::Object => Some(author_val.get("name").str().trim().to_string()),
                 gjson::Kind::Array => {
-                    let names: Vec<String> = author_val.get("#.name").array().iter().map(|v| v.str().trim().to_string()).collect();
+                    let names: Vec<String> = author_val
+                        .get("#.name")
+                        .array()
+                        .iter()
+                        .map(|v| v.str().trim().to_string())
+                        .collect();
                     Some(names.join(", "))
-                    
-                },
+                }
                 _ => None,
             };
 
-            if let Some(byline) =  byline {
-                meta_data.insert("author".to_string(), byline);
+            if let Some(byline) = byline {
+                ld_meta.byline = byline;
             }
 
+            // Description
+            let excerpt_val = gjson::get(&content, "description");
+            if matches!(excerpt_val.kind(), gjson::Kind::String) {
+                ld_meta.excerpt = excerpt_val.str().trim().to_string();
+            }
 
-            
+            // Publisher
+            let publisher_val = gjson::get(&content, "publisher.name");
+            if matches!(publisher_val.kind(), gjson::Kind::String) {
+                ld_meta.site_name = publisher_val.str().trim().to_string();
+            }
 
-
+            // DatePublished
+            let publisher_date_val = gjson::get(&content, "datePublished");
+            if matches!(publisher_date_val.kind(), gjson::Kind::String) {
+                ld_meta.date_published = publisher_date_val.str().trim().to_string();
+            }
+            if !ld_meta.is_empty() {
+                return Some(ld_meta);
+            }
         }
-        return meta_data;
+        None
     }
 }
 
@@ -261,6 +372,31 @@ fn is_whitespace(node: &NodeRef<NodeData>) -> bool {
     false
 }
 
+fn text_similarity(text_a: &str, text_b: &str) -> f64 {
+    //TODO: revise this later
+    let a = text_a.to_lowercase();
+    let b = text_b.to_lowercase();
+    let unique_tokens_a: HashSet<&str> = RX_TOKENIZE.split(&a).filter(|s| !s.is_empty()).collect();
+
+    let tokens_b: Vec<&str> = RX_TOKENIZE.split(&b).filter(|s| !s.is_empty()).collect();
+
+    let unique_tokens_b: Vec<&str> = tokens_b
+        .iter()
+        .filter(|&&s| !unique_tokens_a.contains(s))
+        .cloned()
+        .collect();
+
+    let merged_b = tokens_b.join(" ");
+    let merged_unique_b = unique_tokens_b.join(" ");
+
+    let distance_b = merged_unique_b.chars().count() as f64 / merged_b.chars().count() as f64;
+    1.0 - distance_b
+}
+
+fn normalize_spaces(text: &str) -> String {
+    text.split_whitespace().collect::<Vec<&str>>().join(" ")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -286,7 +422,7 @@ mod tests {
     }
 
     #[test]
-    fn test_remove_unwanted_urls()  {
+    fn test_remove_unwanted_urls() {
         let contents = r#"<!DOCTYPE>
         <html>
             <head><title>Test</title></head>
@@ -298,5 +434,39 @@ mod tests {
         let mut readability = Readability::from(contents);
         readability.prepare();
         assert_eq!(readability.doc.select("a").length(), 1);
+    }
+
+    #[test]
+    fn test_text_similarity() {
+        let text_a = "The quick brown fox";
+        let text_b = "The quick fox";
+        let similarity = text_similarity(text_a, text_b);
+        assert!(similarity > 0.75);
+    }
+
+    #[test]
+    fn test_text_similarity_similar() {
+        let text_a = "THE QUICK FOX";
+        let text_b = "The quick fox";
+        let similarity = text_similarity(text_a, text_b);
+        assert!(similarity == 1.0);
+    }
+
+    #[test]
+    fn test_get_title() {
+        let contents = include_str!("../test-pages/rustwiki_2024.html");
+        let mut readability = Readability::from(contents);
+        readability.prepare();
+
+        let title = readability.get_title();
+
+        assert_eq!(title, "Rust (programming language)".into())
+    }
+
+    #[test]
+    fn test_normalize_spaces() {
+        let text = "  The    quick\t        brown\r\n  fox ";
+        let normalized = normalize_spaces(text);
+        assert_eq!(normalized, "The quick brown fox");
     }
 }

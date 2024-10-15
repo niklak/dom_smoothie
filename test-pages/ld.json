@@ -1,0 +1,24 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "name": "Rust (programming language)",
+  "url": "https://en.wikipedia.org/wiki/Rust_(programming_language)",
+  "sameAs": "http://www.wikidata.org/entity/Q575650",
+  "mainEntity": "http://www.wikidata.org/entity/Q575650",
+  "author": {
+    "@type": "Organization",
+    "name": "Contributors to Wikimedia projects"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Wikimedia Foundation, Inc.",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://www.wikimedia.org/static/images/wmf-hor-googpub.png"
+    }
+  },
+  "datePublished": "2010-10-30T22:30:54Z",
+  "dateModified": "2024-10-03T02:23:08Z",
+  "image": "https://upload.wikimedia.org/wikipedia/commons/d/d5/Rust_programming_language_black_logo.svg",
+  "headline": "memory-safe programming language without garbage collection"
+}
