@@ -10,6 +10,7 @@ pub(crate) static STYLE_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new("styl
 pub(crate) static FONT_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new("font").unwrap());
 pub(crate) static BR_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new("br").unwrap());
 pub(crate) static IMG_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new("img").unwrap());
+pub(crate) static META_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new("meta").unwrap());
 pub(crate) static UNWANTED_A_MATCHER: Lazy<Matcher> =
     Lazy::new(|| Matcher::new(r#"a[href^="javascript:"]"#).unwrap());
 pub(crate) static JSONLD_MATCHER: Lazy<Matcher> =
@@ -24,6 +25,17 @@ pub(crate) static PHRASING_ELEMS: &[&str] = &[
     "sub", "sup", "textarea", "time", "var", "wbr",
 ];
 
+pub(crate) static META_TITLE_KEYS: &[&str] = &[
+    "dc:title",
+    "dcterm:title",
+    "og:title",
+    "weibo:article:title",
+    "weibo:webpage:title",
+    "title",
+    "twitter:title",
+    "parsely-title",
+];
+
 //TODO: replace \s+
 pub(crate) static RX_TOKENIZE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(?i)\W+"#).unwrap());
 pub(crate) static RX_CDATA: Lazy<Regex> =
@@ -35,6 +47,15 @@ pub(crate) static RX_TITLE_SEP: Lazy<Regex> = Lazy::new(|| Regex::new(r#"[\|\-\\
 pub(crate) static RX_TITLE_ANY_SEP: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#"[\|\-\\—/>»]+"#).unwrap());
 pub(crate) static RX_HIERARCHY_SEP: Lazy<Regex> = Lazy::new(|| Regex::new(r#"[\\/>»]"#).unwrap());
+
+//TODO: replace these with &[&str], because there is no reason to use regex here.
+
+pub(crate) static RX_META_NAME: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"(?i)^\s*(?:(dc|dcterm|og|twitter|parsely|weibo:(article|webpage))\s*[-\.:]\s*)?(author|creator|pub-date|description|title|site_name)\s*$"#).unwrap()
+});
+pub(crate) static RX_META_PROPERTY: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"(?i)\s*(article|dc|dcterm|og|twitter)\s*:\s*(author|creator|description|published_time|title|site_name)\s*"#).unwrap()
+});
 pub(crate) static RX_JSONLD_ARTICLE_TYPES: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r#"(?i)^Article|AdvertiserContentArticle|NewsArticle|AnalysisNewsArticle|AskPublicNewsArticle|BackgroundNewsArticle|OpinionNewsArticle|ReportageNewsArticle|ReviewNewsArticle|Report|SatiricalArticle|ScholarlyArticle|MedicalScholarlyArticle|SocialMediaPosting|BlogPosting|LiveBlogPosting|DiscussionForumPosting|TechArticle|APIReference$"#).unwrap()
 });

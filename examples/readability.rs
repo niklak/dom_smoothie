@@ -4,7 +4,7 @@ fn main() {
     let html = include_str!("../test-pages/replace-brs/source.html");
     let mut readability = Readability::from(html);
 
-    println!("title: {}", &readability.get_title());
+    println!("title: {}", &readability.get_article_title());
 
     readability.prepare();
 

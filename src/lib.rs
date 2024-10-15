@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use dom_query::{Document, NodeData, NodeRef};
 use tendril::StrTendril;
@@ -14,12 +14,20 @@ pub struct Article {
 }
 
 #[derive(Debug, Default, Clone, serde::Deserialize, PartialEq)]
-struct MetaData {
+#[serde(rename_all = "camelCase")]
+//TODO: better to convert each field to Option<String>
+pub struct MetaData {
     title: String,
     byline: String,
     excerpt: String,
     site_name: String,
-    date_published: String,
+    published_time: String,
+    #[serde(default)]
+    modified_time: String,
+    #[serde(default)]
+    image: String,
+    #[serde(default)]
+    favicon: String,
 }
 
 impl MetaData {
@@ -28,7 +36,10 @@ impl MetaData {
             && self.byline.is_empty()
             && self.excerpt.is_empty()
             && self.site_name.is_empty()
-            && self.date_published.is_empty()
+            && self.published_time.is_empty()
+            && self.modified_time.is_empty()
+            && self.image.is_empty()
+            && self.favicon.is_empty()
     }
 }
 
@@ -64,7 +75,7 @@ impl Readability {
         self.replace_brs();
     }
 
-    pub fn get_title(&self) -> StrTendril {
+    pub fn get_article_title(&self) -> StrTendril {
         let orig_title = self
             .doc
             .select_single_matcher(&TITLE_MATCHER)
@@ -225,10 +236,14 @@ impl Readability {
     }
 
     pub fn parse(&mut self) -> Article {
+        let ld_meta = self.parse_json_ld();
+
         self.prepare();
 
+        let metadata = self.get_article_metadata(ld_meta);
+
         Article {
-            title: self.get_title(),
+            title: metadata.title.into(),
             content: self.doc.html(),
             text_content: self.doc.text(),
         }
@@ -293,7 +308,7 @@ impl Readability {
             let mut ld_meta = MetaData::default();
 
             if name_is_string && headline_is_string && name != headline {
-                let title = self.get_title();
+                let title = self.get_article_title();
                 let name_matches = text_similarity(&name, &title) > 0.75;
                 let headline_matches = text_similarity(&headline, &title) > 0.75;
                 if headline_matches && !name_matches {
@@ -344,13 +359,54 @@ impl Readability {
             // DatePublished
             let publisher_date_val = gjson::get(&content, "datePublished");
             if matches!(publisher_date_val.kind(), gjson::Kind::String) {
-                ld_meta.date_published = publisher_date_val.str().trim().to_string();
+                ld_meta.published_time = publisher_date_val.str().trim().to_string();
             }
             if !ld_meta.is_empty() {
                 return Some(ld_meta);
             }
         }
         None
+    }
+
+    pub fn get_article_metadata(&self, json_ld: Option<MetaData>) -> MetaData {
+        let mut values: HashMap<String, StrTendril> = HashMap::new();
+        let mut metadata = json_ld.unwrap_or_default();
+
+        let selection = self.doc.select_matcher(&META_MATCHER);
+
+        for sel in selection.iter() {
+            if let Some(content) = sel.attr("content") {
+                // TODO: to trim or not to trim?
+                let content: StrTendril = content.trim().into();
+                let element_property = sel.attr("property");
+                //TODO: looks like redundant checks!
+                if let Some(property) = element_property {
+                    let property: StrTendril = property.trim().into();
+                    if RX_META_PROPERTY.is_match(&property) {
+                        values.insert(property.to_string(), content.clone());
+                    }
+                }
+                let element_name = sel.attr("name");
+                if let Some(name) = element_name {
+                    if RX_META_NAME.is_match(&name) {
+                        values.insert(name.to_string(), content);
+                    }
+                }
+            }
+        }
+
+        if metadata.title.is_empty() {
+            if let Some(val) = get_map_any_value(&values, META_TITLE_KEYS) {
+                metadata.title = val.to_string();
+            }
+        }
+
+        //TODO: why? Leave till tests
+        if metadata.title.is_empty() {
+            metadata.title = self.get_article_title().to_string();
+        }
+
+        metadata
     }
 }
 
@@ -392,7 +448,7 @@ fn is_whitespace(node: &NodeRef<NodeData>) -> bool {
 }
 
 fn text_similarity(text_a: &str, text_b: &str) -> f64 {
-    //TODO: revise this later
+    //TODO: revise this later (use Jaccard index)
     let a = text_a.to_lowercase();
     let b = text_b.to_lowercase();
     let unique_tokens_a: HashSet<&str> = RX_TOKENIZE.split(&a).filter(|s| !s.is_empty()).collect();
@@ -416,6 +472,12 @@ fn normalize_spaces(text: &str) -> String {
     text.split_whitespace().collect::<Vec<&str>>().join(" ")
 }
 
+fn get_map_any_value(map: &HashMap<String, StrTendril>, keys: &[&str]) -> Option<StrTendril> {
+    keys.iter()
+        .find_map(|&key| map.get(key))
+        .map(|s| s.to_owned())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -433,7 +495,6 @@ mod tests {
 
         let mut readability = Readability::from(contents);
         readability.replace_fonts();
-        
 
         debug_assert_eq!(
             readability.doc.select("span").html(),
@@ -478,7 +539,7 @@ mod tests {
         let mut readability = Readability::from(contents);
         readability.prepare();
 
-        let title = readability.get_title();
+        let title = readability.get_article_title();
 
         assert_eq!(title, "Rust (programming language) - Wikipedia".into())
     }
