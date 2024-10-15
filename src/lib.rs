@@ -13,7 +13,7 @@ pub struct Article {
     pub text_content: StrTendril,
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Deserialize, PartialEq)]
 struct MetaData {
     title: String,
     byline: String,
@@ -144,7 +144,9 @@ impl Readability {
     }
 
     fn replace_fonts(&mut self) {
-        self.doc.select_matcher(&FONT_MATCHER).rename("span");
+        let mut sel = self.doc.select_matcher(&FONT_MATCHER);
+        sel.rename("span");
+        sel.remove_all_attrs();
     }
 
     fn replace_brs(&mut self) {
@@ -232,37 +234,45 @@ impl Readability {
         }
     }
 
-    fn parse_json_ld(&self) -> Option<MetaData> {
-        // TODO: revise this weird thing
+    pub fn parse_json_ld(&self) -> Option<MetaData> {
         for sel in self.doc.select_matcher(&JSONLD_MATCHER).iter() {
-            let mut ld_meta = MetaData::default();
-            // TODO: strip CDATA
-            let content = sel.text();
+            let text = sel.text();
+            let content = RX_CDATA.replace_all(&text, "");
 
-            let context_val = gjson::get(&content, "@context");
-            //TODO: what?
-            let is_string = matches!(context_val.kind(), gjson::Kind::String);
-            if !is_string || !RX_SCHEMA_ORG.is_match(context_val.str()) {
+            /*
+               Because of `gjson` reserved "@" symbol for its own modifiers,
+               it is necessary to replace it with other symbol to be able of using `gjson`.
+               Or decline using `gjson` at all and replace it with other crate.
+               TODO: don't leave it like this!.
+            */
+
+            let content = content.trim().replace(r#""@"#, r#""^"#);
+
+            let context_val = gjson::get(&content, "^context");
+            // validating @context
+            if !matches!(context_val.kind(), gjson::Kind::String)
+                || !RX_SCHEMA_ORG.is_match(context_val.str())
+            {
                 break;
             }
-
+            // validating @type
             let mut article_type = String::new();
 
-            let type_val = gjson::get(&content, "@type");
+            let type_val = gjson::get(&content, "^type");
 
             if !type_val.exists() {
-                let type_val = gjson::get(&content, "@graph.#.@type");
+                let type_val = gjson::get(&content, "^graph.#.^type");
                 if matches!(type_val.kind(), gjson::Kind::String) {
                     article_type = type_val.str().to_string();
                 }
             } else {
                 article_type = type_val.str().to_string();
             }
-
-            if RX_JSONLD_ARTICLE_TYPES.is_match(&article_type) {
+            if !RX_JSONLD_ARTICLE_TYPES.is_match(&article_type) {
                 break;
             }
 
+            // Title
             let name_val = gjson::get(&content, "name");
             let headline_val = gjson::get(&content, "headline");
             let name_is_string = matches!(name_val.kind(), gjson::Kind::String);
@@ -280,8 +290,17 @@ impl Readability {
                 String::new()
             };
 
+            let mut ld_meta = MetaData::default();
+
             if name_is_string && headline_is_string && name != headline {
-                todo!();
+                let title = self.get_title();
+                let name_matches = text_similarity(&name, &title) > 0.75;
+                let headline_matches = text_similarity(&headline, &title) > 0.75;
+                if headline_matches && !name_matches {
+                    ld_meta.title = headline;
+                } else {
+                    ld_meta.title = name;
+                }
             } else if name_is_string {
                 ld_meta.title = name;
             } else if headline_is_string {
@@ -414,6 +433,7 @@ mod tests {
 
         let mut readability = Readability::from(contents);
         readability.replace_fonts();
+        
 
         debug_assert_eq!(
             readability.doc.select("span").html(),
@@ -460,7 +480,7 @@ mod tests {
 
         let title = readability.get_title();
 
-        assert_eq!(title, "Rust (programming language)".into())
+        assert_eq!(title, "Rust (programming language) - Wikipedia".into())
     }
 
     #[test]
@@ -468,5 +488,18 @@ mod tests {
         let text = "  The    quick\t        brown\r\n  fox ";
         let normalized = normalize_spaces(text);
         assert_eq!(normalized, "The quick brown fox");
+    }
+
+    #[test]
+    fn test_parse_json_ld() {
+        let contents = include_str!("../test-pages/aclu/source.html");
+        let ra = Readability::from(contents);
+
+        let meta_contents = include_str!("../test-pages/aclu/expected_ld_meta.json");
+        let expected_meta: MetaData = serde_json::from_str(&meta_contents).unwrap();
+
+        let meta = ra.parse_json_ld().unwrap();
+
+        assert_eq!(expected_meta, meta);
     }
 }

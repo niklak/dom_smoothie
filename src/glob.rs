@@ -26,6 +26,8 @@ pub(crate) static PHRASING_ELEMS: &[&str] = &[
 
 //TODO: replace \s+
 pub(crate) static RX_TOKENIZE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(?i)\W+"#).unwrap());
+pub(crate) static RX_CDATA: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"^\s*<!\[CDATA\[|\]\]>\s*$"#).unwrap());
 
 pub(crate) static RX_SCHEMA_ORG: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#"(?i)^https?://schema\.org/?$"#).unwrap());
