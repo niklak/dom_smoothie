@@ -36,6 +36,14 @@ pub(crate) static META_TITLE_KEYS: &[&str] = &[
     "parsely-title",
 ];
 
+
+pub (crate) static META_IMAGE_KEYS: &[&str] = &["og:image", "image","twitter:image" ];
+pub (crate) static META_MOD_TIME_KEYS: &[&str] = &["article:modified_time", "dcterms.modifie" ];
+pub (crate) static META_PUB_TIME_KEYS: &[&str] = &["article:published_time", "dcterms.available", "dcterms.created", "dcterms.issued", "parsely-pub-date", "weibo:article:create_at" ];
+pub (crate) static META_BYLINE_KEYS: &[&str] = &["dc:creator", "dcterms:creator", "author","parsely-author" ];
+pub (crate) static META_EXCERPT_KEYS: &[&str] = &["dc:description", "dcterm:description", "og:description", "weibo:article:description", "weibo:webpage:description", "description", "twitter:description"];
+
+
 //TODO: replace \s+
 pub(crate) static RX_TOKENIZE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(?i)\W+"#).unwrap());
 pub(crate) static RX_CDATA: Lazy<Regex> =
