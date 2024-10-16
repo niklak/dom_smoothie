@@ -2,13 +2,21 @@ use dom_query::{Document, Node, NodeData, NodeRef};
 
 use crate::glob::*;
 
+use crate::helpers::text_similarity;
 use crate::MetaData;
 //TODO: do not forget FLAGS
 
 pub fn grab_article(doc: &Document, metadata: Option<MetaData>) {
-    let mut metadata = metadata.unwrap_or(MetaData::default());
-
+    let mut metadata = metadata.unwrap_or_default();
+    
     clean_doc(doc);
+
+    if !metadata.title.is_empty() {
+        // if title is not empty then delete duplicate
+        remove_header_duplicates_title(doc, &metadata.title);
+    }
+
+
     for node in doc.select("*").nodes() {
         if !is_probably_visible(node) {
             node.remove_from_parent();
@@ -97,11 +105,23 @@ fn is_valid_byline(node: &Node, match_string: &str) -> bool {
     RX_BYLINE.is_match(match_string)
 }
 
+
+// Removes the first occurred title duplicate from the document
+fn remove_header_duplicates_title(doc: &Document, title: &str) {
+    for sel in doc.select_matcher(&HEADINGS_MATCHER).iter() {
+        let heading = sel.text();
+        if text_similarity(title, heading.trim()) > 0.75 {
+            sel.remove();
+            return;
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use std::fs::Metadata;
 
     use super::*;
+    use crate::readability::Readability;
 
     #[test]
     fn test_removing_probably_invisible_nodes() {
@@ -228,5 +248,24 @@ mod tests {
         // consuming byline during grabbing the article
         grab_article(&doc, Some(metadata));
         assert!(doc.select("a").exists())
+    }
+
+    #[test]
+    fn test_remove_title_duplicates()  {
+        let contents = r#"<!DOCTYPE>
+        <html>
+            <head><title>Rust (programming language) - Wikipedia</title></head>
+            <body>
+                 <h1>Rust (programming language)</h1>
+            </body>
+        </html>"#;
+
+        let readability = Readability::from(contents);
+        let metadata = readability.get_article_metadata(None);
+
+        assert!(readability.doc.select("h1").exists());
+
+        grab_article(&readability.doc, Some(metadata));
+        assert!(!readability.doc.select("h1").exists())
     }
 }

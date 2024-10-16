@@ -242,7 +242,7 @@ impl Readability {
 
     fn remove_empty_imgs(&mut self) {
         // TODO: handle noscript images
-        for mut sel in self.doc.select_matcher(&IMG_MATCHER).iter() {
+        for sel in self.doc.select_matcher(&IMG_MATCHER).iter() {
             let attrs = sel.attrs();
             if attrs
                 .iter()
