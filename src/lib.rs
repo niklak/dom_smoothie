@@ -24,7 +24,8 @@ pub struct MetaData {
     published_time: Option<String>,
     modified_time: Option<String>,
     image: Option<String>,
-    favicon:Option<String>,
+    favicon: Option<String>,
+    lang: Option<String>,
 }
 
 impl MetaData {
@@ -37,17 +38,30 @@ impl MetaData {
             && self.modified_time.is_none()
             && self.image.is_none()
             && self.favicon.is_none()
+            && self.lang.is_none()
     }
 
-    fn  unescape_html_entities(&mut self) {
+    fn unescape_html_entities(&mut self) {
         self.title = html_escape::decode_html_entities(&self.title).to_string();
         self.byline = html_escape::decode_html_entities(&self.byline).to_string();
         self.excerpt = html_escape::decode_html_entities(&self.excerpt).to_string();
         self.site_name = html_escape::decode_html_entities(&self.site_name).to_string();
-        self.published_time = self.published_time.as_ref().map(|s|html_escape::decode_html_entities(&s).to_string());
-        self.modified_time = self.modified_time.as_ref().map(|s|html_escape::decode_html_entities(&s).to_string());
-        self.image = self.image.as_ref().map(|s|html_escape::decode_html_entities(&s).to_string());
-        self.favicon = self.favicon.as_ref().map(|s|html_escape::decode_html_entities(&s).to_string());
+        self.published_time = self
+            .published_time
+            .as_ref()
+            .map(|s| html_escape::decode_html_entities(&s).to_string());
+        self.modified_time = self
+            .modified_time
+            .as_ref()
+            .map(|s| html_escape::decode_html_entities(&s).to_string());
+        self.image = self
+            .image
+            .as_ref()
+            .map(|s| html_escape::decode_html_entities(&s).to_string());
+        self.favicon = self
+            .favicon
+            .as_ref()
+            .map(|s| html_escape::decode_html_entities(&s).to_string());
     }
 }
 
@@ -416,50 +430,62 @@ impl Readability {
             metadata.title = self.get_article_title().to_string();
         }
 
-
         // author
-        if metadata.byline.is_empty()  {
+        if metadata.byline.is_empty() {
             if let Some(val) = get_map_any_value(&values, META_BYLINE_KEYS) {
                 metadata.byline = val.to_string();
             }
         }
 
         // description
-        if metadata.excerpt.is_empty()  {
+        if metadata.excerpt.is_empty() {
             if let Some(val) = get_map_any_value(&values, META_EXCERPT_KEYS) {
                 metadata.excerpt = val.to_string();
             }
         }
 
         //site name
-        if metadata.site_name.is_empty()  {
+        if metadata.site_name.is_empty() {
             if let Some(val) = values.get("og:site_name") {
                 metadata.site_name = val.to_string();
             }
         }
 
         //published time
-        if metadata.published_time.is_none()   {
-            metadata.published_time = get_map_any_value(&values, META_PUB_TIME_KEYS).map(|x|x.to_string());
+        if metadata.published_time.is_none() {
+            metadata.published_time =
+                get_map_any_value(&values, META_PUB_TIME_KEYS).map(|x| x.to_string());
         }
 
         self.assign_extra_article_metadata(&mut metadata, &values);
 
+        metadata.lang = self.get_html_lang().map(|s| s.to_string());
 
         metadata.unescape_html_entities();
         metadata
     }
 
-    fn assign_extra_article_metadata(&self, metadata: &mut MetaData, values: &HashMap<String, StrTendril>) {
+    fn assign_extra_article_metadata(
+        &self,
+        metadata: &mut MetaData,
+        values: &HashMap<String, StrTendril>,
+    ) {
         // thumbnail
-        metadata.image = get_map_any_value(&values, META_IMAGE_KEYS).map(|x|x.to_string());
+        metadata.image = get_map_any_value(&values, META_IMAGE_KEYS).map(|x| x.to_string());
 
         // modified time
-        metadata.modified_time = get_map_any_value(&values, META_MOD_TIME_KEYS).map(|x|x.to_string());
+        metadata.modified_time =
+            get_map_any_value(&values, META_MOD_TIME_KEYS).map(|x| x.to_string());
 
         //TODO: favicon
+    }
 
-
+    fn get_html_lang(&self) -> Option<StrTendril> {
+        let sel = self.doc.select_single_matcher(&HTML_LANG_MATCHER);
+        match sel.is_empty() {
+            false => sel.attr("lang"),
+            true => None,
+        }
     }
 }
 
