@@ -18,6 +18,7 @@ pub(crate) static UNWANTED_A_MATCHER: Lazy<Matcher> =
 pub(crate) static JSONLD_MATCHER: Lazy<Matcher> =
     Lazy::new(|| Matcher::new(r#"script[type="application/ld+json"]"#).unwrap());
 pub(crate) static HEADINGS_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new(r#"h1,h2"#).unwrap());
+pub(crate) static ROLES_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new(r#"*[role]"#).unwrap());
 pub(crate) static DIALOGS_MATCHER: Lazy<Matcher> =
     Lazy::new(|| Matcher::new(r#"*[aria-modal="true"][role="dialog"]"#).unwrap());
 pub(crate) static EMPTY_SECTION_MATCHER: Lazy<Matcher> = Lazy::new(|| {
@@ -65,6 +66,16 @@ pub(crate) static META_EXCERPT_KEYS: &[&str] = &[
     "twitter:description",
 ];
 
+pub(crate) static UNLIKELY_ROLES: &[&str] = &[
+    "menu",
+    "menubar",
+    "complementary",
+    "navigation",
+    "alert",
+    "alertdialog",
+    "dialog",
+];
+
 //TODO: replace \s+
 pub(crate) static RX_TOKENIZE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(?i)\W+"#).unwrap());
 pub(crate) static RX_STYLE_DISPLAY_NONE: Lazy<Regex> =
@@ -78,6 +89,8 @@ pub(crate) static RX_TITLE_SEP: Lazy<Regex> = Lazy::new(|| Regex::new(r#"[\|\-\\
 pub(crate) static RX_TITLE_ANY_SEP: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#"[\|\-\\—/>»]+"#).unwrap());
 pub(crate) static RX_HIERARCHY_SEP: Lazy<Regex> = Lazy::new(|| Regex::new(r#"[\\/>»]"#).unwrap());
+pub(crate) static RX_BYLINE: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"(?i)byline|author|dateline|writtenby|p-author"#).unwrap());
 
 //TODO: replace these with &[&str], because there is no reason to use regex here.
 

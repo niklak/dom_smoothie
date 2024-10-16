@@ -15,15 +15,15 @@ pub struct Article {
 #[serde(rename_all = "camelCase")]
 //TODO: better to convert each field to Option<String>
 pub struct MetaData {
-    title: String,
-    byline: String,
-    excerpt: String,
-    site_name: String,
-    published_time: Option<String>,
-    modified_time: Option<String>,
-    image: Option<String>,
-    favicon: Option<String>,
-    lang: Option<String>,
+    pub title: String,
+    pub byline: String,
+    pub excerpt: String,
+    pub site_name: String,
+    pub published_time: Option<String>,
+    pub modified_time: Option<String>,
+    pub image: Option<String>,
+    pub favicon: Option<String>,
+    pub lang: Option<String>,
 }
 
 impl MetaData {
