@@ -18,6 +18,11 @@ pub(crate) static UNWANTED_A_MATCHER: Lazy<Matcher> =
 pub(crate) static JSONLD_MATCHER: Lazy<Matcher> =
     Lazy::new(|| Matcher::new(r#"script[type="application/ld+json"]"#).unwrap());
 pub(crate) static HEADINGS_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new(r#"h1,h2"#).unwrap());
+pub(crate) static DIALOGS_MATCHER: Lazy<Matcher> =
+    Lazy::new(|| Matcher::new(r#"*[aria-modal="true"][role="dialog"]"#).unwrap());
+pub(crate) static EMPTY_SECTION_MATCHER: Lazy<Matcher> = Lazy::new(|| {
+    Matcher::new(r#"div:empty,section:empty,header:empty,h1:empty,h2:empty,h3:empty,h4:empty,h5:empty,h6:empty"#).unwrap()
+});
 
 pub(crate) static PHRASING_ELEMS: &[&str] = &[
     // "canvas", "iframe", "svg", "video",
@@ -62,6 +67,8 @@ pub(crate) static META_EXCERPT_KEYS: &[&str] = &[
 
 //TODO: replace \s+
 pub(crate) static RX_TOKENIZE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(?i)\W+"#).unwrap());
+pub(crate) static RX_STYLE_DISPLAY_NONE: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"(?i)display\s*:\s*none|visibility\s*:\s*hidden"#).unwrap());
 pub(crate) static RX_CDATA: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#"^\s*<!\[CDATA\[|\]\]>\s*$"#).unwrap());
 
