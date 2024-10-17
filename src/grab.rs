@@ -8,14 +8,13 @@ use crate::MetaData;
 
 pub fn grab_article(doc: &Document, metadata: Option<MetaData>) {
     let mut metadata = metadata.unwrap_or_default();
-    
+
     clean_doc(doc);
 
     if !metadata.title.is_empty() {
         // if title is not empty then delete duplicate
         remove_header_duplicates_title(doc, &metadata.title);
     }
-
 
     for node in doc.select("*").nodes() {
         if !is_probably_visible(node) {
@@ -26,6 +25,11 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) {
         let match_string = get_node_matching_string(node);
         if metadata.byline.is_empty() && is_valid_byline(node, &match_string) {
             metadata.byline = node.text().trim().to_string();
+            node.remove_from_parent();
+            continue;
+        }
+
+        if is_unlikely_candidate(node, &match_string) {
             node.remove_from_parent();
             continue;
         }
@@ -50,11 +54,18 @@ fn clean_doc(doc: &Document) {
 }
 
 fn get_node_matching_string(node: &NodeRef<NodeData>) -> String {
+    let mut matched_attrs: Vec<String> = vec![];
     let class = node.attr("class");
     let id = node.attr("id");
-    class
-        .zip(id)
-        .map_or_else(String::new, |(a, b)| format!("{a} {b}"))
+    if let Some(class) = class {
+        matched_attrs.push(class.to_string());
+    }
+
+    if let Some(id) = id {
+        matched_attrs.push(id.to_string());
+    }
+
+    matched_attrs.join(" ")
 }
 
 fn is_probably_visible(node: &Node) -> bool {
@@ -105,7 +116,6 @@ fn is_valid_byline(node: &Node, match_string: &str) -> bool {
     RX_BYLINE.is_match(match_string)
 }
 
-
 // Removes the first occurred title duplicate from the document
 fn remove_header_duplicates_title(doc: &Document, title: &str) {
     for sel in doc.select_matcher(&HEADINGS_MATCHER).iter() {
@@ -115,6 +125,65 @@ fn remove_header_duplicates_title(doc: &Document, title: &str) {
             return;
         }
     }
+}
+
+fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
+    if !RX_UNLIKELY_CANDIDATES.is_match(match_string) {
+        return false;
+    }
+    if RX_MAYBE_CANDIDATES.is_match(match_string) {
+        return false;
+    }
+
+    let name = node.node_name().unwrap();
+    if name.as_ref() == "a" || name.as_ref() == "body" {
+        return false;
+    }
+    if has_ancestor_tag::<NodePredicate>(node, "table", None, None) {
+        return false;
+    }
+    if has_ancestor_tag::<NodePredicate>(node, "code", None, None) {
+        return false;
+    }
+    true
+}
+
+type NodePredicate = fn(&Node) -> bool;
+
+fn has_ancestor_tag<F>(
+    node: &Node,
+    tag: &str,
+    max_depth: Option<usize>,
+    filter_fn: Option<F>,
+) -> bool
+where
+    F: Fn(&Node) -> bool,
+{
+    let max_depth = max_depth.unwrap_or(3);
+    if max_depth == 0 {
+        return false;
+    }
+    let mut depth: usize = 0;
+
+    let mut parent_node = node.parent();
+    while let Some(ref parent) = parent_node {
+        if depth > max_depth {
+            break;
+        }
+        // if node has no name, then it is not element, skip it
+        if let Some(name) = parent.node_name() {
+            if name.as_ref() == tag && filter_fn.as_ref().map_or(true, |f| f(parent)) {
+                return true;
+            }
+        } else {
+            parent_node = parent.parent();
+            continue;
+        }
+        parent_node = parent.parent();
+        depth += 1;
+    }
+
+    false
 }
 
 #[cfg(test)]
@@ -251,7 +320,7 @@ mod tests {
     }
 
     #[test]
-    fn test_remove_title_duplicates()  {
+    fn test_remove_title_duplicates() {
         let contents = r#"<!DOCTYPE>
         <html>
             <head><title>Rust (programming language) - Wikipedia</title></head>
@@ -267,5 +336,40 @@ mod tests {
 
         grab_article(&readability.doc, Some(metadata));
         assert!(!readability.doc.select("h1").exists())
+    }
+
+    #[test]
+    fn test_remove_unlikely_candidates() {
+        let contents = r#"<!DOCTYPE>
+        <html>
+            <head><title>Test</title></head>
+            <body>
+                 <h1>Test</h1>
+                 <div class="banner">Some annoying content</div>
+            </body>
+        </html>"#;
+
+        let doc = Document::from(contents);
+        assert!(doc.select("div.banner").exists());
+
+        grab_article(&doc, None);
+        assert!(!doc.select("div.banner").exists())
+    }
+    #[test]
+    fn test_skip_ok_maybe_candidates() {
+        let contents = r#"<!DOCTYPE>
+        <html>
+            <head><title>Test</title></head>
+            <body>
+                 <h1>Test</h1>
+                 <a class="banner">Some annoying content</a>
+            </body>
+        </html>"#;
+
+        let doc = Document::from(contents);
+        assert!(doc.select("a.banner").exists());
+
+        grab_article(&doc, None);
+        assert!(doc.select("a.banner").exists())
     }
 }

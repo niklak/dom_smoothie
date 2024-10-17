@@ -1,7 +1,7 @@
 mod glob;
 mod grab;
-mod readability;
 mod helpers;
+mod readability;
 
 pub use readability::MetaData;
 pub use readability::Readability;

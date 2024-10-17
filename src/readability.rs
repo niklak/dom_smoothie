@@ -524,8 +524,6 @@ fn is_whitespace(node: &NodeRef<NodeData>) -> bool {
     false
 }
 
-
-
 fn normalize_spaces(text: &str) -> String {
     text.split_whitespace().collect::<Vec<&str>>().join(" ")
 }

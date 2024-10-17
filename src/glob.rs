@@ -92,6 +92,12 @@ pub(crate) static RX_HIERARCHY_SEP: Lazy<Regex> = Lazy::new(|| Regex::new(r#"[\\
 pub(crate) static RX_BYLINE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#"(?i)byline|author|dateline|writtenby|p-author"#).unwrap());
 
+pub(crate) static RX_UNLIKELY_CANDIDATES: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"(?i)-ad-|ai2html|banner|breadcrumbs|combx|comment|community|cover-wrap|disqus|extra|footer|gdpr|header|legends|menu|related|remark|replies|rss|shoutbox|sidebar|skyscraper|social|sponsor|supplemental|ad-break|agegate|pagination|pager|popup|yom-remote"#).unwrap()
+});
+pub(crate) static RX_MAYBE_CANDIDATES: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"and|article|body|column|content|main|shadow"#).unwrap());
+
 //TODO: replace these with &[&str], because there is no reason to use regex here.
 
 pub(crate) static RX_META_NAME: Lazy<Regex> = Lazy::new(|| {
