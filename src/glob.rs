@@ -76,6 +76,8 @@ pub(crate) static UNLIKELY_ROLES: &[&str] = &[
     "dialog",
 ];
 
+pub (crate) static DEFAULT_TAGS_TO_SCORE: &[&str] = &["section","h2","h3","h4","h5","h6","p","td","pre"];
+
 //TODO: replace \s+
 pub(crate) static RX_TOKENIZE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(?i)\W+"#).unwrap());
 pub(crate) static RX_STYLE_DISPLAY_NONE: Lazy<Regex> =

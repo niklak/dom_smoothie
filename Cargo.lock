@@ -71,7 +71,7 @@ dependencies = [
 
 [[package]]
 name = "dom_query"
-version = "0.5.1"
+version = "0.6.0"
 dependencies = [
  "cssparser",
  "html5ever",

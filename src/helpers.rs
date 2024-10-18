@@ -1,5 +1,7 @@
 use std::collections::HashSet;
 
+use dom_query::Node;
+
 use crate::glob::*;
 
 pub(crate) fn text_similarity(text_a: &str, text_b: &str) -> f64 {
@@ -21,6 +23,44 @@ pub(crate) fn text_similarity(text_a: &str, text_b: &str) -> f64 {
 
     let distance_b = merged_unique_b.chars().count() as f64 / merged_b.chars().count() as f64;
     1.0 - distance_b
+}
+
+
+pub(crate) fn is_phrasing_content(node: &Node) -> bool {
+    // TODO: revise this function
+    if node.is_text() {
+        return true;
+    }
+
+    if !node.is_element() {
+        return false;
+    }
+
+    let node_name_t = node.node_name().unwrap();
+    let node_name: &str = &node_name_t;
+    if PHRASING_ELEMS.contains(&node_name) {
+        return true;
+    }
+
+    if (node_name == "a")
+        || (node_name == "del")
+        || (node_name == "ins")
+        || node.children().into_iter().all(|n| is_phrasing_content(&n))
+    {
+        return true;
+    }
+
+    false
+}
+
+pub(crate) fn is_whitespace(node: &Node) -> bool {
+    if node.is_text() {
+        return node.text().trim().is_empty();
+    }
+    if node.is_element() {
+        return node.node_name().map_or(false, |name| name == "br".into());
+    }
+    false
 }
 
 #[cfg(test)]

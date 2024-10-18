@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use dom_query::{Document, NodeData, NodeRef};
+use dom_query::{Document, NodeData, NodeRef, Node};
 use tendril::StrTendril;
 
 use crate::glob::*;
@@ -487,42 +487,9 @@ impl Readability {
     }
 }
 
-fn is_phrasing_content(node: &NodeRef<NodeData>) -> bool {
-    // TODO: revise this function
-    if node.is_text() {
-        return true;
-    }
 
-    if !node.is_element() {
-        return false;
-    }
 
-    let node_name_t = node.node_name().unwrap();
-    let node_name: &str = &node_name_t;
-    if PHRASING_ELEMS.contains(&node_name) {
-        return true;
-    }
 
-    if (node_name == "a")
-        || (node_name == "del")
-        || (node_name == "ins")
-        || node.children().into_iter().all(|n| is_phrasing_content(&n))
-    {
-        return true;
-    }
-
-    false
-}
-
-fn is_whitespace(node: &NodeRef<NodeData>) -> bool {
-    if node.is_text() {
-        return node.text().trim().is_empty();
-    }
-    if node.is_element() {
-        return node.node_name().map_or(false, |name| name == "br".into());
-    }
-    false
-}
 
 fn normalize_spaces(text: &str) -> String {
     text.split_whitespace().collect::<Vec<&str>>().join(" ")

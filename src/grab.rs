@@ -2,7 +2,7 @@ use dom_query::{Document, Node, NodeData, NodeRef};
 
 use crate::glob::*;
 
-use crate::helpers::text_similarity;
+use crate::helpers::{is_phrasing_content, is_whitespace, text_similarity};
 use crate::MetaData;
 //TODO: do not forget FLAGS
 
@@ -11,12 +11,19 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) {
 
     clean_doc(doc);
 
+    let mut elements_to_score: Vec<&Node> = vec![];
+
     if !metadata.title.is_empty() {
         // if title is not empty then delete duplicate
         remove_header_duplicates_title(doc, &metadata.title);
     }
 
+    //TODO: maybe this way of iterating through nodes is not the best
     for node in doc.select("*").nodes() {
+        if !node.is_element() {
+            continue;
+        }
+
         if !is_probably_visible(node) {
             node.remove_from_parent();
             continue;
@@ -33,6 +40,17 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) {
             node.remove_from_parent();
             continue;
         }
+
+        let node_name = node.node_name().unwrap();
+
+        if DEFAULT_TAGS_TO_SCORE.contains(&node_name.as_ref()){
+            elements_to_score.push(node);
+        }
+
+        if node_name.as_ref() == "div" {
+            div_into_p(node, doc);
+        }
+
     }
 }
 
@@ -185,6 +203,42 @@ where
 
     false
 }
+
+fn div_into_p(node: &Node, doc: &Document) {
+    // Turn all divs that don't have children block level elements into p's
+
+    // Put phrasing content into paragraphs.
+    let mut p_node: Option<Node> = None;
+    let mut child_node = node.first_child();
+
+    while let Some(ref child) = child_node {
+
+        if is_phrasing_content(child) {
+            if let Some(ref p) = p_node {
+                p.append_child(&child.id);
+            } else if !is_whitespace(child) {
+                let raw_p = doc.tree.new_element("p");
+                child.append_prev_sibling(&raw_p.id);
+                child.remove_from_parent();
+                raw_p.append_child(&child.id);
+                p_node = Some(raw_p);
+            }
+        }else if let Some(ref p) = p_node {
+            //TODO: careful! Revise this:
+            while let Some(p_last_child) = p.last_child() {
+                if is_whitespace(&p_last_child) {
+                    p_last_child.remove_from_parent();
+                } else {
+                    break;
+                }
+            }
+            p_node = None;
+        }
+        child_node = child.next_sibling();
+    }
+
+}
+
 
 #[cfg(test)]
 mod tests {
