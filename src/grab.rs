@@ -1,4 +1,4 @@
-use dom_query::{Document, Node, NodeData, NodeRef};
+use dom_query::{Document, Node, NodeData, NodeRef, Selection};
 
 use crate::glob::*;
 
@@ -11,7 +11,7 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) {
 
     clean_doc(doc);
 
-    let mut elements_to_score: Vec<&Node> = vec![];
+    let mut elements_to_score: Vec<Node> = vec![];
 
     if !metadata.title.is_empty() {
         // if title is not empty then delete duplicate
@@ -43,15 +43,16 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) {
 
         let node_name = node.node_name().unwrap();
 
-        if DEFAULT_TAGS_TO_SCORE.contains(&node_name.as_ref()){
-            elements_to_score.push(node);
+        if DEFAULT_TAGS_TO_SCORE.contains(&node_name.as_ref()) {
+            elements_to_score.push(node.clone());
         }
 
         if node_name.as_ref() == "div" {
-            div_into_p(node, doc);
+            div_into_p(node, doc, &mut elements_to_score);
         }
-
     }
+
+    //TODO: handle elements_to_score
 }
 
 fn clean_doc(doc: &Document) {
@@ -204,7 +205,11 @@ where
     false
 }
 
-fn div_into_p(node: &Node, doc: &Document) {
+fn div_into_p<'a>(
+    node: &'a Node,
+    doc: &'a Document,
+    elements_to_score: &mut Vec<NodeRef<'a, NodeData>>,
+) {
     // Turn all divs that don't have children block level elements into p's
 
     // Put phrasing content into paragraphs.
@@ -212,7 +217,6 @@ fn div_into_p(node: &Node, doc: &Document) {
     let mut child_node = node.first_child();
 
     while let Some(ref child) = child_node {
-
         if is_phrasing_content(child) {
             if let Some(ref p) = p_node {
                 p.append_child(&child.id);
@@ -223,7 +227,7 @@ fn div_into_p(node: &Node, doc: &Document) {
                 raw_p.append_child(&child.id);
                 p_node = Some(raw_p);
             }
-        }else if let Some(ref p) = p_node {
+        } else if let Some(ref p) = p_node {
             //TODO: careful! Revise this:
             while let Some(p_last_child) = p.last_child() {
                 if is_whitespace(&p_last_child) {
@@ -237,8 +241,76 @@ fn div_into_p(node: &Node, doc: &Document) {
         child_node = child.next_sibling();
     }
 
+    // Sites like http://mobile.slate.com encloses each paragraph with a DIV
+    // element. DIVs with only a P element inside and no text content can be
+    // safely converted into plain P elements to avoid confusing the scoring
+    // algorithm with DIVs with are, in practice, paragraphs.
+
+    if has_single_tag_inside_element(node, "p") && link_density(node) < 0.25 {
+        let new_node = node.first_child().unwrap();
+        node.append_prev_sibling(&new_node.id);
+        node.remove_from_parent();
+        elements_to_score.push(new_node.clone());
+    } else if !has_child_block_element(node) {
+        node.rename("p");
+        elements_to_score.push(node.clone());
+    }
 }
 
+fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
+    // There should be exactly 1 element child with given tag
+    let children = node.children();
+    if children.len() != 1 {
+        return false;
+    }
+
+    let first_child = children.first().unwrap();
+
+    if !first_child
+        .node_name()
+        .map_or(false, |name| name.as_ref() == tag)
+    {
+        return false;
+    }
+
+    !first_child
+        .children()
+        .iter()
+        .any(|n| n.is_text() && RX_HAS_CONTENT.is_match(n.text().as_ref()))
+}
+
+fn link_density(node: &Node) -> f64 {
+    let text_length: f64 = node.text().chars().count() as f64;
+    if text_length == 0.0 {
+        return 0.0;
+    }
+    let mut link_length = 0f64;
+
+    let a_sel = Selection::from(node.clone()).select("a");
+
+    for a in a_sel.iter() {
+        let href = a.attr_or("href", "");
+        let coeff = if !href.is_empty() && RX_HASH_URL.is_match(href.as_ref()) {
+            0.3
+        } else {
+            1.0
+        };
+        link_length += a.text().len() as f64 * coeff;
+    }
+
+    link_length / text_length
+}
+
+fn has_child_block_element(node: &Node) -> bool {
+    //TODO: try to improve this!
+    node.children().iter().any(|n| {
+        if let Some(name) = n.node_name() {
+            BLOCK_ELEMS.contains(&name.as_ref()) || has_child_block_element(n)
+        } else {
+            false
+        }
+    })
+}
 
 #[cfg(test)]
 mod tests {

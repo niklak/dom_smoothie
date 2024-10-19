@@ -25,7 +25,6 @@ pub(crate) fn text_similarity(text_a: &str, text_b: &str) -> f64 {
     1.0 - distance_b
 }
 
-
 pub(crate) fn is_phrasing_content(node: &Node) -> bool {
     // TODO: revise this function
     if node.is_text() {

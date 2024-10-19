@@ -76,7 +76,20 @@ pub(crate) static UNLIKELY_ROLES: &[&str] = &[
     "dialog",
 ];
 
-pub (crate) static DEFAULT_TAGS_TO_SCORE: &[&str] = &["section","h2","h3","h4","h5","h6","p","td","pre"];
+pub(crate) static BLOCK_ELEMS: &[&str] = &[
+    "blockquote",
+    "dl",
+    "div",
+    "img",
+    "ol",
+    "p",
+    "pre",
+    "table",
+    "ul",
+];
+
+pub(crate) static DEFAULT_TAGS_TO_SCORE: &[&str] =
+    &["section", "h2", "h3", "h4", "h5", "h6", "p", "td", "pre"];
 
 //TODO: replace \s+
 pub(crate) static RX_TOKENIZE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(?i)\W+"#).unwrap());
@@ -111,3 +124,5 @@ pub(crate) static RX_META_PROPERTY: Lazy<Regex> = Lazy::new(|| {
 pub(crate) static RX_JSONLD_ARTICLE_TYPES: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r#"(?i)^Article|AdvertiserContentArticle|NewsArticle|AnalysisNewsArticle|AskPublicNewsArticle|BackgroundNewsArticle|OpinionNewsArticle|ReportageNewsArticle|ReviewNewsArticle|Report|SatiricalArticle|ScholarlyArticle|MedicalScholarlyArticle|SocialMediaPosting|BlogPosting|LiveBlogPosting|DiscussionForumPosting|TechArticle|APIReference$"#).unwrap()
 });
+pub(crate) static RX_HAS_CONTENT: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\S$"#).unwrap());
+pub(crate) static RX_HASH_URL: Lazy<Regex> = Lazy::new(|| Regex::new(r#"^#.+"#).unwrap());

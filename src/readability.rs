@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use dom_query::{Document, NodeData, NodeRef, Node};
+use dom_query::Document;
 use tendril::StrTendril;
 
 use crate::glob::*;
@@ -486,10 +486,6 @@ impl Readability {
         }
     }
 }
-
-
-
-
 
 fn normalize_spaces(text: &str) -> String {
     text.split_whitespace().collect::<Vec<&str>>().join(" ")

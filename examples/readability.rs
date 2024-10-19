@@ -1,4 +1,4 @@
-use dom_readability::Readability;
+use dom_smoothie::Readability;
 
 fn main() {
     let html = include_str!("../test-pages/replace-brs/source.html");
