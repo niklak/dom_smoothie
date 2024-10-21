@@ -1,6 +1,10 @@
+use std::vec;
+
 use dom_query::{Document, Node, NodeData, NodeRef, Selection};
+use tendril::StrTendril;
 
 use crate::glob::*;
+use crate::score::*;
 
 use crate::helpers::{is_phrasing_content, is_whitespace, text_similarity};
 use crate::MetaData;
@@ -18,8 +22,10 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) {
         remove_header_duplicates_title(doc, &metadata.title);
     }
 
+    let selection = doc.select("*");
+
     //TODO: maybe this way of iterating through nodes is not the best
-    for node in doc.select("*").nodes() {
+    for node in selection.nodes() {
         if !node.is_element() {
             continue;
         }
@@ -47,10 +53,14 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) {
             elements_to_score.push(node.clone());
         }
 
+        // TODO: div_matcher.match_element(node)
+
         if node_name.as_ref() == "div" {
             div_into_p(node, doc, &mut elements_to_score);
         }
     }
+
+    handle_candidates(&mut elements_to_score, doc);
 
     //TODO: handle elements_to_score
 }
@@ -178,6 +188,8 @@ fn has_ancestor_tag<F>(
 where
     F: Fn(&Node) -> bool,
 {
+
+    //TODO: revise this with node.ancestors()!
     let max_depth = max_depth.unwrap_or(3);
     if max_depth == 0 {
         return false;
@@ -279,12 +291,12 @@ fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
         .any(|n| n.is_text() && RX_HAS_CONTENT.is_match(n.text().as_ref()))
 }
 
-fn link_density(node: &Node) -> f64 {
-    let text_length: f64 = node.text().chars().count() as f64;
+fn link_density(node: &Node) -> f32 {
+    let text_length: f32 = node.text().chars().count() as f32;
     if text_length == 0.0 {
         return 0.0;
     }
-    let mut link_length = 0f64;
+    let mut link_length = 0f32;
 
     let a_sel = Selection::from(node.clone()).select("a");
 
@@ -295,14 +307,14 @@ fn link_density(node: &Node) -> f64 {
         } else {
             1.0
         };
-        link_length += a.text().len() as f64 * coeff;
+        link_length += a.text().len() as f32 * coeff;
     }
 
     link_length / text_length
 }
 
 fn has_child_block_element(node: &Node) -> bool {
-    //TODO: try to improve this!
+    //TODO: try to improve this! Matcher.match_element()
     node.children().iter().any(|n| {
         if let Some(name) = n.node_name() {
             BLOCK_ELEMS.contains(&name.as_ref()) || has_child_block_element(n)
@@ -311,6 +323,93 @@ fn has_child_block_element(node: &Node) -> bool {
         }
     })
 }
+
+fn handle_candidates<'a>(elements_to_score: &mut Vec<NodeRef<'a, NodeData>>, doc: &'a Document) {
+    let mut candidates = vec![];
+
+    for element in elements_to_score {
+        if !element.is_element() || element.parent().is_none() {
+            continue;
+        }
+        let inner_text = element.text();
+        if inner_text.len() < 25 {
+            continue;
+        }
+        let ancestors = element.ancestors(Some(5));
+
+        if ancestors.len() == 0 {
+            continue;
+        }
+
+        let mut content_score: usize = 1;
+
+        content_score += RX_COMMAS.captures_iter(&inner_text.as_ref()).count();
+
+        content_score += std::cmp::min(inner_text.len() / 100, 3);
+
+        for (level,ancestor) in ancestors.iter().enumerate() {
+            if !ancestor.is_element() || ancestor.parent().is_none() {
+                continue;
+
+            }
+
+            let score_divider: f32 = match level{
+                0 => 1.0,
+                1 => 2.0,
+                _ => (level * 3) as f32,
+            };
+
+            let mut was_initialized = false;
+
+            if !has_node_score(ancestor) {
+                init_node_score(ancestor);
+                was_initialized = true;
+            }
+
+            let mut ancestor_score = get_node_score(ancestor).unwrap();
+            ancestor_score += content_score as f32 / score_divider;
+            set_node_score(ancestor, ancestor_score);
+            
+            if was_initialized {
+                candidates.push(ancestor.clone());
+            }
+        }   
+
+    }
+
+    //TODO: this is a crap
+
+    // Scale the final candidates score based on link density. Good content
+    // should have a relatively small link density (5% or less) and be mostly
+    // unaffected by this operation.
+    for candidate in candidates.iter() {
+        let prev_score = get_node_score(candidate).unwrap();
+        let score = prev_score * (1.0 - link_density(candidate));
+        set_node_score(candidate, score);
+    }
+    candidates.sort_by(|n1, n2| get_node_score(n2).unwrap().partial_cmp(&get_node_score(n1).unwrap()).unwrap());
+
+    let mut top_candidates = candidates;
+    top_candidates.truncate(DEFAULT_N_TOP_CANDIDATES);
+
+    let top_candidate = top_candidates.first();
+    let top_candidate_name = top_candidate.map_or(None,|n| n.node_name()).unwrap_or_else(|| StrTendril::new());
+    
+    let page_sel = doc.select("body");
+    let page_node =page_sel.nodes().first().unwrap();
+    let mut needed_to_create_top_candidate = false;
+
+    if top_candidate.is_none() || top_candidate_name.as_ref() == "body" {
+        needed_to_create_top_candidate = true;
+        let tc = doc.tree.new_element("div");
+
+        doc.tree.reparent_children_of(&page_node.id, Some(tc.id));
+        page_node.append_child(&tc.id);
+    }
+
+}
+
+
 
 #[cfg(test)]
 mod tests {

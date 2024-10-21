@@ -126,3 +126,9 @@ pub(crate) static RX_JSONLD_ARTICLE_TYPES: Lazy<Regex> = Lazy::new(|| {
 });
 pub(crate) static RX_HAS_CONTENT: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\S$"#).unwrap());
 pub(crate) static RX_HASH_URL: Lazy<Regex> = Lazy::new(|| Regex::new(r#"^#.+"#).unwrap());
+pub(crate) static RX_COMMAS: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\u002C|\u060C|\uFE50|\uFE10|\uFE11|\u2E41|\u2E34|\u2E32|\uFF0C"#).unwrap());
+pub(crate) static RX_CLASSES_NEGATIVE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"-ad-|hidden|^hid$| hid$| hid |^hid |banner|combx|comment|com-|contact|footer|gdpr|masthead|media|meta|outbrain|promo|related|scroll|share|shoutbox|sidebar|skyscraper|sponsor|shopping|tags|widget"#).unwrap());
+pub(crate) static RX_CLASSES_POSITIVE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"article|body|content|entry|hentry|h-entry|main|page|pagination|post|text|blog|story"#).unwrap());
+
+pub(crate) static DEFAULT_N_TOP_CANDIDATES: usize = 5;
+pub(crate) static MINIMUM_TOP_CANDIDATES: usize = 3;
