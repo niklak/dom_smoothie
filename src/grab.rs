@@ -521,7 +521,8 @@ fn handle_candidates<'a>(elements_to_score: &mut Vec<NodeRef<'a, NodeData>>, doc
 
 
             //prepare the article
-
+            prep_article(&article_content);
+            
             if needed_to_create_top_candidate {
                 // This looks like nonsense
                 // We already created a fake div thing, and there wouldn't have been any siblings left
@@ -564,6 +565,79 @@ fn handle_candidates<'a>(elements_to_score: &mut Vec<NodeRef<'a, NodeData>>, doc
     
     }
     None
+}
+
+
+
+fn clean_styles(n: &Node) {
+    if !n.is_element() {
+        return;
+    }
+    let node_name =n.node_name().unwrap();
+    if node_name.as_ref() == "svg" {
+        return;
+    }
+
+    n.remove_attrs(PRESENTATIONAL_ATTRIBUTES);
+
+    if DEPRECATED_SIZE_ATTRIBUTE_ELEMS.contains(&node_name.as_ref()) {
+        n.remove_attrs(&["width", "height"]);
+    }
+
+    for child_node in n.element_children().iter() {
+        clean_styles(child_node);
+    }
+
+}
+
+fn clean(n: &Node, tag: &str) {
+    let is_embed = EMBED_ELEMENTS.contains(&tag);
+
+    let sel = Selection::from(n.clone()).select(tag);
+
+    for node in sel.nodes().iter() {
+        // Allow youtube and vimeo videos through as people usually want to see those.
+        let mut should_remove = true;
+        if is_embed {
+
+            for attr in node.attrs().iter() {
+                if RX_VIDEO_ATTRS.is_match(&attr.value) {
+                    should_remove = false;
+                    break;
+                }
+            }
+
+            if node.node_name().unwrap().as_ref() == "object" && RX_VIDEO_ATTRS.is_match(&node.inner_html()) {
+                should_remove = false;
+            }
+        }
+
+        if should_remove {
+            node.remove_from_parent();
+        }
+    }
+
+}
+
+fn prep_article(article_content: &Node) {
+
+    clean_styles(article_content);
+
+    // Check for data tables before we continue, to avoid removing items in
+    // those tables, which will often be isolated even though they're
+    // visually linked to other content-ful elements (text, images, etc.).
+
+    //TODO: this._markDataTables(articleContent);
+
+    //TODO: this._fixLazyImages(articleContent);
+
+    // Clean out junk from the article content
+    clean(article_content, "object");
+    clean(article_content, "embed");
+    clean(article_content, "footer");
+    clean(article_content, "link");
+    clean(article_content, "aside");
+
 }
 
 fn handle_top_candidate(tc: &Node, article_content: &Node) {

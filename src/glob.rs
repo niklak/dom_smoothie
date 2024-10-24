@@ -22,7 +22,7 @@ pub(crate) static ROLES_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new(r#"*[
 pub(crate) static DIALOGS_MATCHER: Lazy<Matcher> =
     Lazy::new(|| Matcher::new(r#"*[aria-modal="true"][role="dialog"]"#).unwrap());
 pub(crate) static EMPTY_SECTION_MATCHER: Lazy<Matcher> = Lazy::new(|| {
-    Matcher::new(r#"div:empty,section:empty,header:empty,h1:empty,h2:empty,h3:empty,h4:empty,h5:empty,h6:empty"#).unwrap()
+    Matcher::new(r#":is(div,section,header,h1,h2,h3,h4,h5,h6) :empty"#).unwrap()
 });
 
 pub(crate) static PHRASING_ELEMS: &[&str] = &[
@@ -95,6 +95,26 @@ pub(crate) static ALTER_TO_DIV_EXCEPTIONS: &[&str] = &[
 pub(crate) static DEFAULT_TAGS_TO_SCORE: &[&str] =
     &["section", "h2", "h3", "h4", "h5", "h6", "p", "td", "pre"];
 
+
+pub(crate) static PRESENTATIONAL_ATTRIBUTES: &[&str] = &[
+    "align",
+    "background",
+    "bgcolor",
+    "border",
+    "cellpadding",
+    "cellspacing",
+    "frame",
+    "hspace",
+    "rules",
+    "style",
+    "valign",
+    "vspace",
+];
+
+pub (crate) static EMBED_ELEMENTS: &[&str] = &["object", "embed", "iframe"];
+
+pub (crate) static DEPRECATED_SIZE_ATTRIBUTE_ELEMS: &[&str] = &["table", "th", "td", "hr", "pre"];
+
 //TODO: replace \s+
 pub(crate) static RX_TOKENIZE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(?i)\W+"#).unwrap());
 pub(crate) static RX_STYLE_DISPLAY_NONE: Lazy<Regex> =
@@ -143,6 +163,9 @@ pub(crate) static RX_CLASSES_POSITIVE: Lazy<Regex> = Lazy::new(|| {
     .unwrap()
 });
 pub(crate) static RX_SENTENCE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\.( |$)").unwrap());
+pub(crate) static RX_VIDEO_ATTRS: Lazy<Regex> = Lazy::new(|| Regex::new(r#"//(www\.)?((dailymotion|youtube|youtube-nocookie|player\.vimeo|v\.qq)\.com|(archive|upload\.wikimedia)\.org|player\.twitch\.tv)"#).unwrap());
+
+
 pub(crate) static DEFAULT_N_TOP_CANDIDATES: usize = 5;
 pub(crate) static MINIMUM_TOP_CANDIDATES: usize = 3;
 pub(crate) static DEFAULT_CHAR_THRESHOLD: usize = 500;
