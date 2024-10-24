@@ -10,7 +10,7 @@ use crate::helpers::{is_phrasing_content, is_whitespace, text_similarity};
 use crate::MetaData;
 //TODO: do not forget FLAGS
 
-pub fn grab_article(doc: &Document, metadata: Option<MetaData>) {
+pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<String> {
     let mut metadata = metadata.unwrap_or_default();
 
     clean_doc(doc);
@@ -60,7 +60,7 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) {
         }
     }
 
-    handle_candidates(&mut elements_to_score, doc);
+    handle_candidates(&mut elements_to_score, doc)
 
     //TODO: handle elements_to_score
 }
@@ -188,7 +188,6 @@ fn has_ancestor_tag<F>(
 where
     F: Fn(&Node) -> bool,
 {
-
     //TODO: revise this with node.ancestors()!
     let max_depth = max_depth.unwrap_or(3);
     if max_depth == 0 {
@@ -324,7 +323,7 @@ fn has_child_block_element(node: &Node) -> bool {
     })
 }
 
-fn handle_candidates<'a>(elements_to_score: &mut Vec<NodeRef<'a, NodeData>>, doc: &'a Document) {
+fn handle_candidates<'a>(elements_to_score: &mut Vec<NodeRef<'a, NodeData>>, doc: &'a Document) -> Option<String> {
     let mut candidates = vec![];
 
     for element in elements_to_score {
@@ -337,23 +336,22 @@ fn handle_candidates<'a>(elements_to_score: &mut Vec<NodeRef<'a, NodeData>>, doc
         }
         let ancestors = element.ancestors(Some(5));
 
-        if ancestors.len() == 0 {
+        if ancestors.is_empty() {
             continue;
         }
 
         let mut content_score: usize = 1;
 
-        content_score += RX_COMMAS.captures_iter(&inner_text.as_ref()).count();
+        content_score += RX_COMMAS.captures_iter(inner_text.as_ref()).count();
 
         content_score += std::cmp::min(inner_text.len() / 100, 3);
 
-        for (level,ancestor) in ancestors.iter().enumerate() {
+        for (level, ancestor) in ancestors.iter().enumerate() {
             if !ancestor.is_element() || ancestor.parent().is_none() {
                 continue;
-
             }
 
-            let score_divider: f32 = match level{
+            let score_divider: f32 = match level {
                 0 => 1.0,
                 1 => 2.0,
                 _ => (level * 3) as f32,
@@ -369,12 +367,11 @@ fn handle_candidates<'a>(elements_to_score: &mut Vec<NodeRef<'a, NodeData>>, doc
             let mut ancestor_score = get_node_score(ancestor).unwrap();
             ancestor_score += content_score as f32 / score_divider;
             set_node_score(ancestor, ancestor_score);
-            
+
             if was_initialized {
                 candidates.push(ancestor.clone());
             }
-        }   
-
+        }
     }
 
     //TODO: this is a crap
@@ -387,16 +384,26 @@ fn handle_candidates<'a>(elements_to_score: &mut Vec<NodeRef<'a, NodeData>>, doc
         let score = prev_score * (1.0 - link_density(candidate));
         set_node_score(candidate, score);
     }
-    candidates.sort_by(|n1, n2| get_node_score(n2).unwrap().partial_cmp(&get_node_score(n1).unwrap()).unwrap());
+    candidates.sort_by(|n1, n2| {
+        get_node_score(n2)
+            .unwrap()
+            .partial_cmp(&get_node_score(n1).unwrap())
+            .unwrap()
+    });
 
     let mut top_candidates = candidates;
     top_candidates.truncate(DEFAULT_N_TOP_CANDIDATES);
 
-    let top_candidate = top_candidates.first();
-    let top_candidate_name = top_candidate.map_or(None,|n| n.node_name()).unwrap_or_else(|| StrTendril::new());
-    
+    // TODO: revise everything below till line 460
+
+    let mut top_candidate = top_candidates.first().cloned();
+    let top_candidate_name = top_candidate
+        .clone()
+        .and_then(|ref n| n.node_name())
+        .unwrap_or_else(StrTendril::new);
+
     let page_sel = doc.select("body");
-    let page_node =page_sel.nodes().first().unwrap();
+    let page_node = page_sel.nodes().first().unwrap();
     let mut needed_to_create_top_candidate = false;
 
     if top_candidate.is_none() || top_candidate_name.as_ref() == "body" {
@@ -405,11 +412,231 @@ fn handle_candidates<'a>(elements_to_score: &mut Vec<NodeRef<'a, NodeData>>, doc
 
         doc.tree.reparent_children_of(&page_node.id, Some(tc.id));
         page_node.append_child(&tc.id);
-    }
+        init_node_score(&tc);
+    } else if let Some(ref tc) = top_candidate {
+        let tc_score = get_node_score(tc).unwrap();
 
+        let mut alternative_candidate_ancestors = vec![];
+        for alt in top_candidates.iter().skip(1) {
+            if get_node_score(alt).unwrap() / tc_score >= 0.75 {
+                alternative_candidate_ancestors.push(alt.ancestors(Some(0)));
+            }
+        }
+
+        if alternative_candidate_ancestors.len() > MINIMUM_TOP_CANDIDATES {
+            let mut parent_of_top_candidate = tc.parent();
+            while let Some(ref parent_of_tc) = parent_of_top_candidate {
+                let node_name = parent_of_tc.node_name().unwrap();
+                if node_name.as_ref() == "body" {
+                    break;
+                }
+                let mut lists_containing_this_ancestor = 0;
+
+                for alt_ancestor in &alternative_candidate_ancestors {
+                    if lists_containing_this_ancestor >= MINIMUM_TOP_CANDIDATES {
+                        break;
+                    }
+
+                    if alt_ancestor.iter().any(|n| n.id == parent_of_tc.id) {
+                        lists_containing_this_ancestor += 1;
+                    }
+                }
+
+                if lists_containing_this_ancestor >= MINIMUM_TOP_CANDIDATES {
+                    top_candidate = parent_of_top_candidate;
+                    break;
+                }
+
+                parent_of_top_candidate = parent_of_tc.parent();
+            }
+        }
+
+        if let Some(ref tc) = top_candidate {
+            if !has_node_score(tc) {
+                init_node_score(tc);
+            }
+            // Because of our bonus system, parents of candidates might have scores
+            // themselves. They get half of the node. There won't be nodes with higher
+            // scores than our topCandidate, but if we see the score going *up* in the first
+            // few steps up the tree, that's a decent sign that there might be more content
+            // lurking in other places that we want to unify in. The sibling stuff
+            // below does some of that - but only if we've looked high enough up the DOM
+            // tree.
+            let mut last_score = get_node_score(tc).unwrap();
+            let score_threshold = last_score / 3.0;
+            let mut parent_of_top_candidate = tc.parent();
+            while let Some(ref parent_of_tc) = parent_of_top_candidate {
+                let node_name = parent_of_tc.node_name().unwrap();
+                if node_name.as_ref() == "body" {
+                    break;
+                }
+                if !has_node_score(parent_of_tc) {
+                    parent_of_top_candidate = parent_of_tc.parent();
+                    continue;
+                }
+
+                let parent_score = get_node_score(parent_of_tc).unwrap();
+                if parent_score < score_threshold {
+                    break;
+                }
+                if parent_score > last_score {
+                    top_candidate = parent_of_top_candidate;
+                    break;
+                }
+                last_score = parent_score;
+                parent_of_top_candidate = parent_of_tc.parent();
+            }
+        }
+
+        if let Some(ref tc) = top_candidate {
+            let mut parent_of_top_candidate = tc.parent();
+
+            while let Some(ref parent_of_tc) = parent_of_top_candidate {
+                let node_name = parent_of_tc.node_name().unwrap();
+                if node_name.as_ref() == "body" {
+                    break;
+                }
+
+                if parent_of_tc.children().len() != 1 {
+                    break;
+                }
+
+                top_candidate = parent_of_top_candidate.clone();
+                parent_of_top_candidate = parent_of_tc.parent();
+            }
+        }
+
+        if let Some(ref tc) = top_candidate {
+            if !has_node_score(tc) {
+                init_node_score(tc);
+            }
+
+            // Now that we have the top candidate, look through its siblings for content
+            // that might also be related. Things like preambles, content split by ads
+            // that we removed, etc.
+            
+            let article_content = doc.tree.new_element("div");
+            article_content.set_attr("id", "readability-content");
+            handle_top_candidate(tc, &article_content);
+
+
+            //prepare the article
+
+            if needed_to_create_top_candidate {
+                // This looks like nonsense
+                // We already created a fake div thing, and there wouldn't have been any siblings left
+                // for the previous loop, so there's no point trying to create a new div, and then
+                // move all the children over. Just assign IDs and class names here. No need to append
+                // because that already happened anyway.
+                article_content.set_attr("id", "readability-page-1");
+                article_content.set_attr("class", "page");
+            }else {
+                let div = doc.tree.new_element("div");
+                div.set_attr("id", "readability-page-1");
+                div.set_attr("class", "page");
+                doc.tree.reparent_children_of(&article_content.id, Some(div.id));
+                article_content.append_child(&div.id);
+            }
+
+            let mut parse_successful = true;
+
+            let text_length = article_content.text().len();
+            if text_length < DEFAULT_CHAR_THRESHOLD {
+                parse_successful = false;
+
+                //TODO: implement logic with flags and attempts!
+            }
+
+            return match parse_successful {
+                true => Some(article_content.html().to_string()),
+                false => None
+            };
+
+            // Now that we've gone through the full algorithm, check to see if
+            // we got any meaningful content. If we didn't, we may need to re-run
+            // grabArticle with different flags set. This gives us a higher likelihood of
+            // finding the content, and the sieve approach gives us a higher likelihood of
+            // finding the -right- content.
+
+
+
+        }
+    
+    }
+    None
 }
 
+fn handle_top_candidate(tc: &Node, article_content: &Node) {
+    
+    let tc_node_score = get_node_score(tc).unwrap();
+    let mut sibling_score_threshold = tc_node_score * 0.2;
+    if sibling_score_threshold < 10.0 {
+        sibling_score_threshold = 10.0;
+    }
+    // Keep potential top candidate's parent node to try to get text direction of it later.
+    let parent_of_top_candidate = tc.parent().unwrap();
 
+    let mut siblings: Vec<Node> = parent_of_top_candidate.element_children();
+
+    let mut s = 0;
+
+    while s < siblings.len() {
+        let sibling = siblings.get(s).unwrap();
+        let sibling_name = sibling.node_name().unwrap();
+        let mut append = false;
+        if sibling.id == tc.id {
+            append = true;
+        } else {
+            let mut content_bonus: f32 = 0.0;
+            let sibling_class = sibling.attr_or("class", "");
+            let tc_class = tc.attr_or("class", "");
+            if !tc_class.is_empty() && sibling_class == tc_class {
+                content_bonus += tc_node_score * 0.2;
+            }
+
+            
+
+            if let Some(sibling_score) = get_node_score(sibling) {
+                if sibling_score + content_bonus >= sibling_score_threshold {
+                    append = true;
+                }
+            } else if sibling_name.as_ref() == "p" {
+                let link_density = link_density(sibling);
+                let node_content = sibling.text();
+                let node_length = node_content.chars().count();
+
+                if node_length > 80 && link_density < 0.25 {
+                    append = true;
+                } else if node_length < 80
+                    && node_length > 0
+                    && link_density == 0.0
+                    && !RX_SENTENCE.is_match(&node_content)
+                {
+                    append = true;
+                }
+            }
+        }
+
+        //appending sibling
+        if append {
+            if !ALTER_TO_DIV_EXCEPTIONS.contains(&sibling_name.as_ref()) {
+                // We have a node that isn't a common block level element, like a form or td tag.
+                // Turn it into a div so it doesn't get filtered out later by accident.
+                sibling.rename("div");
+            }
+            
+            sibling.remove_from_parent();
+            article_content.append_child(&sibling.id);
+
+            siblings = parent_of_top_candidate.element_children();
+            
+            s -= 1;
+
+        }
+        s += 1; 
+        
+    }
+}
 
 #[cfg(test)]
 mod tests {

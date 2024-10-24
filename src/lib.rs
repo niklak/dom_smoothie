@@ -1,8 +1,8 @@
 mod glob;
 mod grab;
 mod helpers;
-mod score;
 mod readability;
+mod score;
 
 pub use readability::MetaData;
 pub use readability::Readability;
