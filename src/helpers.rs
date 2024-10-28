@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use dom_query::Node;
+use dom_query::{Node, Selection};
 
 use crate::glob::*;
 
@@ -60,6 +60,66 @@ pub(crate) fn is_whitespace(node: &Node) -> bool {
         return node.node_name().map_or(false, |name| name == "br".into());
     }
     false
+}
+
+pub(crate) type NodePredicate = fn(&Node) -> bool;
+
+pub(crate) fn has_ancestor_tag<F>(
+    node: &Node,
+    tag: &str,
+    max_depth: Option<usize>,
+    filter_fn: Option<F>,
+) -> bool
+where
+    F: Fn(&Node) -> bool,
+{
+    //TODO: revise this with node.ancestors()!
+    let max_depth = max_depth.map(|max_depth| if max_depth == 0 { 3 } else { max_depth });
+    let mut matched_ancestors = node
+        .ancestors_it(max_depth)
+        .filter(|a| a.node_name().unwrap().as_ref() == tag);
+
+    if let Some(filter_fn) = filter_fn {
+        matched_ancestors.any(|a| filter_fn(&a))
+    } else {
+        matched_ancestors.count() > 0
+    }
+}
+
+pub fn get_text_density(node: &Node, selector: &str) -> f32 {
+    let text_length = node.text().chars().count() as f32;
+    if text_length == 0.0 {
+        return 0.0;
+    }
+    let sel = Selection::from(node.clone()).select(selector);
+    let children_length =  normalize_spaces(&sel.text()).chars().count() as f32;
+    children_length / text_length
+}
+
+pub fn normalize_spaces(text: &str) -> String {
+    text.split_whitespace().collect::<Vec<&str>>().join(" ")
+}
+
+pub fn link_density(node: &Node) -> f32 {
+    let text_length: f32 = node.text().chars().count() as f32;
+    if text_length == 0.0 {
+        return 0.0;
+    }
+    let mut link_length = 0f32;
+
+    let a_sel = Selection::from(node.clone()).select("a");
+
+    for a in a_sel.iter() {
+        let href = a.attr_or("href", "");
+        let coeff = if !href.is_empty() && RX_HASH_URL.is_match(href.as_ref()) {
+            0.3
+        } else {
+            1.0
+        };
+        link_length += a.text().len() as f32 * coeff;
+    }
+
+    link_length / text_length
 }
 
 #[cfg(test)]

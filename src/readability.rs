@@ -487,9 +487,7 @@ impl Readability {
     }
 }
 
-fn normalize_spaces(text: &str) -> String {
-    text.split_whitespace().collect::<Vec<&str>>().join(" ")
-}
+
 
 fn get_map_any_value(map: &HashMap<String, StrTendril>, keys: &[&str]) -> Option<StrTendril> {
     keys.iter()

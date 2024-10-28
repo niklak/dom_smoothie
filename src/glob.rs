@@ -21,9 +21,8 @@ pub(crate) static HEADINGS_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new(r#
 pub(crate) static ROLES_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new(r#"*[role]"#).unwrap());
 pub(crate) static DIALOGS_MATCHER: Lazy<Matcher> =
     Lazy::new(|| Matcher::new(r#"*[aria-modal="true"][role="dialog"]"#).unwrap());
-pub(crate) static EMPTY_SECTION_MATCHER: Lazy<Matcher> = Lazy::new(|| {
-    Matcher::new(r#":is(div,section,header,h1,h2,h3,h4,h5,h6) :empty"#).unwrap()
-});
+pub(crate) static EMPTY_SECTION_MATCHER: Lazy<Matcher> =
+    Lazy::new(|| Matcher::new(r#":is(div,section,header,h1,h2,h3,h4,h5,h6) :empty"#).unwrap());
 
 pub(crate) static PHRASING_ELEMS: &[&str] = &[
     // "canvas", "iframe", "svg", "video",
@@ -88,13 +87,11 @@ pub(crate) static BLOCK_ELEMS: &[&str] = &[
     "ul",
 ];
 
-pub(crate) static ALTER_TO_DIV_EXCEPTIONS: &[&str] = &[
-    "div", "article", "section", "p", "ol", "ul"
-];
+pub(crate) static ALTER_TO_DIV_EXCEPTIONS: &[&str] =
+    &["div", "article", "section", "p", "ol", "ul"];
 
 pub(crate) static DEFAULT_TAGS_TO_SCORE: &[&str] =
     &["section", "h2", "h3", "h4", "h5", "h6", "p", "td", "pre"];
-
 
 pub(crate) static PRESENTATIONAL_ATTRIBUTES: &[&str] = &[
     "align",
@@ -111,9 +108,9 @@ pub(crate) static PRESENTATIONAL_ATTRIBUTES: &[&str] = &[
     "vspace",
 ];
 
-pub (crate) static EMBED_ELEMENTS: &[&str] = &["object", "embed", "iframe"];
+pub(crate) static EMBED_ELEMENTS: &[&str] = &["object", "embed", "iframe"];
 
-pub (crate) static DEPRECATED_SIZE_ATTRIBUTE_ELEMS: &[&str] = &["table", "th", "td", "hr", "pre"];
+pub(crate) static DEPRECATED_SIZE_ATTRIBUTE_ELEMS: &[&str] = &["table", "th", "td", "hr", "pre"];
 
 //TODO: replace \s+
 pub(crate) static RX_TOKENIZE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(?i)\W+"#).unwrap());
@@ -163,8 +160,21 @@ pub(crate) static RX_CLASSES_POSITIVE: Lazy<Regex> = Lazy::new(|| {
     .unwrap()
 });
 pub(crate) static RX_SENTENCE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\.( |$)").unwrap());
-pub(crate) static RX_VIDEO_ATTRS: Lazy<Regex> = Lazy::new(|| Regex::new(r#"//(www\.)?((dailymotion|youtube|youtube-nocookie|player\.vimeo|v\.qq)\.com|(archive|upload\.wikimedia)\.org|player\.twitch\.tv)"#).unwrap());
+pub(crate) static RX_VIDEO_ATTRS: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"//(www\.)?((dailymotion|youtube|youtube-nocookie|player\.vimeo|v\.qq)\.com|(archive|upload\.wikimedia)\.org|player\.twitch\.tv)"#).unwrap()
+});
+pub(crate) static RX_BASE64_URL: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"(?i)^data:\s*([^\s;,]+)\s*;\s*base64\s*"#).unwrap());
+pub(crate) static RX_IMG_ATTR: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"(?i).(jpg|jpeg|png|webp)"#).unwrap());
+pub(crate) static RX_IMG_ATTR_TO_SRC: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"(?i)^\s*\S+\.(jpg|jpeg|png|webp)\S*\s*$"#).unwrap());
+pub(crate) static RX_IMG_ATTR_TO_SRCSET: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"(?i).(jpg|jpeg|png|webp)\s+\d"#).unwrap());
 
+pub(crate) static RX_SPACE_NORMALIZE: Lazy<Regex> =Lazy::new(|| Regex::new(r#"\s{2,}"#).unwrap());
+pub(crate) static RX_AD_WORDS: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(?i)^(ad(vertising|vertisement)?|pub(licité)?|werb(ung)?|广告|Реклама|Anuncio)$"#).unwrap());
+pub(crate) static RX_LOADING_WORDS: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(?i)^((loading|正在加载|Загрузка|chargement|cargando)(…|\.\.\.)?)$"#).unwrap());
 
 pub(crate) static DEFAULT_N_TOP_CANDIDATES: usize = 5;
 pub(crate) static MINIMUM_TOP_CANDIDATES: usize = 3;

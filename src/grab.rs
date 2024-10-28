@@ -6,7 +6,8 @@ use tendril::StrTendril;
 use crate::glob::*;
 use crate::score::*;
 
-use crate::helpers::{is_phrasing_content, is_whitespace, text_similarity};
+use crate::helpers::*;
+use crate::prep_article::prep_article;
 use crate::MetaData;
 //TODO: do not forget FLAGS
 
@@ -168,52 +169,13 @@ fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
     if name.as_ref() == "a" || name.as_ref() == "body" {
         return false;
     }
-    if has_ancestor_tag::<NodePredicate>(node, "table", None, None) {
+    if has_ancestor_tag::<NodePredicate>(node, "table", Some(0), None) {
         return false;
     }
-    if has_ancestor_tag::<NodePredicate>(node, "code", None, None) {
+    if has_ancestor_tag::<NodePredicate>(node, "code", Some(0), None) {
         return false;
     }
     true
-}
-
-type NodePredicate = fn(&Node) -> bool;
-
-fn has_ancestor_tag<F>(
-    node: &Node,
-    tag: &str,
-    max_depth: Option<usize>,
-    filter_fn: Option<F>,
-) -> bool
-where
-    F: Fn(&Node) -> bool,
-{
-    //TODO: revise this with node.ancestors()!
-    let max_depth = max_depth.unwrap_or(3);
-    if max_depth == 0 {
-        return false;
-    }
-    let mut depth: usize = 0;
-
-    let mut parent_node = node.parent();
-    while let Some(ref parent) = parent_node {
-        if depth > max_depth {
-            break;
-        }
-        // if node has no name, then it is not element, skip it
-        if let Some(name) = parent.node_name() {
-            if name.as_ref() == tag && filter_fn.as_ref().map_or(true, |f| f(parent)) {
-                return true;
-            }
-        } else {
-            parent_node = parent.parent();
-            continue;
-        }
-        parent_node = parent.parent();
-        depth += 1;
-    }
-
-    false
 }
 
 fn div_into_p<'a>(
@@ -290,27 +252,7 @@ fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
         .any(|n| n.is_text() && RX_HAS_CONTENT.is_match(n.text().as_ref()))
 }
 
-fn link_density(node: &Node) -> f32 {
-    let text_length: f32 = node.text().chars().count() as f32;
-    if text_length == 0.0 {
-        return 0.0;
-    }
-    let mut link_length = 0f32;
 
-    let a_sel = Selection::from(node.clone()).select("a");
-
-    for a in a_sel.iter() {
-        let href = a.attr_or("href", "");
-        let coeff = if !href.is_empty() && RX_HASH_URL.is_match(href.as_ref()) {
-            0.3
-        } else {
-            1.0
-        };
-        link_length += a.text().len() as f32 * coeff;
-    }
-
-    link_length / text_length
-}
 
 fn has_child_block_element(node: &Node) -> bool {
     //TODO: try to improve this! Matcher.match_element()
@@ -323,7 +265,10 @@ fn has_child_block_element(node: &Node) -> bool {
     })
 }
 
-fn handle_candidates<'a>(elements_to_score: &mut Vec<NodeRef<'a, NodeData>>, doc: &'a Document) -> Option<String> {
+fn handle_candidates<'a>(
+    elements_to_score: &mut Vec<NodeRef<'a, NodeData>>,
+    doc: &'a Document,
+) -> Option<String> {
     let mut candidates = vec![];
 
     for element in elements_to_score {
@@ -514,15 +459,14 @@ fn handle_candidates<'a>(elements_to_score: &mut Vec<NodeRef<'a, NodeData>>, doc
             // Now that we have the top candidate, look through its siblings for content
             // that might also be related. Things like preambles, content split by ads
             // that we removed, etc.
-            
+
             let article_content = doc.tree.new_element("div");
             article_content.set_attr("id", "readability-content");
             handle_top_candidate(tc, &article_content);
 
-
             //prepare the article
             prep_article(&article_content);
-            
+
             if needed_to_create_top_candidate {
                 // This looks like nonsense
                 // We already created a fake div thing, and there wouldn't have been any siblings left
@@ -531,11 +475,12 @@ fn handle_candidates<'a>(elements_to_score: &mut Vec<NodeRef<'a, NodeData>>, doc
                 // because that already happened anyway.
                 article_content.set_attr("id", "readability-page-1");
                 article_content.set_attr("class", "page");
-            }else {
+            } else {
                 let div = doc.tree.new_element("div");
                 div.set_attr("id", "readability-page-1");
                 div.set_attr("class", "page");
-                doc.tree.reparent_children_of(&article_content.id, Some(div.id));
+                doc.tree
+                    .reparent_children_of(&article_content.id, Some(div.id));
                 article_content.append_child(&div.id);
             }
 
@@ -550,7 +495,7 @@ fn handle_candidates<'a>(elements_to_score: &mut Vec<NodeRef<'a, NodeData>>, doc
 
             return match parse_successful {
                 true => Some(article_content.html().to_string()),
-                false => None
+                false => None,
             };
 
             // Now that we've gone through the full algorithm, check to see if
@@ -558,90 +503,12 @@ fn handle_candidates<'a>(elements_to_score: &mut Vec<NodeRef<'a, NodeData>>, doc
             // grabArticle with different flags set. This gives us a higher likelihood of
             // finding the content, and the sieve approach gives us a higher likelihood of
             // finding the -right- content.
-
-
-
         }
-    
     }
     None
 }
 
-
-
-fn clean_styles(n: &Node) {
-    if !n.is_element() {
-        return;
-    }
-    let node_name =n.node_name().unwrap();
-    if node_name.as_ref() == "svg" {
-        return;
-    }
-
-    n.remove_attrs(PRESENTATIONAL_ATTRIBUTES);
-
-    if DEPRECATED_SIZE_ATTRIBUTE_ELEMS.contains(&node_name.as_ref()) {
-        n.remove_attrs(&["width", "height"]);
-    }
-
-    for child_node in n.element_children().iter() {
-        clean_styles(child_node);
-    }
-
-}
-
-fn clean(n: &Node, tag: &str) {
-    let is_embed = EMBED_ELEMENTS.contains(&tag);
-
-    let sel = Selection::from(n.clone()).select(tag);
-
-    for node in sel.nodes().iter() {
-        // Allow youtube and vimeo videos through as people usually want to see those.
-        let mut should_remove = true;
-        if is_embed {
-
-            for attr in node.attrs().iter() {
-                if RX_VIDEO_ATTRS.is_match(&attr.value) {
-                    should_remove = false;
-                    break;
-                }
-            }
-
-            if node.node_name().unwrap().as_ref() == "object" && RX_VIDEO_ATTRS.is_match(&node.inner_html()) {
-                should_remove = false;
-            }
-        }
-
-        if should_remove {
-            node.remove_from_parent();
-        }
-    }
-
-}
-
-fn prep_article(article_content: &Node) {
-
-    clean_styles(article_content);
-
-    // Check for data tables before we continue, to avoid removing items in
-    // those tables, which will often be isolated even though they're
-    // visually linked to other content-ful elements (text, images, etc.).
-
-    //TODO: this._markDataTables(articleContent);
-
-    //TODO: this._fixLazyImages(articleContent);
-
-    // Clean out junk from the article content
-    clean(article_content, "object");
-    clean(article_content, "embed");
-    clean(article_content, "footer");
-    clean(article_content, "link");
-    clean(article_content, "aside");
-
-}
-
 fn handle_top_candidate(tc: &Node, article_content: &Node) {
-    
     let tc_node_score = get_node_score(tc).unwrap();
     let mut sibling_score_threshold = tc_node_score * 0.2;
     if sibling_score_threshold < 10.0 {
@@ -667,8 +534,6 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
             if !tc_class.is_empty() && sibling_class == tc_class {
                 content_bonus += tc_node_score * 0.2;
             }
-
-            
 
             if let Some(sibling_score) = get_node_score(sibling) {
                 if sibling_score + content_bonus >= sibling_score_threshold {
@@ -698,17 +563,15 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
                 // Turn it into a div so it doesn't get filtered out later by accident.
                 sibling.rename("div");
             }
-            
+
             sibling.remove_from_parent();
             article_content.append_child(&sibling.id);
 
             siblings = parent_of_top_candidate.element_children();
-            
-            s -= 1;
 
+            s -= 1;
         }
-        s += 1; 
-        
+        s += 1;
     }
 }
 
