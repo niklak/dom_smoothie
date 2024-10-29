@@ -55,115 +55,118 @@ fn clean_styles(n: &Node) {
 
 fn should_clean_conditionally(sel: &Selection, tag: &str) -> bool {
     let node = sel.nodes().first().unwrap();
-        let mut is_list = matches!(tag, "ul" | "ol");
-        if !is_list {
-            let list_length = sel
-                .select("ul, ol")
-                .iter()
-                .fold(0, |acc, s| acc + s.inner_html().chars().count());
-            is_list = (list_length as f32 / sel.inner_html().chars().count() as f32) > 0.9;
+    let mut is_list = matches!(tag, "ul" | "ol");
+    if !is_list {
+        let list_length = sel
+            .select("ul, ol")
+            .iter()
+            .fold(0, |acc, s| acc + s.inner_html().chars().count());
+        is_list = (list_length as f32 / sel.inner_html().chars().count() as f32) > 0.9;
+    }
+
+    let is_data_table = |n: &Node| n.has_attr("data-readability-table");
+
+    if tag == "table" && is_data_table(node) {
+        return false;
+    }
+    // Next check if we're inside a data table, in which case don't remove it as well.
+    if has_ancestor_tag(node, "table", None, Some(is_data_table)) {
+        return false;
+    }
+
+    if has_ancestor_tag::<NodePredicate>(node, "code", Some(0), None) {
+        return false;
+    }
+
+    // keep element if it has a data tables
+    if sel.select("table[data-readability-table]").exists() {
+        return false;
+    }
+
+    let weight = get_class_weight(node);
+
+    if weight < 0.0 {
+        return true;
+    }
+
+    if node.text().matches(",").count() < 10 {
+        // If there are not very many commas, and the number of
+        // non-paragraph elements is more than paragraphs or other
+        // ominous signs, remove the element.
+        let p: f32 = sel.select("p").length() as f32;
+        let img = sel.select("img").length() as f32;
+        let li = sel.select("li").length() as f32 - 100.0;
+        let input = sel.select("input").length() as f32;
+        let heading_density = get_text_density(node, "h1,h2,h3,h4,h5,h6");
+
+        let mut embed_count = 0;
+
+        let embeds_sel = sel.select("object,embed,iframe");
+
+        for embed in embeds_sel.iter() {
+            for attr in embed.attrs().iter() {
+                if RX_VIDEO_ATTRS.is_match(&attr.value) {
+                    return false;
+                }
+            }
+            let embed_node = embed.nodes().first().unwrap();
+            if embed_node.node_name().unwrap().as_ref() == "object" {
+                if RX_VIDEO_ATTRS.is_match(&embed_node.inner_html()) {
+                    return false;
+                }
+            }
+            embed_count += 1;
         }
 
-        let is_data_table = |n: &Node| n.has_attr("data-readability-table");
-
-        if tag == "table" && is_data_table(node) {
-            return false;
-        }
-        // Next check if we're inside a data table, in which case don't remove it as well.
-        if has_ancestor_tag(node, "table", None, Some(is_data_table)) {
-            return false;
-        }
-
-        if has_ancestor_tag::<NodePredicate>(node, "code", Some(0), None) {
-            return false;
-        }
-
-        // keep element if it has a data tables
-        if sel.select("table[data-readability-table]").exists(){
-            return false;
-        }
-
-        let weight = get_class_weight(node);
-
-
-        if weight < 0.0 {
+        let inner_text = sel.text();
+        if RX_AD_WORDS.is_match(&inner_text) || RX_LOADING_WORDS.is_match(&inner_text) {
             return true;
         }
 
-        if node.text().matches(",").count() < 10 {
-            // If there are not very many commas, and the number of
-            // non-paragraph elements is more than paragraphs or other
-            // ominous signs, remove the element.
-            let p: f32 = sel.select("p").length() as f32;
-            let img = sel.select("img").length() as f32;
-            let li = sel.select("li").length() as f32 - 100.0;
-            let input = sel.select("input").length() as f32;
-            let heading_density = get_text_density(node, "h1,h2,h3,h4,h5,h6");
+        let content_length = inner_text.chars().count();
+        let link_density = link_density(node);
 
-            let mut embed_count  = 0;
+        let mut textish_tags = vec!["span", "li", "td"];
+        textish_tags.extend(BLOCK_ELEMS);
 
-            let embeds_sel = sel.select("object,embed,iframe");
+        let text_density = get_text_density(node, &textish_tags.join(","));
+        let is_figure_child = has_ancestor_tag::<NodePredicate>(node, "figure", None, None);
 
-            for embed in embeds_sel.iter() {
-                for attr in embed.attrs().iter() {
-                    if RX_VIDEO_ATTRS.is_match(&attr.value) {
-                        return false;
-                    }
-                }
-                let embed_node = embed.nodes().first().unwrap();
-                if embed_node.node_name().unwrap().as_ref() == "object" {
-                    if RX_VIDEO_ATTRS.is_match(&embed_node.inner_html()) {
-                        return false;
-                    }
-                }
-                embed_count += 1;
-            }
-
-            let inner_text = sel.text();
-            if RX_AD_WORDS.is_match(&inner_text) || RX_LOADING_WORDS.is_match(&inner_text) {
-                return  true;
-            }
-
-            let content_length = inner_text.chars().count();
-            let link_density = link_density(node);
-
-            let mut textish_tags = vec!["span", "li", "td"];
-            textish_tags.extend(BLOCK_ELEMS);
-
-            let text_density = get_text_density(node, &textish_tags.join(","));
-            let is_figure_child = has_ancestor_tag::<NodePredicate>(node, "figure", None, None);
-            
-            if !is_figure_child && img > 1.0 && p / img < 0.5 {
-                return true;
-            }
-            if !is_list && li > p {
-                return true;
-            }
-            if input > (p / 3.0).floor() {
-                return true;
-            }
-
-            if !is_list && !is_figure_child && heading_density < 0.9 && content_length < 25 && (img == 0.0 || img > 2.0) && link_density > 0.0 {
-                return true;
-            }
-            if !is_list && weight < 25.0 && link_density > 0.2 {
-                return true;
-            }
-
-            if  weight >= 25.0 && link_density > 0.5 {
-                return  true;
-            }
-
-            if (embed_count == 1 && content_length < 75) || embed_count > 1 {
-                return true;
-            }
-            if img == 0.0 && text_density == 0.0 {
-                return true;
-            }
-        
+        if !is_figure_child && img > 1.0 && p / img < 0.5 {
+            return true;
         }
-        false
+        if !is_list && li > p {
+            return true;
+        }
+        if input > (p / 3.0).floor() {
+            return true;
+        }
 
+        if !is_list
+            && !is_figure_child
+            && heading_density < 0.9
+            && content_length < 25
+            && (img == 0.0 || img > 2.0)
+            && link_density > 0.0
+        {
+            return true;
+        }
+        if !is_list && weight < 25.0 && link_density > 0.2 {
+            return true;
+        }
+
+        if weight >= 25.0 && link_density > 0.5 {
+            return true;
+        }
+
+        if (embed_count == 1 && content_length < 75) || embed_count > 1 {
+            return true;
+        }
+        if img == 0.0 && text_density == 0.0 {
+            return true;
+        }
+    }
+    false
 }
 
 fn clean_conditionally(node: &Node, tag: &str, clean: bool) {
@@ -172,10 +175,9 @@ fn clean_conditionally(node: &Node, tag: &str, clean: bool) {
     }
 
     for sel in Selection::from(node.clone()).select(tag).iter() {
-            if should_clean_conditionally(&sel, tag) {
-                sel.remove();
-            }
-
+        if should_clean_conditionally(&sel, tag) {
+            sel.remove();
+        }
     }
 }
 
@@ -342,15 +344,28 @@ fn fix_lazy_images(n: &Node) {
     }
 }
 
+fn clean_headers(n: &Node) {
+    for h_sel in Selection::from(n.clone()).select_matcher(&HEADINGS_MATCHER).iter(){
+        let h_node = h_sel.nodes().first().unwrap();
+        if get_class_weight(h_node) < 0.0 {
+            h_node.remove_from_parent();
+        }
+    }
+}
+
 pub(crate) fn prep_article(article_content: &Node) {
     clean_styles(article_content);
 
     // Check for data tables before we continue, to avoid removing items in
     // those tables, which will often be isolated even though they're
     // visually linked to other content-ful elements (text, images, etc.).
+    let flag_clean_conditionally = true;
 
     mark_data_tables(article_content);
     fix_lazy_images(article_content);
+
+    clean_conditionally(article_content, "form", flag_clean_conditionally);
+    clean_conditionally(article_content, "fieldset", flag_clean_conditionally);
 
     // Clean out junk from the article content
     clean(article_content, "object");
@@ -358,4 +373,90 @@ pub(crate) fn prep_article(article_content: &Node) {
     clean(article_content, "footer");
     clean(article_content, "link");
     clean(article_content, "aside");
+
+    let share_element_threshold = DEFAULT_CHAR_THRESHOLD;
+
+    // Clean out elements with little content that have "share" in their id/class combinations from final top candidates,
+    // which means we don't remove the top candidates even they have "share".
+
+    for child in article_content.element_children().iter() {
+        let class = child.attr_or("class", "");
+        let id = child.attr_or("id", "");
+        let class_and_id = format!("{} {}", class, id);
+        if RX_SHARE_ELEMENTS.is_match(&class_and_id) && child.text().len() < share_element_threshold
+        {
+            child.remove_from_parent();
+        }
+    }
+
+    clean(article_content, "iframe");
+    clean(article_content, "input");
+    clean(article_content, "textarea");
+    clean(article_content, "select");
+    clean(article_content, "button");
+    clean_headers(article_content);
+
+    // Do these last as the previous stuff may have removed junk
+    // that will affect these
+    clean_conditionally(article_content, "table", flag_clean_conditionally);
+    clean_conditionally(article_content, "ul", flag_clean_conditionally);
+    clean_conditionally(article_content, "div", flag_clean_conditionally);
+
+    // replace H1 with H2 as H1 should be only title that is displayed separately
+    
+    let article_sel = Selection::from(article_content.clone());
+
+    article_sel.select("h1").rename("h2");
+
+    // Remove extra paragraphs
+
+    // At this point, nasty iframes have been removed; only embedded video
+    // ones remain.
+    for p_sel in article_sel.select("p").iter() {
+        let content_el_count = p_sel.select("img,object,embed,iframe").length();
+        let text = p_sel.text();
+        if content_el_count == 0 && text.is_empty(){
+            p_sel.remove();
+        }
+    }
+
+    for br_sel in article_sel.select("br").iter() {
+        let br_node = br_sel.nodes().first().unwrap();
+        if let Some(next_node) = br_node.next_element_sibling() {
+            if next_node.node_name().unwrap().as_ref() == "p" {
+                br_sel.remove();
+            }
+        }
+    }
+
+    // Remove single-cell tables
+    for table_sel in article_sel.select("table").iter() {
+        let table_node = table_sel.nodes().first().unwrap();
+        let tbody = if has_single_tag_inside_element(table_node, "tbody") {
+            table_node.first_element_child().unwrap()
+        }else {
+           table_node.clone()
+        };
+
+        if has_single_tag_inside_element(&tbody, "tr"){
+            let row = tbody.first_element_child().unwrap();
+            if has_single_tag_inside_element(&row, "td") {
+                let cell = row.first_element_child().unwrap();
+
+                let new_tag = if cell.children().iter().all(|c| is_phrasing_content(c)){
+                    "p"
+                }else {
+                    "div"
+                };
+
+                cell.rename(new_tag);
+                table_node.append_prev_sibling(&cell.id);
+                table_node.remove_from_parent();
+
+            }
+        }
+
+
+
+    }
 }

@@ -93,7 +93,7 @@ pub fn get_text_density(node: &Node, selector: &str) -> f32 {
         return 0.0;
     }
     let sel = Selection::from(node.clone()).select(selector);
-    let children_length =  normalize_spaces(&sel.text()).chars().count() as f32;
+    let children_length = normalize_spaces(&sel.text()).chars().count() as f32;
     children_length / text_length
 }
 
@@ -121,6 +121,29 @@ pub fn link_density(node: &Node) -> f32 {
     }
 
     link_length / text_length
+}
+
+
+pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
+    // There should be exactly 1 element child with given tag
+    let children = node.children();
+    if children.len() != 1 {
+        return false;
+    }
+
+    let first_child = children.first().unwrap();
+
+    if !first_child
+        .node_name()
+        .map_or(false, |name| name.as_ref() == tag)
+    {
+        return false;
+    }
+
+    !first_child
+        .children()
+        .iter()
+        .any(|n| n.is_text() && RX_HAS_CONTENT.is_match(n.text().as_ref()))
 }
 
 #[cfg(test)]

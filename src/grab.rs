@@ -230,28 +230,6 @@ fn div_into_p<'a>(
     }
 }
 
-fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
-    // There should be exactly 1 element child with given tag
-    let children = node.children();
-    if children.len() != 1 {
-        return false;
-    }
-
-    let first_child = children.first().unwrap();
-
-    if !first_child
-        .node_name()
-        .map_or(false, |name| name.as_ref() == tag)
-    {
-        return false;
-    }
-
-    !first_child
-        .children()
-        .iter()
-        .any(|n| n.is_text() && RX_HAS_CONTENT.is_match(n.text().as_ref()))
-}
-
 
 
 fn has_child_block_element(node: &Node) -> bool {
@@ -544,10 +522,11 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
                 let node_content = sibling.text();
                 let node_length = node_content.chars().count();
 
-                if (node_length > 80 && link_density < 0.25) ||  node_length < 80
-                    && node_length > 0
-                    && link_density == 0.0
-                    && !RX_SENTENCE.is_match(&node_content)
+                if (node_length > 80 && link_density < 0.25)
+                    || node_length < 80
+                        && node_length > 0
+                        && link_density == 0.0
+                        && !RX_SENTENCE.is_match(&node_content)
                 {
                     append = true;
                 }

@@ -487,8 +487,6 @@ impl Readability {
     }
 }
 
-
-
 fn get_map_any_value(map: &HashMap<String, StrTendril>, keys: &[&str]) -> Option<StrTendril> {
     keys.iter()
         .find_map(|&key| map.get(key))
