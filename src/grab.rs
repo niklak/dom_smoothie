@@ -544,9 +544,7 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
                 let node_content = sibling.text();
                 let node_length = node_content.chars().count();
 
-                if node_length > 80 && link_density < 0.25 {
-                    append = true;
-                } else if node_length < 80
+                if (node_length > 80 && link_density < 0.25) ||  node_length < 80
                     && node_length > 0
                     && link_density == 0.0
                     && !RX_SENTENCE.is_match(&node_content)
