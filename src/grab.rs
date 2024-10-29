@@ -666,6 +666,7 @@ mod tests {
         let doc = Document::from(contents);
         let sel = doc.select("body > *");
         let count_before = sel.nodes().iter().filter(|n| n.is_element()).count();
+
         assert_eq!(count_before, 10);
         clean_doc(&doc);
 

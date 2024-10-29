@@ -77,6 +77,7 @@ where
     let max_depth = max_depth.map(|max_depth| if max_depth == 0 { 3 } else { max_depth });
     let mut matched_ancestors = node
         .ancestors_it(max_depth)
+        .filter(|a| a.is_element())
         .filter(|a| a.node_name().unwrap().as_ref() == tag);
 
     if let Some(filter_fn) = filter_fn {

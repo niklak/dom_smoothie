@@ -85,7 +85,10 @@ fn should_clean_conditionally(sel: &Selection, tag: &str) -> bool {
 
         let weight = get_class_weight(node);
 
-        let mut content_score = 0.0;
+
+        if weight < 0.0 {
+            return true;
+        }
 
         if node.text().matches(",").count() < 10 {
             // If there are not very many commas, and the number of
@@ -129,6 +132,35 @@ fn should_clean_conditionally(sel: &Selection, tag: &str) -> bool {
 
             let text_density = get_text_density(node, &textish_tags.join(","));
             let is_figure_child = has_ancestor_tag::<NodePredicate>(node, "figure", None, None);
+            
+            if !is_figure_child && img > 1.0 && p / img < 0.5 {
+                return true;
+            }
+            if !is_list && li > p {
+                return true;
+            }
+            if input > (p / 3.0).floor() {
+                return true;
+            }
+
+            if !is_list && !is_figure_child && heading_density < 0.9 && content_length < 25 && (img == 0.0 || img > 2.0) && link_density > 0.0 {
+                return true;
+            }
+            if !is_list && weight < 25.0 && link_density > 0.2 {
+                return true;
+            }
+
+            if  weight >= 25.0 && link_density > 0.5 {
+                return  true;
+            }
+
+            if (embed_count == 1 && content_length < 75) || embed_count > 1 {
+                return true;
+            }
+            if img == 0.0 && text_density == 0.0 {
+                return true;
+            }
+        
         }
         false
 
