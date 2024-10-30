@@ -1,6 +1,6 @@
 use std::vec;
 
-use dom_query::{Document, Node, NodeData, NodeRef, Selection};
+use dom_query::{Document, Node, NodeRef};
 use tendril::StrTendril;
 
 use crate::glob::*;
@@ -26,10 +26,8 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<String
     let selection = doc.select("*");
 
     //TODO: maybe this way of iterating through nodes is not the best
-    for node in selection.nodes() {
-        if !node.is_element() {
-            continue;
-        }
+    for node in selection.nodes().iter().filter(|n| n.is_element()) {
+        
 
         if !is_probably_visible(node) {
             node.remove_from_parent();
@@ -49,6 +47,13 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<String
         }
 
         let node_name = node.node_name().unwrap();
+        
+        if TAGS_WITH_CONTENT.contains(&&node_name.as_ref()) {
+            if remove_empty_elements_with_ancestors(node) {
+                continue;
+            }
+            
+        }
 
         if DEFAULT_TAGS_TO_SCORE.contains(&node_name.as_ref()) {
             elements_to_score.push(node.clone());
@@ -61,8 +66,9 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<String
         }
     }
 
-    handle_candidates(&mut elements_to_score, doc)
-
+    let s = handle_candidates(&mut elements_to_score, doc);
+   
+    s
     //TODO: handle elements_to_score
 }
 
@@ -83,7 +89,7 @@ fn clean_doc(doc: &Document) {
     }
 }
 
-fn get_node_matching_string(node: &NodeRef<NodeData>) -> String {
+fn get_node_matching_string(node: &NodeRef) -> String {
     let mut matched_attrs: Vec<String> = vec![];
     let class = node.attr("class");
     let id = node.attr("id");
@@ -181,7 +187,7 @@ fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
 fn div_into_p<'a>(
     node: &'a Node,
     doc: &'a Document,
-    elements_to_score: &mut Vec<NodeRef<'a, NodeData>>,
+    elements_to_score: &mut Vec<NodeRef<'a>>,
 ) {
     // Turn all divs that don't have children block level elements into p's
 
@@ -244,7 +250,7 @@ fn has_child_block_element(node: &Node) -> bool {
 }
 
 fn handle_candidates<'a>(
-    elements_to_score: &mut Vec<NodeRef<'a, NodeData>>,
+    elements_to_score: &mut Vec<NodeRef<'a>>,
     doc: &'a Document,
 ) -> Option<String> {
     let mut candidates = vec![];
@@ -546,7 +552,10 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
 
             siblings = parent_of_top_candidate.element_children();
 
-            s -= 1;
+            if s > 0 {
+                s -= 1;
+            }
+            
         }
         s += 1;
     }

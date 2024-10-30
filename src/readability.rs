@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
-use dom_query::Document;
+use dom_query::{Document, Node, NodeData};
 use tendril::StrTendril;
 
 use crate::glob::*;
+use crate::grab::grab_article;
 use crate::helpers::*;
 pub struct Article {
     pub title: StrTendril,
@@ -93,6 +94,12 @@ impl Readability {
 
         // replace duplicating br elements
         self.replace_brs();
+
+        // remove comments
+        self.remove_comments();
+
+        // remove empty elements
+        //self.remove_empty_elements();
     }
 
     pub fn get_article_title(&self) -> StrTendril {
@@ -175,7 +182,7 @@ impl Readability {
     }
 
     fn replace_fonts(&mut self) {
-        let mut sel = self.doc.select_matcher(&FONT_MATCHER);
+        let sel = self.doc.select_matcher(&FONT_MATCHER);
         sel.rename("span");
         sel.remove_all_attrs();
     }
@@ -261,10 +268,11 @@ impl Readability {
         self.prepare();
 
         let metadata = self.get_article_metadata(ld_meta);
+        let article = grab_article(&self.doc, Some(metadata.clone()));
 
         Article {
             title: metadata.title.into(),
-            content: self.doc.html(),
+            content: StrTendril::from(article.unwrap()),
             text_content: self.doc.text(),
         }
     }
@@ -478,6 +486,14 @@ impl Readability {
         //TODO: favicon
     }
 
+    fn remove_comments(&self) {
+        remove_comments(&self.doc.root());
+    }
+
+    fn remove_empty_elements(&self) {
+        remove_empty_elements(&self.doc.root());
+    }
+
     fn get_html_lang(&self) -> Option<StrTendril> {
         let sel = self.doc.select_single_matcher(&HTML_LANG_MATCHER);
         match sel.is_empty() {
@@ -491,6 +507,41 @@ fn get_map_any_value(map: &HashMap<String, StrTendril>, keys: &[&str]) -> Option
     keys.iter()
         .find_map(|&key| map.get(key))
         .map(|s| s.to_owned())
+}
+
+
+
+fn remove_comments(n: &Node) {
+    let mut ops = n.children();
+    let mut comments  = vec![];
+    while let Some(node) = ops.pop() {
+        node.query(|n| match n.data {
+            NodeData::Comment { .. } => {
+                comments.push(node.clone());
+            },
+            NodeData::Element(_) => {
+                ops.extend(node.children());
+            }
+            _ => {}
+        });
+    }
+
+    for comment in comments{
+        comment.remove_from_parent();
+    }
+}
+
+fn remove_empty_elements(n: &Node) {
+    let mut ops = n.element_children();
+    while let Some(node) = ops.pop() {
+        if node.text().trim().is_empty() {
+            node.remove_from_parent();
+            continue;
+        }
+        ops.extend(node.element_children());
+
+    }
+
 }
 
 #[cfg(test)]

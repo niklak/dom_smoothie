@@ -86,6 +86,7 @@ name = "dom_smoothie"
 version = "0.1.0"
 dependencies = [
  "dom_query",
+ "flagset",
  "gjson",
  "html-escape",
  "once_cell",
@@ -109,6 +110,12 @@ checksum = "cd1511a7b6a56299bd043a9c167a6d2bfb37bf84a6dfceaba651168adfb43c87"
 dependencies = [
  "dtoa",
 ]
+
+[[package]]
+name = "flagset"
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b3ea1ec5f8307826a5b71094dd91fc04d4ae75d5709b20ad351c7fb4815c86ec"
 
 [[package]]
 name = "foldhash"

@@ -146,6 +146,43 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
         .any(|n| n.is_text() && RX_HAS_CONTENT.is_match(n.text().as_ref()))
 }
 
+
+pub(crate) fn is_element_without_content(node: &Node) -> bool {
+    if !node.is_element() {
+        return false;
+    }
+
+    if !node.text().trim().is_empty() {
+        return false;
+    }
+
+    let sel = Selection::from(node.clone()).select("br,hr");
+    if node.children().len() == 0 || node.children().len() == sel.length() {
+        return true;
+    }
+
+    true
+}
+
+pub(crate) fn remove_empty_elements_with_ancestors(node: &Node) -> bool {
+
+    let mut node_to_check = Some(node.clone());
+    let mut removed = false;
+    while let Some(ref node) = node_to_check {
+        if is_element_without_content(node) {
+            let parent = node.parent();
+            node.remove_from_parent();
+            node_to_check = parent;
+            removed = true;
+
+        }else {
+            node_to_check = None;
+        }
+    }
+    removed
+    
+}
+
 #[cfg(test)]
 mod tests {
 

@@ -1,3 +1,4 @@
+mod flags;
 mod glob;
 mod grab;
 mod helpers;

@@ -93,6 +93,8 @@ pub(crate) static ALTER_TO_DIV_EXCEPTIONS: &[&str] =
 pub(crate) static DEFAULT_TAGS_TO_SCORE: &[&str] =
     &["section", "h2", "h3", "h4", "h5", "h6", "p", "td", "pre"];
 
+pub (crate) static TAGS_WITH_CONTENT: &[&str] = &["div", "section", "header", "h1", "h2", "h3","h4","h5","h6"];
+
 pub(crate) static PRESENTATIONAL_ATTRIBUTES: &[&str] = &[
     "align",
     "background",
