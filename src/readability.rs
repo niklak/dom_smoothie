@@ -268,11 +268,13 @@ impl Readability {
         self.prepare();
 
         let metadata = self.get_article_metadata(ld_meta);
-        let article = grab_article(&self.doc, Some(metadata.clone()));
+        let article = grab_article(&self.doc, Some(metadata.clone())).unwrap();
+
+        self.post_process_content(&article);
 
         Article {
             title: metadata.title.into(),
-            content: StrTendril::from(article.unwrap()),
+            content: article.select("#readability-page-1").html(),
             text_content: self.doc.text(),
         }
     }
@@ -490,16 +492,31 @@ impl Readability {
         remove_comments(&self.doc.root());
     }
 
-    fn remove_empty_elements(&self) {
-        remove_empty_elements(&self.doc.root());
-    }
-
     fn get_html_lang(&self) -> Option<StrTendril> {
         let sel = self.doc.select_single_matcher(&HTML_LANG_MATCHER);
         match sel.is_empty() {
             false => sel.attr("lang"),
             true => None,
         }
+    }
+
+    fn post_process_content(&self, doc: &Document) {
+        // Readability cannot open relative uris so we convert them to absolute uris.
+        //this._fixRelativeUris(articleContent);
+
+        //this._simplifyNestedElements(articleContent);
+
+        /*if (!this._keepClasses) {
+            // Remove classes.
+            this._cleanClasses(articleContent);
+        }*/
+        simplify_nested_elements(&doc.root());
+
+        let score_sel = doc.select("*[data-readability-score], *[data-readability-table]");
+        score_sel.remove_attrs(&["data-readability-score","data-readability-table"]);
+
+        let class_sel = doc.select(".page *[class]");
+        class_sel.remove_attr("class");
     }
 }
 
@@ -509,16 +526,14 @@ fn get_map_any_value(map: &HashMap<String, StrTendril>, keys: &[&str]) -> Option
         .map(|s| s.to_owned())
 }
 
-
-
 fn remove_comments(n: &Node) {
     let mut ops = n.children();
-    let mut comments  = vec![];
+    let mut comments = vec![];
     while let Some(node) = ops.pop() {
         node.query(|n| match n.data {
             NodeData::Comment { .. } => {
                 comments.push(node.clone());
-            },
+            }
             NodeData::Element(_) => {
                 ops.extend(node.children());
             }
@@ -526,7 +541,7 @@ fn remove_comments(n: &Node) {
         });
     }
 
-    for comment in comments{
+    for comment in comments {
         comment.remove_from_parent();
     }
 }
@@ -539,9 +554,37 @@ fn remove_empty_elements(n: &Node) {
             continue;
         }
         ops.extend(node.element_children());
-
     }
+}
 
+fn simplify_nested_elements(n: &Node) {
+    let mut ops = vec![n.clone()];
+    while let Some(node) = ops.pop() {
+        if node.is_element() {
+            let node_name = node.clone().node_name().unwrap();
+            let node_id_attr = node.attr_or("id", "");
+
+            if node.parent().is_some()
+                && ["div", "section"].contains(&node_name.as_ref())
+                && !node_id_attr.starts_with("readability")
+            {
+                if is_element_without_content(&node) {
+                    node.remove_from_parent();
+                    continue;
+                }
+                else if node_name.as_ref() != "body" && (has_single_tag_inside_element(&node, "div")
+                || has_single_tag_inside_element(&node, "section"))
+                {
+                    let child = node.first_element_child().unwrap();
+                    for attr in node.attrs() {
+                        child.set_attr(&attr.name.local, &attr.value);
+                    }
+                    node.replace_with(&child.id);
+                }
+            } 
+        }
+        ops.extend(node.element_children());
+    }
 }
 
 #[cfg(test)]

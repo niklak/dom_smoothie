@@ -345,7 +345,10 @@ fn fix_lazy_images(n: &Node) {
 }
 
 fn clean_headers(n: &Node) {
-    for h_sel in Selection::from(n.clone()).select_matcher(&HEADINGS_MATCHER).iter(){
+    for h_sel in Selection::from(n.clone())
+        .select_matcher(&HEADINGS_MATCHER)
+        .iter()
+    {
         let h_node = h_sel.nodes().first().unwrap();
         if get_class_weight(h_node) < 0.0 {
             h_node.remove_from_parent();
@@ -403,7 +406,7 @@ pub(crate) fn prep_article(article_content: &Node) {
     clean_conditionally(article_content, "div", flag_clean_conditionally);
 
     // replace H1 with H2 as H1 should be only title that is displayed separately
-    
+
     let article_sel = Selection::from(article_content.clone());
 
     article_sel.select("h1").rename("h2");
@@ -415,7 +418,7 @@ pub(crate) fn prep_article(article_content: &Node) {
     for p_sel in article_sel.select("p").iter() {
         let content_el_count = p_sel.select("img,object,embed,iframe").length();
         let text = p_sel.text();
-        if content_el_count == 0 && text.is_empty(){
+        if content_el_count == 0 && text.trim().is_empty() {
             p_sel.remove();
         }
     }
@@ -434,29 +437,25 @@ pub(crate) fn prep_article(article_content: &Node) {
         let table_node = table_sel.nodes().first().unwrap();
         let tbody = if has_single_tag_inside_element(table_node, "tbody") {
             table_node.first_element_child().unwrap()
-        }else {
-           table_node.clone()
+        } else {
+            table_node.clone()
         };
 
-        if has_single_tag_inside_element(&tbody, "tr"){
+        if has_single_tag_inside_element(&tbody, "tr") {
             let row = tbody.first_element_child().unwrap();
             if has_single_tag_inside_element(&row, "td") {
                 let cell = row.first_element_child().unwrap();
 
-                let new_tag = if cell.children().iter().all(|c| is_phrasing_content(c)){
+                let new_tag = if cell.children().iter().all(|c| is_phrasing_content(c)) {
                     "p"
-                }else {
+                } else {
                     "div"
                 };
 
                 cell.rename(new_tag);
                 table_node.append_prev_sibling(&cell.id);
                 table_node.remove_from_parent();
-
             }
         }
-
-
-
     }
 }

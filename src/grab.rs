@@ -1,6 +1,5 @@
 use std::vec;
 
-use dom_query::Selection;
 use dom_query::{Document, Node, NodeRef};
 use tendril::StrTendril;
 
@@ -12,7 +11,7 @@ use crate::prep_article::prep_article;
 use crate::MetaData;
 //TODO: do not forget FLAGS
 
-pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<String> {
+pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Document> {
     let mut metadata = metadata.unwrap_or_default();
 
     clean_doc(doc);
@@ -28,8 +27,6 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<String
 
     //TODO: maybe this way of iterating through nodes is not the best
     for node in selection.nodes().iter().filter(|n| n.is_element()) {
-        
-
         if !is_probably_visible(node) {
             node.remove_from_parent();
             continue;
@@ -48,12 +45,11 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<String
         }
 
         let node_name = node.node_name().unwrap();
-        
+
         if TAGS_WITH_CONTENT.contains(&&node_name.as_ref()) {
             if remove_empty_elements_with_ancestors(node) {
                 continue;
             }
-            
         }
 
         if DEFAULT_TAGS_TO_SCORE.contains(&node_name.as_ref()) {
@@ -61,7 +57,6 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<String
         }
 
         // TODO: div_matcher.match_element(node)
-        
 
         if node_name.as_ref() == "div" {
             div_into_p(node, doc, &mut elements_to_score);
@@ -184,11 +179,7 @@ fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
     true
 }
 
-fn div_into_p<'a>(
-    node: &'a Node,
-    doc: &'a Document,
-    elements_to_score: &mut Vec<NodeRef<'a>>,
-) {
+fn div_into_p<'a>(node: &'a Node, doc: &'a Document, elements_to_score: &mut Vec<NodeRef<'a>>) {
     // Turn all divs that don't have children block level elements into p's
 
     // Put phrasing content into paragraphs.
@@ -236,8 +227,6 @@ fn div_into_p<'a>(
     }
 }
 
-
-
 fn has_child_block_element(node: &Node) -> bool {
     //TODO: try to improve this! Matcher.match_element()
     node.children().iter().any(|n| {
@@ -252,7 +241,7 @@ fn has_child_block_element(node: &Node) -> bool {
 fn handle_candidates<'a>(
     elements_to_score: &mut Vec<NodeRef<'a>>,
     doc: &'a Document,
-) -> Option<String> {
+) -> Option<Document> {
     let mut candidates = vec![];
 
     for element in elements_to_score {
@@ -303,7 +292,6 @@ fn handle_candidates<'a>(
         }
     }
 
-
     //TODO: this is a crap
 
     // Scale the final candidates score based on link density. Good content
@@ -327,6 +315,7 @@ fn handle_candidates<'a>(
     // TODO: revise everything below till line 460
 
     let mut top_candidate = top_candidates.first().cloned();
+
     let top_candidate_name = top_candidate
         .clone()
         .and_then(|ref n| n.node_name())
@@ -344,6 +333,9 @@ fn handle_candidates<'a>(
         page_node.append_child(&tc.id);
         init_node_score(&tc);
     } else if let Some(ref tc) = top_candidate {
+        // Find a better top candidate node if it contains (at least three) nodes which belong to `topCandidates` array
+        // and whose scores are quite closed with current `topCandidate` node.
+        // TODO: this isn't working
         let tc_score = get_node_score(tc).unwrap();
 
         let mut alternative_candidate_ancestors = vec![];
@@ -418,81 +410,80 @@ fn handle_candidates<'a>(
             }
         }
 
+        // If the top candidate is the only child, use parent instead. This will help sibling
+        // joining logic when adjacent content is actually located in parent's sibling node.
         if let Some(ref tc) = top_candidate {
             let mut parent_of_top_candidate = tc.parent();
 
             while let Some(ref parent_of_tc) = parent_of_top_candidate {
                 let node_name = parent_of_tc.node_name().unwrap();
+
                 if node_name.as_ref() == "body" {
                     break;
                 }
 
-                if parent_of_tc.children().len() != 1 {
+                if parent_of_tc.element_children().len() != 1 {
                     break;
                 }
-
                 top_candidate = parent_of_top_candidate.clone();
                 parent_of_top_candidate = parent_of_tc.parent();
             }
         }
-
-        if let Some(ref tc) = top_candidate {
-            if !has_node_score(tc) {
-                init_node_score(tc);
-            }
-
-            // Now that we have the top candidate, look through its siblings for content
-            // that might also be related. Things like preambles, content split by ads
-            // that we removed, etc.
-
-            let mut article_content = doc.tree.new_element("div");
-            article_content.set_attr("id", "readability-content");
-
-            handle_top_candidate(tc, &article_content);
-
-            
-
-            //prepare the article
-            prep_article(&article_content);
-
-            if needed_to_create_top_candidate {
-                // This looks like nonsense
-                // We already created a fake div thing, and there wouldn't have been any siblings left
-                // for the previous loop, so there's no point trying to create a new div, and then
-                // move all the children over. Just assign IDs and class names here. No need to append
-                // because that already happened anyway.
-                article_content.set_attr("id", "readability-page-1");
-                article_content.set_attr("class", "page");
-            } else {
-                let div = doc.tree.new_element("div");
-                div.set_attr("id", "readability-page-1");
-                div.set_attr("class", "page");
-                doc.tree
-                    .reparent_children_of(&article_content.id, Some(div.id));
-                article_content.replace_with(&div.id);
-                article_content = div;
-            }
-
-            let mut parse_successful = true;
-
-            let text_length = article_content.text().len();
-            if text_length < DEFAULT_CHAR_THRESHOLD {
-                parse_successful = false;
-
-                //TODO: implement logic with flags and attempts!
-            }
-
-            return match parse_successful {
-                true => Some(article_content.html().to_string()),
-                false => None,
-            };
-
-            // Now that we've gone through the full algorithm, check to see if
-            // we got any meaningful content. If we didn't, we may need to re-run
-            // grabArticle with different flags set. This gives us a higher likelihood of
-            // finding the content, and the sieve approach gives us a higher likelihood of
-            // finding the -right- content.
+    }
+    if let Some(ref tc) = top_candidate {
+        if !has_node_score(tc) {
+            init_node_score(tc);
         }
+
+        // Now that we have the top candidate, look through its siblings for content
+        // that might also be related. Things like preambles, content split by ads
+        // that we removed, etc.
+
+        let mut article_content = doc.tree.new_element("div");
+        article_content.set_attr("id", "readability-content");
+
+        handle_top_candidate(tc, &article_content);
+
+        //prepare the article
+        prep_article(&article_content);
+
+        if needed_to_create_top_candidate {
+            // This looks like nonsense
+            // We already created a fake div thing, and there wouldn't have been any siblings left
+            // for the previous loop, so there's no point trying to create a new div, and then
+            // move all the children over. Just assign IDs and class names here. No need to append
+            // because that already happened anyway.
+            article_content.set_attr("id", "readability-page-1");
+            article_content.set_attr("class", "page");
+        } else {
+            let div = doc.tree.new_element("div");
+            div.set_attr("id", "readability-page-1");
+            div.set_attr("class", "page");
+            doc.tree
+                .reparent_children_of(&article_content.id, Some(div.id));
+            article_content.replace_with(&div.id);
+            article_content = div;
+        }
+
+        let mut parse_successful = true;
+
+        let text_length = article_content.text().len();
+        if text_length < DEFAULT_CHAR_THRESHOLD {
+            parse_successful = false;
+
+            //TODO: implement logic with flags and attempts!
+        }
+
+        return match parse_successful {
+            true => Some(Document::from(article_content.html())),
+            false => None,
+        };
+
+        // Now that we've gone through the full algorithm, check to see if
+        // we got any meaningful content. If we didn't, we may need to re-run
+        // grabArticle with different flags set. This gives us a higher likelihood of
+        // finding the content, and the sieve approach gives us a higher likelihood of
+        // finding the -right- content.
     }
     None
 }
@@ -560,7 +551,6 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
             if s > 0 {
                 s -= 1;
             }
-            
         }
         s += 1;
     }

@@ -41,7 +41,6 @@ pub(crate) fn is_phrasing_content(node: &Node) -> bool {
         return true;
     }
 
-    
     if matches!(node_name, "a" | "del" | "ins")
         && node.children().into_iter().all(|n| is_phrasing_content(&n))
     {
@@ -122,10 +121,9 @@ pub fn link_density(node: &Node) -> f32 {
     link_length / text_length
 }
 
-
 pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
     // There should be exactly 1 element child with given tag
-    let children = node.children();
+    let children = node.element_children();
     if children.len() != 1 {
         return false;
     }
@@ -145,7 +143,6 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
         .any(|n| n.is_text() && RX_HAS_CONTENT.is_match(n.text().as_ref()))
 }
 
-
 pub(crate) fn is_element_without_content(node: &Node) -> bool {
     if !node.is_element() {
         return false;
@@ -164,7 +161,6 @@ pub(crate) fn is_element_without_content(node: &Node) -> bool {
 }
 
 pub(crate) fn remove_empty_elements_with_ancestors(node: &Node) -> bool {
-
     let mut node_to_check = Some(node.clone());
     let mut removed = false;
     while let Some(ref node) = node_to_check {
@@ -173,13 +169,11 @@ pub(crate) fn remove_empty_elements_with_ancestors(node: &Node) -> bool {
             node.remove_from_parent();
             node_to_check = parent;
             removed = true;
-
-        }else {
+        } else {
             node_to_check = None;
         }
     }
     removed
-    
 }
 
 #[cfg(test)]
