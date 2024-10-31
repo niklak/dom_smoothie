@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use dom_query::{Document, Node, NodeData};
+use dom_query::{Document, Node, NodeData, Selection};
 use tendril::StrTendril;
 
 use crate::glob::*;
@@ -504,16 +504,14 @@ impl Readability {
         // Readability cannot open relative uris so we convert them to absolute uris.
         //this._fixRelativeUris(articleContent);
 
-        //this._simplifyNestedElements(articleContent);
-
         /*if (!this._keepClasses) {
             // Remove classes.
             this._cleanClasses(articleContent);
         }*/
-        simplify_nested_elements(&doc.root());
-
+        let root_sel = doc.select(".page");
+        simplify_nested_elements(&root_sel);
         let score_sel = doc.select("*[data-readability-score], *[data-readability-table]");
-        score_sel.remove_attrs(&["data-readability-score","data-readability-table"]);
+        score_sel.remove_attrs(&["data-readability-score", "data-readability-table"]);
 
         let class_sel = doc.select(".page *[class]");
         class_sel.remove_attr("class");
@@ -557,33 +555,20 @@ fn remove_empty_elements(n: &Node) {
     }
 }
 
-fn simplify_nested_elements(n: &Node) {
-    let mut ops = vec![n.clone()];
-    while let Some(node) = ops.pop() {
-        if node.is_element() {
-            let node_name = node.clone().node_name().unwrap();
-            let node_id_attr = node.attr_or("id", "");
+fn simplify_nested_elements(root_sel: &Selection) {
+    let empty_sel = root_sel.select(":is(div, section):empty");
+    empty_sel.remove();
 
-            if node.parent().is_some()
-                && ["div", "section"].contains(&node_name.as_ref())
-                && !node_id_attr.starts_with("readability")
-            {
-                if is_element_without_content(&node) {
-                    node.remove_from_parent();
-                    continue;
-                }
-                else if node_name.as_ref() != "body" && (has_single_tag_inside_element(&node, "div")
-                || has_single_tag_inside_element(&node, "section"))
-                {
-                    let child = node.first_element_child().unwrap();
-                    for attr in node.attrs() {
-                        child.set_attr(&attr.name.local, &attr.value);
-                    }
-                    node.replace_with(&child.id);
-                }
-            } 
+    let only_sel = root_sel
+        .select("div, section")
+        .select(":is(div, section) > :is(div, section):only-child");
+
+    for node in only_sel.nodes() {
+        let parent = node.parent().unwrap();
+        for attr in parent.attrs() {
+            node.set_attr(&attr.name.local, &attr.value);
         }
-        ops.extend(node.element_children());
+        parent.replace_with(&node.id);
     }
 }
 
