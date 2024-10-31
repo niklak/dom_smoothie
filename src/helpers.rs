@@ -41,10 +41,9 @@ pub(crate) fn is_phrasing_content(node: &Node) -> bool {
         return true;
     }
 
-    if (node_name == "a")
-        || (node_name == "del")
-        || (node_name == "ins")
-        || node.children().into_iter().all(|n| is_phrasing_content(&n))
+    
+    if matches!(node_name, "a" | "del" | "ins")
+        && node.children().into_iter().all(|n| is_phrasing_content(&n))
     {
         return true;
     }

@@ -1,5 +1,6 @@
 use std::vec;
 
+use dom_query::Selection;
 use dom_query::{Document, Node, NodeRef};
 use tendril::StrTendril;
 
@@ -60,6 +61,7 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<String
         }
 
         // TODO: div_matcher.match_element(node)
+        
 
         if node_name.as_ref() == "div" {
             div_into_p(node, doc, &mut elements_to_score);
@@ -67,9 +69,7 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<String
     }
 
     let s = handle_candidates(&mut elements_to_score, doc);
-   
     s
-    //TODO: handle elements_to_score
 }
 
 fn clean_doc(doc: &Document) {
@@ -303,6 +303,7 @@ fn handle_candidates<'a>(
         }
     }
 
+
     //TODO: this is a crap
 
     // Scale the final candidates score based on link density. Good content
@@ -444,9 +445,12 @@ fn handle_candidates<'a>(
             // that might also be related. Things like preambles, content split by ads
             // that we removed, etc.
 
-            let article_content = doc.tree.new_element("div");
+            let mut article_content = doc.tree.new_element("div");
             article_content.set_attr("id", "readability-content");
+
             handle_top_candidate(tc, &article_content);
+
+            
 
             //prepare the article
             prep_article(&article_content);
@@ -465,7 +469,8 @@ fn handle_candidates<'a>(
                 div.set_attr("class", "page");
                 doc.tree
                     .reparent_children_of(&article_content.id, Some(div.id));
-                article_content.append_child(&div.id);
+                article_content.replace_with(&div.id);
+                article_content = div;
             }
 
             let mut parse_successful = true;
