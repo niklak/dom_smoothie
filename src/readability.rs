@@ -25,6 +25,7 @@ pub struct MetaData {
     pub image: Option<String>,
     pub favicon: Option<String>,
     pub lang: Option<String>,
+    pub url: Option<String>,
 }
 
 impl MetaData {
@@ -66,15 +67,33 @@ impl MetaData {
 
 pub struct Readability {
     pub doc: Document,
+    pub doc_url: Option<url::Url>,
 }
 
 impl<T: Into<StrTendril>> From<T> for Readability {
     fn from(html: T) -> Self {
         Self {
             doc: Document::from(html),
+            doc_url: None,
+
         }
     }
 }
+
+impl Readability {
+    pub fn new<'a, T: Into<StrTendril>, S: Into<&'a str>>(html: T, document_url: Option<S>) -> Self {
+
+        let doc_url = match document_url {
+            Some(url) => Some(url::Url::parse(url.into()).unwrap()),
+            None => None,
+        };
+        Self {
+            doc: Document::from(html),
+            doc_url: doc_url,
+        }
+    }
+}
+
 
 impl Readability {
     pub fn prepare(&mut self) {
@@ -87,7 +106,7 @@ impl Readability {
         self.doc.select_matcher(&STYLE_MATCHER).remove();
 
         // remove javascript urls
-        self.doc.select_matcher(&UNWANTED_A_MATCHER).remove();
+        //self.doc.select_matcher(&UNWANTED_A_MATCHER).remove();
 
         // replace fonts with spans
         self.replace_fonts();
@@ -391,6 +410,12 @@ impl Readability {
             if matches!(publisher_date_val.kind(), gjson::Kind::String) {
                 ld_meta.published_time = Some(publisher_date_val.str().trim().to_string());
             }
+
+            // Url
+            let url_val = gjson::get(&content, "url");
+            if matches!(url_val.kind(), gjson::Kind::String) {
+                ld_meta.url = Some(url_val.str().trim().to_string());
+            }
             if !ld_meta.is_empty() {
                 return Some(ld_meta);
             }
@@ -502,19 +527,78 @@ impl Readability {
 
     fn post_process_content(&self, doc: &Document) {
         // Readability cannot open relative uris so we convert them to absolute uris.
-        //this._fixRelativeUris(articleContent);
-
-        /*if (!this._keepClasses) {
-            // Remove classes.
-            this._cleanClasses(articleContent);
-        }*/
         let root_sel = doc.select(".page");
+        
+        self.fix_relative_uris(&root_sel);
+
         simplify_nested_elements(&root_sel);
+
         let score_sel = doc.select("*[data-readability-score], *[data-readability-table]");
         score_sel.remove_attrs(&["data-readability-score", "data-readability-table"]);
 
+        //if (!this._keepClasses) {
         let class_sel = doc.select(".page *[class]");
         class_sel.remove_attr("class");
+    }
+
+    fn fix_relative_uris(&self, root_sel: &Selection) {
+
+        if let Some(base_url) = self.doc_url.clone() {
+
+            for a  in root_sel.select(r#"a[href^="/"]"#).nodes().iter(){
+                let href = a.attr("href").unwrap();
+                    let abs_href = base_url.join(&href).unwrap();
+                    a.set_attr("href", abs_href.as_str());
+            };
+
+            // Handle links with javascript: URIs, since
+            // they won't work after scripts have been removed from the page.
+            for a  in root_sel.select_matcher(&JS_LINK_MATCHER).nodes().iter(){
+                
+                let children = a.children();
+                if children.len() == 1 {
+                    let child = children.first().unwrap();
+                    if child.is_text() {
+                        a.replace_with(child);
+                    }
+                }else if children.is_empty() {
+                    a.remove_from_parent();
+                }else {
+                    a.remove_all_attrs();
+                    a.rename("span");
+                }
+                
+            };
+
+
+            for media in root_sel.select(r#"img,picture,figure,video,audio,source"#).nodes().iter(){
+                let src = media.attr_or("src", "");
+                if !src.is_empty(){
+                    let abs_src = base_url.join(&src).unwrap();
+                    media.set_attr("src", abs_src.as_str());
+                }
+
+                let poster = media.attr_or("poster", "");
+                if !poster.is_empty(){
+                    let abs_poster = base_url.join(&poster).unwrap();
+                    media.set_attr("poster", abs_poster.as_str());
+                }
+
+                let srcset = media.attr_or("srcset", "");
+                if !srcset.is_empty(){
+                    let abs_srcset: Vec<String> = srcset.split(", ").map(|s|
+                         if let Some((src,cond)) =s.split_once(" ") {
+                             let abs_src = base_url.join(&src.trim()).unwrap().to_string();
+                             format!("{} {}", abs_src, cond)
+                         }else {
+                            s.to_string()
+                         }
+                    ).collect();
+                    media.set_attr("srcset", abs_srcset.join(", ").as_str());
+                }
+            }
+        }
+        
     }
 }
 
@@ -544,16 +628,6 @@ fn remove_comments(n: &Node) {
     }
 }
 
-fn remove_empty_elements(n: &Node) {
-    let mut ops = n.element_children();
-    while let Some(node) = ops.pop() {
-        if node.text().trim().is_empty() {
-            node.remove_from_parent();
-            continue;
-        }
-        ops.extend(node.element_children());
-    }
-}
 
 fn simplify_nested_elements(root_sel: &Selection) {
     let empty_sel = root_sel.select(":is(div, section):empty");

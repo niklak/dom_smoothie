@@ -86,7 +86,7 @@ where
 }
 
 pub fn get_text_density(node: &Node, selector: &str) -> f32 {
-    let text_length = node.text().chars().count() as f32;
+    let text_length =  normalize_spaces(&node.text()).chars().count() as f32;
     if text_length == 0.0 {
         return 0.0;
     }

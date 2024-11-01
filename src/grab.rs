@@ -461,16 +461,15 @@ fn handle_candidates<'a>(
             div.set_attr("class", "page");
             doc.tree
                 .reparent_children_of(&article_content.id, Some(div.id));
-            article_content.replace_with(&div.id);
+            article_content.replace_with(&div);
             article_content = div;
         }
 
         let mut parse_successful = true;
 
-        let text_length = article_content.text().len();
+        let text_length = normalize_spaces(&article_content.text()).chars().count();
         if text_length < DEFAULT_CHAR_THRESHOLD {
             parse_successful = false;
-
             //TODO: implement logic with flags and attempts!
         }
 

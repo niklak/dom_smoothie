@@ -14,3 +14,4 @@ serde_json = {version = "1.0"}
 gjson = {version = "0.8.1"}
 html-escape = "0.2.13"
 flagset = "0.4.6"
+url = "2.5.2"
