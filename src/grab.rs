@@ -18,7 +18,7 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
 
     clean_doc(doc);
 
-    let mut elements_to_score: Vec<Node> = vec![];
+    
 
     if !metadata.title.is_empty() {
         // if title is not empty then delete duplicate
@@ -26,8 +26,14 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
     }
 
     let mut flags =
-        GrabFlags::CleanConditionally | GrabFlags::StripUnlikelys | GrabFlags::WeightClasses;
+        GrabFlags::CleanConditionally |
+         GrabFlags::StripUnlikelys | 
+         GrabFlags::WeightClasses;
 
+    let mut attempts = vec![];
+
+    loop {
+    let mut elements_to_score: Vec<Node> = vec![];
     let doc = doc.clone();
 
     let selection = doc.select("*");
@@ -69,30 +75,52 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
         }
     }
 
+
     let article_node = handle_candidates(&mut elements_to_score, &doc, &flags);
 
     let mut parse_successful = true;
 
+    let mut article_doc: Option<Document> = None;
+
     if let Some(ref article_node) = article_node {
+        article_doc = Some(Document::from(article_node.html()));
         let text_length = normalize_spaces(&article_node.text()).chars().count();
         if text_length < DEFAULT_CHAR_THRESHOLD {
             parse_successful = false;
-            //TODO: implement logic with flags and attempts!
+
+            attempts.push((article_doc.clone(), text_length));
+
+            if flags.contains(GrabFlags::StripUnlikelys) {
+                flags -= GrabFlags::StripUnlikelys;
+            } else if flags.contains(GrabFlags::WeightClasses) {
+                flags -= GrabFlags::WeightClasses;
+            } else if flags.contains(GrabFlags::CleanConditionally) {
+                flags -= GrabFlags::CleanConditionally;
+            }else {
+                // No luck after removing flags, just return the longest text we found during the different loops
+                attempts.sort_by_key(|i| i.1);
+
+                if attempts[0].1 == 0 {
+                    return None;
+                }
+                article_doc = attempts[0].0.clone();
+                parse_successful = true;
+            }
         }
     } else {
         parse_successful = false;
     }
 
-    return match parse_successful {
-        true => Some(Document::from(article_node.unwrap().html())),
-        false => None,
-    };
+    if parse_successful {
+        return article_doc;
+    }
 
     // Now that we've gone through the full algorithm, check to see if
     // we got any meaningful content. If we didn't, we may need to re-run
     // grabArticle with different flags set. This gives us a higher likelihood of
     // finding the content, and the sieve approach gives us a higher likelihood of
     // finding the -right- content.
+}
 }
 
 fn clean_doc(doc: &Document) {

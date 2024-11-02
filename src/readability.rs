@@ -80,14 +80,23 @@ impl<T: Into<StrTendril>> From<T> for Readability {
 }
 
 impl Readability {
+
+    /// Create a new `Readability` instance
+    /// 
+    /// # Panics
+    /// 
+    /// Panics if `document_url` is not a valid URL
+    /// 
+    /// # Arguments
+    /// 
+    /// * `html` - HTML content
+    /// 
+    /// * `document_url` - URL of the HTML content
     pub fn new<'a, T: Into<StrTendril>, S: Into<&'a str>>(
         html: T,
         document_url: Option<S>,
     ) -> Self {
-        let doc_url = match document_url {
-            Some(url) => Some(url::Url::parse(url.into()).unwrap()),
-            None => None,
-        };
+        let doc_url = document_url.map(|url| url::Url::parse(url.into()).unwrap());
         Self {
             doc: Document::from(html),
             doc_url,
