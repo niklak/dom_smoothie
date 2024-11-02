@@ -103,9 +103,9 @@ impl Readability {
     /// * `html` - HTML content
     /// 
     /// * `document_url` - URL of the HTML content
-    pub fn new<'a, T: Into<StrTendril>, S: Into<&'a str>>(
+    pub fn new<'a, T: Into<StrTendril>>(
         html: T,
-        document_url: Option<S>,
+        document_url: Option<&'a str>,
     ) -> Self {
         let doc_url = document_url.map(|url| url::Url::parse(url.into()).unwrap());
         Self {
@@ -132,7 +132,7 @@ impl Readability {
         self.replace_fonts();
 
         // replace duplicating br elements
-        self.replace_brs();
+        //self.replace_brs();
 
         // remove comments
         self.remove_comments();

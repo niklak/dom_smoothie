@@ -89,9 +89,9 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
             parse_successful = false;
 
             attempts.push((article_doc.clone(), text_length));
-
             if flags.contains(GrabFlags::StripUnlikelys) {
                 flags -= GrabFlags::StripUnlikelys;
+                
             } else if flags.contains(GrabFlags::WeightClasses) {
                 flags -= GrabFlags::WeightClasses;
             } else if flags.contains(GrabFlags::CleanConditionally) {
@@ -114,7 +114,8 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
     if parse_successful {
         return article_doc;
     }
-
+    dbg!("boom");
+    dbg!(&flags);
     // Now that we've gone through the full algorithm, check to see if
     // we got any meaningful content. If we didn't, we may need to re-run
     // grabArticle with different flags set. This gives us a higher likelihood of
@@ -384,15 +385,18 @@ fn handle_candidates<'a>(
 
     if top_candidate.is_none() || top_candidate_name.as_ref() == "body" {
         needed_to_create_top_candidate = true;
+
         let tc = doc.tree.new_element("div");
 
         doc.tree.reparent_children_of(&page_node.id, Some(tc.id));
         page_node.append_child(&tc.id);
         init_node_score(&tc, flags.contains(GrabFlags::WeightClasses));
+        top_candidate = Some(tc.clone());
     } else if let Some(ref tc) = top_candidate {
         // Find a better top candidate node if it contains (at least three) nodes which belong to `topCandidates` array
         // and whose scores are quite closed with current `topCandidate` node.
         // TODO: this isn't working
+
         let tc_score = get_node_score(tc).unwrap();
 
         let mut alternative_candidate_ancestors = vec![];
@@ -429,6 +433,7 @@ fn handle_candidates<'a>(
                 parent_of_top_candidate = parent_of_tc.parent();
             }
         }
+
 
         if let Some(ref tc) = top_candidate {
             if !has_node_score(tc) {
@@ -488,6 +493,7 @@ fn handle_candidates<'a>(
         }
     }
     if let Some(ref tc) = top_candidate {
+
         if !has_node_score(tc) {
             init_node_score(tc, flags.contains(GrabFlags::WeightClasses));
         }
