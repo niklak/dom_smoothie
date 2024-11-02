@@ -1,9 +1,11 @@
 use std::vec;
 
 use dom_query::{Document, Node, NodeRef};
+use flagset::FlagSet;
 use tendril::StrTendril;
 
 use crate::glob::*;
+use crate::grab_flags::GrabFlags;
 use crate::score::*;
 
 use crate::helpers::*;
@@ -23,6 +25,11 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
         remove_header_duplicates_title(doc, &metadata.title);
     }
 
+    let mut flags =
+        GrabFlags::CleanConditionally | GrabFlags::StripUnlikelys | GrabFlags::WeightClasses;
+
+    let doc = doc.clone();
+
     let selection = doc.select("*");
 
     //TODO: maybe this way of iterating through nodes is not the best
@@ -39,17 +46,16 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
             continue;
         }
 
-        if is_unlikely_candidate(node, &match_string) {
+        if flags.contains(GrabFlags::StripUnlikelys) && is_unlikely_candidate(node, &match_string)
+        {
             node.remove_from_parent();
             continue;
         }
 
         let node_name = node.node_name().unwrap();
 
-        if TAGS_WITH_CONTENT.contains(&&node_name.as_ref()) {
-            if remove_empty_elements_with_ancestors(node) {
-                continue;
-            }
+        if TAGS_WITH_CONTENT.contains(&node_name.as_ref()) && remove_empty_elements_with_ancestors(node) {
+            continue;
         }
 
         if DEFAULT_TAGS_TO_SCORE.contains(&node_name.as_ref()) {
@@ -59,12 +65,34 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
         // TODO: div_matcher.match_element(node)
 
         if node_name.as_ref() == "div" {
-            div_into_p(node, doc, &mut elements_to_score);
+            div_into_p(node, &doc, &mut elements_to_score);
         }
     }
 
-    let s = handle_candidates(&mut elements_to_score, doc);
-    s
+    let article_node = handle_candidates(&mut elements_to_score, &doc, &flags);
+
+    let mut parse_successful = true;
+
+    if let Some(ref article_node) = article_node {
+        let text_length = normalize_spaces(&article_node.text()).chars().count();
+        if text_length < DEFAULT_CHAR_THRESHOLD {
+            parse_successful = false;
+            //TODO: implement logic with flags and attempts!
+        }
+    } else {
+        parse_successful = false;
+    }
+
+    return match parse_successful {
+        true => Some(Document::from(article_node.unwrap().html())),
+        false => None,
+    };
+
+    // Now that we've gone through the full algorithm, check to see if
+    // we got any meaningful content. If we didn't, we may need to re-run
+    // grabArticle with different flags set. This gives us a higher likelihood of
+    // finding the content, and the sieve approach gives us a higher likelihood of
+    // finding the -right- content.
 }
 
 fn clean_doc(doc: &Document) {
@@ -241,7 +269,8 @@ fn has_child_block_element(node: &Node) -> bool {
 fn handle_candidates<'a>(
     elements_to_score: &mut Vec<NodeRef<'a>>,
     doc: &'a Document,
-) -> Option<Document> {
+    flags: &FlagSet<GrabFlags>,
+) -> Option<NodeRef<'a>> {
     let mut candidates = vec![];
 
     for element in elements_to_score {
@@ -278,7 +307,7 @@ fn handle_candidates<'a>(
             let mut was_initialized = false;
 
             if !has_node_score(ancestor) {
-                init_node_score(ancestor);
+                init_node_score(ancestor, flags.contains(GrabFlags::WeightClasses));
                 was_initialized = true;
             }
 
@@ -331,7 +360,7 @@ fn handle_candidates<'a>(
 
         doc.tree.reparent_children_of(&page_node.id, Some(tc.id));
         page_node.append_child(&tc.id);
-        init_node_score(&tc);
+        init_node_score(&tc, flags.contains(GrabFlags::WeightClasses));
     } else if let Some(ref tc) = top_candidate {
         // Find a better top candidate node if it contains (at least three) nodes which belong to `topCandidates` array
         // and whose scores are quite closed with current `topCandidate` node.
@@ -375,7 +404,7 @@ fn handle_candidates<'a>(
 
         if let Some(ref tc) = top_candidate {
             if !has_node_score(tc) {
-                init_node_score(tc);
+                init_node_score(tc, flags.contains(GrabFlags::WeightClasses));
             }
             // Because of our bonus system, parents of candidates might have scores
             // themselves. They get half of the node. There won't be nodes with higher
@@ -432,7 +461,7 @@ fn handle_candidates<'a>(
     }
     if let Some(ref tc) = top_candidate {
         if !has_node_score(tc) {
-            init_node_score(tc);
+            init_node_score(tc, flags.contains(GrabFlags::WeightClasses));
         }
 
         // Now that we have the top candidate, look through its siblings for content
@@ -445,7 +474,7 @@ fn handle_candidates<'a>(
         handle_top_candidate(tc, &article_content);
 
         //prepare the article
-        prep_article(&article_content);
+        prep_article(&article_content, flags);
 
         if needed_to_create_top_candidate {
             // This looks like nonsense
@@ -464,25 +493,7 @@ fn handle_candidates<'a>(
             article_content.replace_with(&div);
             article_content = div;
         }
-
-        let mut parse_successful = true;
-
-        let text_length = normalize_spaces(&article_content.text()).chars().count();
-        if text_length < DEFAULT_CHAR_THRESHOLD {
-            parse_successful = false;
-            //TODO: implement logic with flags and attempts!
-        }
-
-        return match parse_successful {
-            true => Some(Document::from(article_content.html())),
-            false => None,
-        };
-
-        // Now that we've gone through the full algorithm, check to see if
-        // we got any meaningful content. If we didn't, we may need to re-run
-        // grabArticle with different flags set. This gives us a higher likelihood of
-        // finding the content, and the sieve approach gives us a higher likelihood of
-        // finding the -right- content.
+        return Some(article_content);
     }
     None
 }
@@ -547,9 +558,7 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
 
             siblings = parent_of_top_candidate.element_children();
 
-            if s > 0 {
-                s -= 1;
-            }
+            s = s.saturating_sub(1);
         }
         s += 1;
     }

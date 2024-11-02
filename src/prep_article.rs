@@ -1,6 +1,8 @@
 use dom_query::{Node, Selection};
+use flagset::FlagSet;
 
 use crate::glob::*;
+use crate::grab_flags::GrabFlags;
 use crate::helpers::*;
 use crate::score::*;
 
@@ -53,7 +55,7 @@ fn clean_styles(n: &Node) {
     }
 }
 
-fn should_clean_conditionally(sel: &Selection, tag: &str) -> bool {
+fn should_clean_conditionally(sel: &Selection, tag: &str, flags: &FlagSet<GrabFlags>) -> bool {
     let node = sel.nodes().first().unwrap();
     let mut is_list = matches!(tag, "ul" | "ol");
     if !is_list {
@@ -83,7 +85,7 @@ fn should_clean_conditionally(sel: &Selection, tag: &str) -> bool {
         return false;
     }
 
-    let weight = get_class_weight(node);
+    let weight = get_class_weight(node, flags.contains(GrabFlags::WeightClasses));
 
     if weight < 0.0 {
         return true;
@@ -110,10 +112,8 @@ fn should_clean_conditionally(sel: &Selection, tag: &str) -> bool {
                 }
             }
             let embed_node = embed.nodes().first().unwrap();
-            if embed_node.node_name().unwrap().as_ref() == "object" {
-                if RX_VIDEO_ATTRS.is_match(&embed_node.inner_html()) {
-                    return false;
-                }
+            if embed_node.node_name().unwrap().as_ref() == "object" && RX_VIDEO_ATTRS.is_match(&embed_node.inner_html()) {
+                return false;
             }
             embed_count += 1;
         }
@@ -169,13 +169,13 @@ fn should_clean_conditionally(sel: &Selection, tag: &str) -> bool {
     false
 }
 
-fn clean_conditionally(node: &Node, tag: &str, clean: bool) {
-    if !clean {
+fn clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>) {
+    if !flags.contains(GrabFlags::CleanConditionally) {
         return;
     }
 
     for sel in Selection::from(node.clone()).select(tag).iter() {
-        if should_clean_conditionally(&sel, tag) {
+        if should_clean_conditionally(&sel, tag, flags) {
             sel.remove();
         }
     }
@@ -344,31 +344,30 @@ fn fix_lazy_images(n: &Node) {
     }
 }
 
-fn clean_headers(n: &Node) {
+fn clean_headers(n: &Node, flags: &FlagSet<GrabFlags>) {
     for h_sel in Selection::from(n.clone())
         .select_matcher(&HEADINGS_MATCHER)
         .iter()
     {
         let h_node = h_sel.nodes().first().unwrap();
-        if get_class_weight(h_node) < 0.0 {
+        if get_class_weight(h_node, flags.contains(GrabFlags::WeightClasses)) < 0.0 {
             h_node.remove_from_parent();
         }
     }
 }
 
-pub(crate) fn prep_article(article_content: &Node) {
+pub(crate) fn prep_article(article_content: &Node, flags: &FlagSet<GrabFlags>) {
     clean_styles(article_content);
 
     // Check for data tables before we continue, to avoid removing items in
     // those tables, which will often be isolated even though they're
     // visually linked to other content-ful elements (text, images, etc.).
-    let flag_clean_conditionally = true;
 
     mark_data_tables(article_content);
     fix_lazy_images(article_content);
 
-    clean_conditionally(article_content, "form", flag_clean_conditionally);
-    clean_conditionally(article_content, "fieldset", flag_clean_conditionally);
+    clean_conditionally(article_content, "form", flags);
+    clean_conditionally(article_content, "fieldset", flags);
 
     // Clean out junk from the article content
     clean(article_content, "object");
@@ -397,13 +396,13 @@ pub(crate) fn prep_article(article_content: &Node) {
     clean(article_content, "textarea");
     clean(article_content, "select");
     clean(article_content, "button");
-    clean_headers(article_content);
+    clean_headers(article_content, flags);
 
     // Do these last as the previous stuff may have removed junk
     // that will affect these
-    clean_conditionally(article_content, "table", flag_clean_conditionally);
-    clean_conditionally(article_content, "ul", flag_clean_conditionally);
-    clean_conditionally(article_content, "div", flag_clean_conditionally);
+    clean_conditionally(article_content, "table", flags);
+    clean_conditionally(article_content, "ul", flags);
+    clean_conditionally(article_content, "div", flags);
 
     // replace H1 with H2 as H1 should be only title that is displayed separately
 

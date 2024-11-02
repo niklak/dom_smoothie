@@ -1,6 +1,6 @@
-mod flags;
 mod glob;
 mod grab;
+mod grab_flags;
 mod helpers;
 mod prep_article;
 mod readability;

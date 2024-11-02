@@ -176,7 +176,6 @@ pub(crate) static RX_IMG_ATTR_TO_SRC: Lazy<Regex> =
 pub(crate) static RX_IMG_ATTR_TO_SRCSET: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#"(?i).(jpg|jpeg|png|webp)\s+\d"#).unwrap());
 
-pub(crate) static RX_SPACE_NORMALIZE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\s{2,}"#).unwrap());
 pub(crate) static RX_AD_WORDS: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r#"(?i)^(ad(vertising|vertisement)?|pub(licité)?|werb(ung)?|广告|Реклама|Anuncio)$"#)
         .unwrap()
@@ -190,3 +189,4 @@ pub(crate) static RX_SHARE_ELEMENTS: Lazy<Regex> =
 pub(crate) static DEFAULT_N_TOP_CANDIDATES: usize = 5;
 pub(crate) static MINIMUM_TOP_CANDIDATES: usize = 3;
 pub(crate) static DEFAULT_CHAR_THRESHOLD: usize = 500;
+pub(crate) const SCORE_ATTR: &str = "data-readability-score";

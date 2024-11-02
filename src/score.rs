@@ -2,8 +2,6 @@ use dom_query::Node;
 
 use crate::glob::*;
 
-const SCORE_ATTR: &str = "data-readability-score";
-
 pub(crate) fn get_node_score(node: &Node) -> Option<f32> {
     let score = node.attr(SCORE_ATTR);
     if let Some(score) = score {
@@ -22,13 +20,13 @@ pub(crate) fn set_node_score(node: &Node, score: f32) {
     node.set_attr(SCORE_ATTR, &score.to_string());
 }
 
-pub(crate) fn init_node_score(node: &Node) -> f32 {
-    let score = determine_node_score(node);
+pub(crate) fn init_node_score(node: &Node, weight_classes: bool) -> f32 {
+    let score = determine_node_score(node, weight_classes);
     set_node_score(node, score);
     score
 }
 
-pub(crate) fn determine_node_score(node: &Node) -> f32 {
+pub(crate) fn determine_node_score(node: &Node, weight_classes: bool) -> f32 {
     let node_name = node.node_name().unwrap();
 
     let score: f32 = match node_name.as_ref() {
@@ -39,13 +37,15 @@ pub(crate) fn determine_node_score(node: &Node) -> f32 {
         _ => 0.0,
     };
 
-    score + get_class_weight(node)
+    score + get_class_weight(node, weight_classes)
 }
 
-pub(crate) fn get_class_weight(node: &Node) -> f32 {
-    // flag.FLAG_WEIGHT_CLASSES, ignore now
-
+pub(crate) fn get_class_weight(node: &Node, weight_classes: bool) -> f32 {
     let mut weight = 0.0;
+
+    if !weight_classes {
+        return weight;
+    }
 
     let class_name = node.attr("class");
 

@@ -86,7 +86,7 @@ where
 }
 
 pub fn get_text_density(node: &Node, selector: &str) -> f32 {
-    let text_length =  normalize_spaces(&node.text()).chars().count() as f32;
+    let text_length = normalize_spaces(&node.text()).chars().count() as f32;
     if text_length == 0.0 {
         return 0.0;
     }
@@ -153,7 +153,7 @@ pub(crate) fn is_element_without_content(node: &Node) -> bool {
     }
 
     let sel = Selection::from(node.clone()).select("br,hr");
-    if node.children().len() == 0 || node.children().len() == sel.length() {
+    if node.children().is_empty() || node.children().len() == sel.length() {
         return true;
     }
 
