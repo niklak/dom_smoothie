@@ -1,7 +1,6 @@
 use std::collections::HashSet;
 
 use dom_query::{Node, Selection};
-use tendril::StrTendril;
 
 use crate::glob::*;
 

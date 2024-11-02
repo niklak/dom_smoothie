@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use dom_query::{Document, Node, NodeData, Selection};
+use dom_query::{Document, Node, NodeData, NodeRef, Selection};
 use tendril::StrTendril;
 
 use crate::glob::*;
@@ -132,7 +132,7 @@ impl Readability {
         self.replace_fonts();
 
         // replace duplicating br elements
-        //self.replace_brs();
+        self.replace_brs();
 
         // remove comments
         self.remove_comments();
@@ -230,32 +230,48 @@ impl Readability {
         // TODO: revise this function
         let sel = self.doc.select_matcher(&BR_MATCHER);
 
-        for next_br in sel.nodes().iter() {
+        for br in sel.nodes().iter() {
+
+            let mut next_sibling = br.next_sibling();
             let mut replaced = false;
-            let mut next_sibling = next_br.next_sibling();
-            while let Some(next) = next_sibling {
+            
+            while let Some(next) = next_significant_node(next_sibling) {
+                
                 let node_name = next.node_name();
                 if node_name.is_none() {
                     break;
                 }
-                if next.node_name().unwrap() != "br".into() {
+                if node_name.unwrap() != "br".into() {
                     break;
                 }
+                
                 replaced = true;
                 next_sibling = next.next_sibling();
                 next.remove_from_parent();
             }
             if replaced {
-                let p = next_br;
-                p.rename("p");
+                let p = br.tree.new_element("p");
+                br.replace_with(&p);
 
                 let mut next_sibling = p.next_sibling();
                 while let Some(next) = next_sibling {
-                    if let Some(node_name) = next.node_name() {
+
+                    let node_name = next.node_name();
+
+                    if let Some(node_name) = node_name {
                         if node_name == "br".into() {
-                            break;
+                            let next_elem = next_significant_node(next.next_sibling());
+                            if let Some(next_elem) = next_elem {
+                                if let Some(elem_name) = next_elem.node_name() {
+                                    if elem_name == "br".into() {
+                                        break;
+                                    }
+                                }
+                            }
+
                         }
                     }
+                    
 
                     if !is_phrasing_content(&next) {
                         break;
@@ -263,7 +279,7 @@ impl Readability {
 
                     next_sibling = next.next_sibling();
                     next.remove_from_parent();
-                    p.append_child(&next.id);
+                    p.append_child(&next);
                 }
 
                 // TODO: is there any profit of this?
@@ -283,6 +299,7 @@ impl Readability {
                     }
                 }
             }
+            
         }
     }
 
@@ -663,6 +680,18 @@ fn remove_comments(n: &Node) {
     for comment in comments {
         comment.remove_from_parent();
     }
+}
+
+fn next_significant_node<'a>(node: Option<NodeRef>) ->  Option<NodeRef> {
+    let mut next = node;
+    while let Some(ref n) = next {
+        if !n.is_element() && n.text().trim().is_empty() {
+            next = n.next_sibling();
+        } else {
+            break;
+        }
+    }
+    next
 }
 
 fn simplify_nested_elements(root_sel: &Selection) {

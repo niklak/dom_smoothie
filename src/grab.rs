@@ -114,7 +114,6 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
     if parse_successful {
         return article_doc;
     }
-    dbg!("boom");
     dbg!(&flags);
     // Now that we've gone through the full algorithm, check to see if
     // we got any meaningful content. If we didn't, we may need to re-run

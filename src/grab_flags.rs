@@ -1,4 +1,4 @@
-use flagset::{flags, FlagSet};
+use flagset::flags;
 
 flags! {
     pub enum GrabFlags: u8 {
