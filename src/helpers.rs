@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use dom_query::{Node, Selection};
+use tendril::StrTendril;
 
 use crate::glob::*;
 
@@ -174,6 +175,21 @@ pub(crate) fn remove_empty_elements_with_ancestors(node: &Node) -> bool {
         }
     }
     removed
+}
+
+pub (crate) fn set_dir_attr(node: &Node) {
+
+    if let Some(first_child) = node.children().first() {
+        if first_child.has_attr("dir") {
+            return;
+        }
+        
+        let dir_attr = first_child.ancestors_it(None).find_map(|a| a.attr("dir"));
+        if let Some(dir_attr) = dir_attr {
+            node.set_attr("dir", dir_attr.as_ref());
+        }
+    }
+    
 }
 
 #[cfg(test)]

@@ -7,9 +7,20 @@ use crate::glob::*;
 use crate::grab::grab_article;
 use crate::helpers::*;
 pub struct Article {
-    pub title: StrTendril,
+    pub title: String,
+    pub byline: String,
     pub content: StrTendril,
     pub text_content: StrTendril,
+    pub length: usize,
+    pub excerpt: String,
+    pub site_name: String,
+    pub dir: Option<String>,
+    pub lang: Option<String>,
+    pub published_time: Option<String>,
+    pub modified_time: Option<String>,
+    pub image: Option<String>,
+    pub favicon: Option<String>,
+    pub url: Option<String>,
 }
 
 #[derive(Debug, Default, Clone, serde::Deserialize, PartialEq)]
@@ -298,12 +309,28 @@ impl Readability {
         let metadata = self.get_article_metadata(ld_meta);
         let doc: Document = grab_article(&self.doc, Some(metadata.clone())).unwrap();
 
+        let text_dir = get_text_dir(&doc);
+
         self.post_process_content(&doc);
 
+        let text_content = self.doc.text();
+        let text_length = text_content.chars().count();
+
         Article {
-            title: metadata.title.into(),
+            title: metadata.title,
+            byline: metadata.byline,
+            dir: text_dir.map(|s| s.to_string()),
+            lang: metadata.lang,
             content: doc.select("#readability-page-1").html(),
-            text_content: self.doc.text(),
+            text_content: text_content,
+            length: text_length,
+            excerpt: metadata.excerpt,
+            site_name: metadata.site_name,
+            published_time: metadata.published_time,
+            modified_time: metadata.modified_time,
+            image: metadata.image,
+            favicon: metadata.favicon,
+            url: metadata.url,
         }
     }
 
@@ -655,6 +682,16 @@ fn simplify_nested_elements(root_sel: &Selection) {
     }
 }
 
+
+
+fn get_text_dir(doc: &Document) -> Option<StrTendril> {
+    let sel = doc.select_single("*[dir]");
+    if sel.is_empty(){
+        None
+    }else {
+        sel.attr("dir")
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -521,6 +521,9 @@ fn handle_candidates<'a>(
             article_content.replace_with(&div);
             article_content = div;
         }
+
+        set_dir_attr(&article_content);
+        
         return Some(article_content);
     }
     None
