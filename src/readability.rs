@@ -137,8 +137,6 @@ impl Readability {
         // remove comments
         self.remove_comments();
 
-        // remove empty elements
-        //self.remove_empty_elements();
     }
 
     pub fn get_article_title(&self) -> StrTendril {

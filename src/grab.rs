@@ -75,7 +75,6 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
         }
     }
 
-
     let article_node = handle_candidates(&mut elements_to_score, &doc, &flags);
 
     let mut parse_successful = true;
@@ -241,14 +240,16 @@ fn div_into_p<'a>(node: &'a Node, doc: &'a Document, elements_to_score: &mut Vec
     // Put phrasing content into paragraphs.
     let mut p_node: Option<Node> = None;
     let mut child_node = node.first_child();
-
     while let Some(ref child) = child_node {
+        let next_sibling = child.next_sibling();
         if is_phrasing_content(child) {
             if let Some(ref p) = p_node {
+                child.remove_from_parent();
                 p.append_child(&child.id);
             } else if !is_whitespace(child) {
+                
                 let raw_p = doc.tree.new_element("p");
-                child.append_prev_sibling(&raw_p.id);
+                child.append_prev_sibling(&raw_p);
                 child.remove_from_parent();
                 raw_p.append_child(&child.id);
                 p_node = Some(raw_p);
@@ -262,9 +263,9 @@ fn div_into_p<'a>(node: &'a Node, doc: &'a Document, elements_to_score: &mut Vec
                     break;
                 }
             }
-            p_node = None;
+            //p_node = None;
         }
-        child_node = child.next_sibling();
+        child_node = next_sibling;
     }
 
     // Sites like http://mobile.slate.com encloses each paragraph with a DIV
