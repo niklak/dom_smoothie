@@ -62,8 +62,8 @@ fn should_clean_conditionally(sel: &Selection, tag: &str, flags: &FlagSet<GrabFl
         let list_length = sel
             .select("ul, ol")
             .iter()
-            .fold(0, |acc, s| acc + s.inner_html().chars().count());
-        is_list = (list_length as f32 / sel.inner_html().chars().count() as f32) > 0.9;
+            .fold(0, |acc, s| acc + s.text().trim().chars().count());
+        is_list = (list_length as f32 / sel.text().trim().chars().count() as f32) > 0.9;
     }
 
     let is_data_table = |n: &Node| n.has_attr("data-readability-table");
@@ -95,10 +95,10 @@ fn should_clean_conditionally(sel: &Selection, tag: &str, flags: &FlagSet<GrabFl
         // If there are not very many commas, and the number of
         // non-paragraph elements is more than paragraphs or other
         // ominous signs, remove the element.
-        let p: f32 = sel.select("p").length() as f32;
-        let img = sel.select("img").length() as f32;
-        let li = sel.select("li").length() as f32 - 100.0;
-        let input = sel.select("input").length() as f32;
+        let p: f32 = sel.select("p").nodes().len() as f32;
+        let img = sel.select("img").nodes().len() as f32;
+        let li = sel.select("li").nodes().len() as f32 - 100.0;
+        let input = sel.select("input").nodes().len() as f32;
         let heading_density = get_text_density(node, "h1,h2,h3,h4,h5,h6");
 
         let mut embed_count = 0;
@@ -125,7 +125,7 @@ fn should_clean_conditionally(sel: &Selection, tag: &str, flags: &FlagSet<GrabFl
             return true;
         }
 
-        let content_length = inner_text.chars().count();
+        let content_length = normalize_spaces(&inner_text).chars().count();
         let link_density = link_density(node);
 
         let mut textish_tags = vec!["span", "li", "td"];
@@ -134,14 +134,16 @@ fn should_clean_conditionally(sel: &Selection, tag: &str, flags: &FlagSet<GrabFl
         let text_density = get_text_density(node, &textish_tags.join(","));
         let is_figure_child = has_ancestor_tag::<NodePredicate>(node, "figure", None, None);
 
+        let mut have_to_remove = false;
+
         if !is_figure_child && img > 1.0 && p / img < 0.5 {
-            return true;
+            have_to_remove = true;
         }
         if !is_list && li > p {
-            return true;
+            have_to_remove = true;
         }
         if input > (p / 3.0).floor() {
-            return true;
+            have_to_remove = true;
         }
 
         if !is_list
@@ -151,22 +153,36 @@ fn should_clean_conditionally(sel: &Selection, tag: &str, flags: &FlagSet<GrabFl
             && (img == 0.0 || img > 2.0)
             && link_density > 0.0
         {
-            return true;
+            have_to_remove = true;
         }
         if !is_list && weight < 25.0 && link_density > 0.2 {
-            return true;
+            have_to_remove = true;
         }
 
         if weight >= 25.0 && link_density > 0.5 {
-            return true;
+            have_to_remove = true;
         }
 
         if (embed_count == 1 && content_length < 75) || embed_count > 1 {
-            return true;
+            have_to_remove = true;
         }
         if img == 0.0 && text_density == 0.0 {
-            return true;
+            have_to_remove = true;
         }
+        
+        if is_list && have_to_remove {
+            for child in node.children_it(false) {
+                if child.children().len() > 1 {
+                    return have_to_remove;
+                }
+            }
+            let li_count =  sel.select("li").nodes().len();
+            if img == li_count as f32 {
+                return false;
+            }
+        }
+
+        return have_to_remove;
     }
     false
 }

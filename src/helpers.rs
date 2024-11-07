@@ -100,7 +100,7 @@ pub fn normalize_spaces(text: &str) -> String {
 }
 
 pub fn link_density(node: &Node) -> f32 {
-    let text_length: f32 = node.text().chars().count() as f32;
+    let text_length: f32 = normalize_spaces(&node.text()).chars().count() as f32;
     if text_length == 0.0 {
         return 0.0;
     }
@@ -115,7 +115,7 @@ pub fn link_density(node: &Node) -> f32 {
         } else {
             1.0
         };
-        link_length += a.text().len() as f32 * coeff;
+        link_length += normalize_spaces(&a.text()).chars().count() as f32 * coeff;
     }
 
     link_length / text_length
