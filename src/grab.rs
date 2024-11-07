@@ -18,108 +18,105 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
 
     clean_doc(doc);
 
-    
-
     if !metadata.title.is_empty() {
         // if title is not empty then delete duplicate
         remove_header_duplicates_title(doc, &metadata.title);
     }
 
     let mut flags =
-        GrabFlags::CleanConditionally |
-         GrabFlags::StripUnlikelys | 
-         GrabFlags::WeightClasses;
+        GrabFlags::CleanConditionally | GrabFlags::StripUnlikelys | GrabFlags::WeightClasses;
 
     let mut attempts = vec![];
 
     loop {
-    let mut elements_to_score: Vec<Node> = vec![];
-    let doc = doc.clone();
+        let mut elements_to_score: Vec<Node> = vec![];
+        let doc = doc.clone();
 
-    let selection = doc.select("*");
+        let selection = doc.select("*");
 
-    //TODO: maybe this way of iterating through nodes is not the best
-    for node in selection.nodes().iter().filter(|n| n.is_element()) {
-        if !is_probably_visible(node) {
-            node.remove_from_parent();
-            continue;
-        }
-        //TODO: byline may be optimized
-        let match_string = get_node_matching_string(node);
-        if metadata.byline.is_empty() && is_valid_byline(node, &match_string) {
-            metadata.byline = node.text().trim().to_string();
-            node.remove_from_parent();
-            continue;
-        }
+        //TODO: maybe this way of iterating through nodes is not the best
+        for node in selection.nodes().iter().filter(|n| n.is_element()) {
+            if !is_probably_visible(node) {
+                node.remove_from_parent();
+                continue;
+            }
+            //TODO: byline may be optimized
+            let match_string = get_node_matching_string(node);
+            if metadata.byline.is_empty() && is_valid_byline(node, &match_string) {
+                metadata.byline = node.text().trim().to_string();
+                node.remove_from_parent();
+                continue;
+            }
 
-        if flags.contains(GrabFlags::StripUnlikelys) && is_unlikely_candidate(node, &match_string)
-        {
-            node.remove_from_parent();
-            continue;
-        }
+            if flags.contains(GrabFlags::StripUnlikelys)
+                && is_unlikely_candidate(node, &match_string)
+            {
+                node.remove_from_parent();
+                continue;
+            }
 
-        let node_name = node.node_name().unwrap();
+            let node_name = node.node_name().unwrap();
 
-        if TAGS_WITH_CONTENT.contains(&node_name.as_ref()) && remove_empty_elements_with_ancestors(node) {
-            continue;
-        }
+            if TAGS_WITH_CONTENT.contains(&node_name.as_ref())
+                && remove_empty_elements_with_ancestors(node)
+            {
+                continue;
+            }
 
-        if DEFAULT_TAGS_TO_SCORE.contains(&node_name.as_ref()) {
-            elements_to_score.push(node.clone());
-        }
+            if DEFAULT_TAGS_TO_SCORE.contains(&node_name.as_ref()) {
+                elements_to_score.push(node.clone());
+            }
 
-        // TODO: div_matcher.match_element(node)
+            // TODO: div_matcher.match_element(node)
 
-        if node_name.as_ref() == "div" {
-            div_into_p(node, &doc, &mut elements_to_score);
-        }
-    }
-
-    let article_node = handle_candidates(&mut elements_to_score, &doc, &flags);
-
-    let mut parse_successful = true;
-
-    let mut article_doc: Option<Document> = None;
-
-    if let Some(ref article_node) = article_node {
-        article_doc = Some(Document::from(article_node.html()));
-        let text_length = normalize_spaces(&article_node.text()).chars().count();
-        if text_length < DEFAULT_CHAR_THRESHOLD {
-            parse_successful = false;
-
-            attempts.push((article_doc.clone(), text_length));
-            if flags.contains(GrabFlags::StripUnlikelys) {
-                flags -= GrabFlags::StripUnlikelys;
-                
-            } else if flags.contains(GrabFlags::WeightClasses) {
-                flags -= GrabFlags::WeightClasses;
-            } else if flags.contains(GrabFlags::CleanConditionally) {
-                flags -= GrabFlags::CleanConditionally;
-            }else {
-                // No luck after removing flags, just return the longest text we found during the different loops
-                attempts.sort_by_key(|i| i.1);
-
-                if attempts[0].1 == 0 {
-                    return None;
-                }
-                article_doc = attempts[0].0.clone();
-                parse_successful = true;
+            if node_name.as_ref() == "div" {
+                div_into_p(node, &doc, &mut elements_to_score);
             }
         }
-    } else {
-        parse_successful = false;
-    }
 
-    if parse_successful {
-        return article_doc;
+        let article_node = handle_candidates(&mut elements_to_score, &doc, &flags);
+
+        let mut parse_successful = true;
+
+        let mut article_doc: Option<Document> = None;
+
+        if let Some(ref article_node) = article_node {
+            article_doc = Some(Document::from(article_node.html()));
+            let text_length = normalize_spaces(&article_node.text()).chars().count();
+            if text_length < DEFAULT_CHAR_THRESHOLD {
+                parse_successful = false;
+
+                attempts.push((article_doc.clone(), text_length));
+                if flags.contains(GrabFlags::StripUnlikelys) {
+                    flags -= GrabFlags::StripUnlikelys;
+                } else if flags.contains(GrabFlags::WeightClasses) {
+                    flags -= GrabFlags::WeightClasses;
+                } else if flags.contains(GrabFlags::CleanConditionally) {
+                    flags -= GrabFlags::CleanConditionally;
+                } else {
+                    // No luck after removing flags, just return the longest text we found during the different loops
+                    attempts.sort_by_key(|i| i.1);
+
+                    if attempts[0].1 == 0 {
+                        return None;
+                    }
+                    article_doc = attempts[0].0.clone();
+                    parse_successful = true;
+                }
+            }
+        } else {
+            parse_successful = false;
+        }
+
+        if parse_successful {
+            return article_doc;
+        }
+        // Now that we've gone through the full algorithm, check to see if
+        // we got any meaningful content. If we didn't, we may need to re-run
+        // grabArticle with different flags set. This gives us a higher likelihood of
+        // finding the content, and the sieve approach gives us a higher likelihood of
+        // finding the -right- content.
     }
-    dbg!(&flags);
-    // Now that we've gone through the full algorithm, check to see if
-    // we got any meaningful content. If we didn't, we may need to re-run
-    // grabArticle with different flags set. This gives us a higher likelihood of
-    // finding the content, and the sieve approach gives us a higher likelihood of
-    // finding the -right- content.
-}
 }
 
 fn clean_doc(doc: &Document) {
@@ -244,13 +241,10 @@ fn div_into_p<'a>(node: &'a Node, doc: &'a Document, elements_to_score: &mut Vec
         let next_sibling = child.next_sibling();
         if is_phrasing_content(child) {
             if let Some(ref p) = p_node {
-                child.remove_from_parent();
-                p.append_child(&child.id);
+                p.append_child(child);
             } else if !is_whitespace(child) {
-                
                 let raw_p = doc.tree.new_element("p");
                 child.append_prev_sibling(&raw_p);
-                child.remove_from_parent();
                 raw_p.append_child(&child.id);
                 p_node = Some(raw_p);
             }
@@ -263,7 +257,7 @@ fn div_into_p<'a>(node: &'a Node, doc: &'a Document, elements_to_score: &mut Vec
                     break;
                 }
             }
-            //p_node = None;
+            p_node = None;
         }
         child_node = next_sibling;
     }
@@ -434,7 +428,6 @@ fn handle_candidates<'a>(
             }
         }
 
-
         if let Some(ref tc) = top_candidate {
             if !has_node_score(tc) {
                 init_node_score(tc, flags.contains(GrabFlags::WeightClasses));
@@ -493,7 +486,6 @@ fn handle_candidates<'a>(
         }
     }
     if let Some(ref tc) = top_candidate {
-
         if !has_node_score(tc) {
             init_node_score(tc, flags.contains(GrabFlags::WeightClasses));
         }
@@ -529,7 +521,7 @@ fn handle_candidates<'a>(
         }
 
         set_dir_attr(&article_content);
-        
+
         return Some(article_content);
     }
     None

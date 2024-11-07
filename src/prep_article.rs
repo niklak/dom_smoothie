@@ -112,7 +112,9 @@ fn should_clean_conditionally(sel: &Selection, tag: &str, flags: &FlagSet<GrabFl
                 }
             }
             let embed_node = embed.nodes().first().unwrap();
-            if embed_node.node_name().unwrap().as_ref() == "object" && RX_VIDEO_ATTRS.is_match(&embed_node.inner_html()) {
+            if embed_node.node_name().unwrap().as_ref() == "object"
+                && RX_VIDEO_ATTRS.is_match(&embed_node.inner_html())
+            {
                 return false;
             }
             embed_count += 1;

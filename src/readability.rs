@@ -91,22 +91,18 @@ impl<T: Into<StrTendril>> From<T> for Readability {
 }
 
 impl Readability {
-
     /// Create a new `Readability` instance
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// Panics if `document_url` is not a valid URL
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `html` - HTML content
-    /// 
+    ///
     /// * `document_url` - URL of the HTML content
-    pub fn new<'a, T: Into<StrTendril>>(
-        html: T,
-        document_url: Option<&'a str>,
-    ) -> Self {
+    pub fn new<'a, T: Into<StrTendril>>(html: T, document_url: Option<&'a str>) -> Self {
         let doc_url = document_url.map(|url| url::Url::parse(url.into()).unwrap());
         Self {
             doc: Document::from(html),
@@ -136,7 +132,6 @@ impl Readability {
 
         // remove comments
         self.remove_comments();
-
     }
 
     pub fn get_article_title(&self) -> StrTendril {
@@ -229,12 +224,10 @@ impl Readability {
         let sel = self.doc.select_matcher(&BR_MATCHER);
 
         for br in sel.nodes().iter() {
-
             let mut next_sibling = br.next_sibling();
             let mut replaced = false;
-            
+
             while let Some(next) = next_significant_node(next_sibling) {
-                
                 let node_name = next.node_name();
                 if node_name.is_none() {
                     break;
@@ -242,7 +235,7 @@ impl Readability {
                 if node_name.unwrap() != "br".into() {
                     break;
                 }
-                
+
                 replaced = true;
                 next_sibling = next.next_sibling();
                 next.remove_from_parent();
@@ -253,7 +246,6 @@ impl Readability {
 
                 let mut next_sibling = p.next_sibling();
                 while let Some(next) = next_sibling {
-
                     let node_name = next.node_name();
 
                     if let Some(node_name) = node_name {
@@ -266,10 +258,8 @@ impl Readability {
                                     }
                                 }
                             }
-
                         }
                     }
-                    
 
                     if !is_phrasing_content(&next) {
                         break;
@@ -297,7 +287,6 @@ impl Readability {
                     }
                 }
             }
-            
         }
     }
 
@@ -680,7 +669,7 @@ fn remove_comments(n: &Node) {
     }
 }
 
-fn next_significant_node<'a>(node: Option<NodeRef>) ->  Option<NodeRef> {
+fn next_significant_node<'a>(node: Option<NodeRef>) -> Option<NodeRef> {
     let mut next = node;
     while let Some(ref n) = next {
         if !n.is_element() && n.text().trim().is_empty() {
@@ -709,13 +698,11 @@ fn simplify_nested_elements(root_sel: &Selection) {
     }
 }
 
-
-
 fn get_text_dir(doc: &Document) -> Option<StrTendril> {
     let sel = doc.select_single("*[dir]");
-    if sel.is_empty(){
+    if sel.is_empty() {
         None
-    }else {
+    } else {
         sel.attr("dir")
     }
 }
@@ -778,10 +765,10 @@ mod tests {
 
     #[test]
     fn test_parse_json_ld() {
-        let contents = include_str!("../test-pages/aclu/source.html");
+        let contents = include_str!("../test-pages/readability/aclu/source.html");
         let ra = Readability::from(contents);
 
-        let meta_contents = include_str!("../test-pages/aclu/expected_ld_meta.json");
+        let meta_contents = include_str!("../test-pages/aclu_ld_meta.json");
         let expected_meta: MetaData = serde_json::from_str(&meta_contents).unwrap();
 
         let meta = ra.parse_json_ld().unwrap();
