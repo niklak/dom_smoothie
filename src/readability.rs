@@ -76,9 +76,17 @@ impl MetaData {
     }
 }
 
+#[derive(Default)]
+pub struct Config {
+    pub keep_classes: bool,
+    pub classes_to_preserve: Vec<String>,
+}
+
+
 pub struct Readability {
     pub doc: Document,
     pub doc_url: Option<url::Url>,
+    pub config: Config,
 }
 
 impl<T: Into<StrTendril>> From<T> for Readability {
@@ -86,6 +94,7 @@ impl<T: Into<StrTendril>> From<T> for Readability {
         Self {
             doc: Document::from(html),
             doc_url: None,
+            config: Config::default(),
         }
     }
 }
@@ -102,11 +111,16 @@ impl Readability {
     /// * `html` - HTML content
     ///
     /// * `document_url` - URL of the HTML content
-    pub fn new<'a, T: Into<StrTendril>>(html: T, document_url: Option<&'a str>) -> Self {
-        let doc_url = document_url.map(|url| url::Url::parse(url.into()).unwrap());
+    pub fn new<T: Into<StrTendril>>(
+        html: T,
+        document_url: Option<&str>,
+        cfg: Option<Config>,
+    ) -> Self {
+        let doc_url = document_url.map(|url| url::Url::parse(url).unwrap());
         Self {
             doc: Document::from(html),
             doc_url,
+            config: cfg.unwrap_or_default(),
         }
     }
 }
@@ -326,7 +340,7 @@ impl Readability {
             dir: text_dir.map(|s| s.to_string()),
             lang: metadata.lang,
             content: doc.select("#readability-page-1").html(),
-            text_content: text_content,
+            text_content,
             length: text_length,
             excerpt: metadata.excerpt,
             site_name: metadata.site_name,
@@ -576,9 +590,40 @@ impl Readability {
         let score_sel = doc.select("*[data-readability-score], *[data-readability-table]");
         score_sel.remove_attrs(&["data-readability-score", "data-readability-table"]);
 
-        //if (!this._keepClasses) {
-        let class_sel = doc.select(".page *[class]");
-        class_sel.remove_attr("class");
+        if !self.config.keep_classes {
+            self.clean_classes(doc);
+        }
+    }
+
+    fn clean_classes(&self, doc: &Document) {
+        let classes_to_preserve: Vec<&str> = self
+            .config
+            .classes_to_preserve
+            .iter()
+            .map(|s| s.as_str())
+            .collect();
+
+        let class_sel = classes_to_preserve
+            .iter()
+            .map(|s| format!(".{}", s))
+            .collect::<Vec<String>>()
+            .join(",");
+
+        let other_class_sel = doc.select(&format!(".page *[class]:not({})", class_sel));
+        other_class_sel.remove_attr("class");
+
+        let class_sel = doc.select(&format!(".page {}", class_sel));
+
+        for node in class_sel.nodes().iter() {
+            if let Some(class_string) = node.attr("class") {
+                let classes_to_remove = class_string
+                    .split_whitespace()
+                    .filter(|s| !classes_to_preserve.contains(s))
+                    .collect::<Vec<&str>>()
+                    .join(" ");
+                node.remove_class(classes_to_remove.as_str());
+            }
+        }
     }
 
     fn fix_relative_uris(&self, root_sel: &Selection) {
@@ -669,7 +714,7 @@ fn remove_comments(n: &Node) {
     }
 }
 
-fn next_significant_node<'a>(node: Option<NodeRef>) -> Option<NodeRef> {
+fn next_significant_node(node: Option<NodeRef>) -> Option<NodeRef> {
     let mut next = node;
     while let Some(ref n) = next {
         if !n.is_element() && n.text().trim().is_empty() {

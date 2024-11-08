@@ -29,9 +29,8 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
     let mut attempts = vec![];
 
     loop {
-        let mut elements_to_score: Vec<Node> = vec![];
+        let mut elements_to_score: Vec<NodeRef<'_>> = vec![];
         let doc = doc.clone();
-
         let selection = doc.select("*");
 
         //TODO: maybe this way of iterating through nodes is not the best
@@ -268,9 +267,8 @@ fn div_into_p<'a>(node: &'a Node, doc: &'a Document, elements_to_score: &mut Vec
     // algorithm with DIVs with are, in practice, paragraphs.
 
     if has_single_tag_inside_element(node, "p") && link_density(node) < 0.25 {
-        let new_node = node.first_child().unwrap();
-        node.append_prev_sibling(&new_node.id);
-        node.remove_from_parent();
+        let new_node = node.first_element_child().unwrap();
+        node.replace_with(&new_node);
         elements_to_score.push(new_node.clone());
     } else if !has_child_block_element(node) {
         node.rename("p");

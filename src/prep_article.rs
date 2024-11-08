@@ -169,14 +169,14 @@ fn should_clean_conditionally(sel: &Selection, tag: &str, flags: &FlagSet<GrabFl
         if img == 0.0 && text_density == 0.0 {
             have_to_remove = true;
         }
-        
+
         if is_list && have_to_remove {
             for child in node.children_it(false) {
                 if child.children().len() > 1 {
                     return have_to_remove;
                 }
             }
-            let li_count =  sel.select("li").nodes().len();
+            let li_count = sel.select("li").nodes().len();
             if img == li_count as f32 {
                 return false;
             }

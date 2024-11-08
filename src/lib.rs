@@ -6,5 +6,6 @@ mod prep_article;
 mod readability;
 mod score;
 
+pub use readability::Config;
 pub use readability::MetaData;
 pub use readability::Readability;

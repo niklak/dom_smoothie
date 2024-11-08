@@ -16,7 +16,11 @@ where
     let expected_path = base_path.join("expected.html");
 
     let source_contents = fs::read_to_string(source_path).unwrap();
-    let mut r = Readability::new(source_contents, host);
+    let cfg = dom_smoothie::Config {
+        classes_to_preserve: vec!["caption".into()],
+        ..Default::default()
+    };
+    let mut r = Readability::new(source_contents, host, Some(cfg));
     let article = r.parse();
 
     let contents = article.content;
@@ -89,8 +93,21 @@ fn test_aclu() {
 
 #[test]
 fn test_aktualne() {
-    //TODO: important can't pass
     test_readability("test-pages/readability/aktualne/", Some("http://fakehost"));
+}
+
+#[test]
+fn test_archive_of_our_own() {
+    //TODO: important can't pass
+    test_readability(
+        "test-pages/readability/archive-of-our-own/",
+        Some("http://fakehost"),
+    );
+}
+
+#[test]
+fn test_ars_1() {
+    test_readability("test-pages/readability/ars-1/", Some("http://fakehost"));
 }
 
 #[test]
