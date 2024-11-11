@@ -82,7 +82,7 @@ dependencies = [
 
 [[package]]
 name = "dom_query"
-version = "0.8.0"
+version = "0.9.1"
 dependencies = [
  "cssparser",
  "foldhash",

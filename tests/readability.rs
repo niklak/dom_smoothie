@@ -111,6 +111,11 @@ fn test_ars_1() {
 }
 
 #[test]
+fn test_base_url() {
+    test_readability("test-pages/readability/base-url/", Some("http://fakehost/test/"));
+}
+
+#[test]
 fn test_replace_brs() {
     test_readability(
         "test-pages/readability/replace-brs/",

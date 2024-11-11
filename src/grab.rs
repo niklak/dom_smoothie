@@ -1,3 +1,4 @@
+use std::cmp::Reverse;
 use std::vec;
 
 use dom_query::{Document, Node, NodeRef};
@@ -74,7 +75,6 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
         }
 
         let article_node = handle_candidates(&mut elements_to_score, &doc, &flags);
-
         let mut parse_successful = true;
 
         let mut article_doc: Option<Document> = None;
@@ -94,7 +94,7 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
                     flags -= GrabFlags::CleanConditionally;
                 } else {
                     // No luck after removing flags, just return the longest text we found during the different loops
-                    attempts.sort_by_key(|i| i.1);
+                    attempts.sort_by_key(|i| Reverse(i.1));
 
                     if attempts[0].1 == 0 {
                         return None;

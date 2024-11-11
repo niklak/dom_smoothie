@@ -628,8 +628,9 @@ impl Readability {
 
     fn fix_relative_uris(&self, root_sel: &Selection) {
         if let Some(base_url) = self.doc_url.clone() {
-            for a in root_sel.select(r#"a[href^="/"]"#).nodes().iter() {
+            for a in root_sel.select(r##"a[href]:not([href^="#"]):not([href^="http"])"##).nodes().iter() {
                 let href = a.attr("href").unwrap();
+
                 let abs_href = base_url.join(&href).unwrap();
                 a.set_attr("href", abs_href.as_str());
             }
