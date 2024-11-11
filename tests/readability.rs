@@ -98,7 +98,6 @@ fn test_aktualne() {
 
 #[test]
 fn test_archive_of_our_own() {
-    //TODO: important can't pass
     test_readability(
         "test-pages/readability/archive-of-our-own/",
         Some("http://fakehost"),
