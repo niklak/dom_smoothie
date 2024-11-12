@@ -53,19 +53,19 @@ where
 
 #[test]
 fn test_001() {
-    test_readability("test-pages/readability/001/", Some("http://fakehost"));
+    test_readability("test-pages/readability/001/", Some("http://fakehost/test/"));
 }
 
 #[test]
 fn test_002() {
-    test_readability("test-pages/readability/002/", Some("http://fakehost"));
+    test_readability("test-pages/readability/002/", Some("http://fakehost/test/"));
 }
 
 #[test]
 fn test_003() {
     test_readability(
         "test-pages/readability/003-metadata-preferred/",
-        Some("http://fakehost"),
+        Some("http://fakehost/test/"),
     );
 }
 
@@ -73,7 +73,7 @@ fn test_003() {
 fn test_004() {
     test_readability(
         "test-pages/readability/004-metadata-space-separated-properties/",
-        Some("http://fakehost"),
+        Some("http://fakehost/test/"),
     );
 }
 
@@ -81,53 +81,80 @@ fn test_004() {
 fn test_005() {
     //TODO: important can't pass
     test_readability(
-        "test-pages/readability/005-unescape-html-entities/",
-        Some("http://fakehost"),
+        "test-pages/controversial/005-unescape-html-entities/",
+        Some("http://fakehost/test/"),
     );
 }
 
 #[test]
 fn test_aclu() {
-    test_readability("test-pages/readability/aclu/", Some("http://fakehost"));
+    test_readability(
+        "test-pages/readability/aclu/",
+        Some("http://fakehost/test/"),
+    );
 }
 
 #[test]
 fn test_aktualne() {
-    test_readability("test-pages/readability/aktualne/", Some("http://fakehost"));
+    test_readability(
+        "test-pages/readability/aktualne/",
+        Some("http://fakehost/test/"),
+    );
 }
 
 #[test]
 fn test_archive_of_our_own() {
     test_readability(
         "test-pages/readability/archive-of-our-own/",
-        Some("http://fakehost"),
+        Some("http://fakehost/test/"),
     );
 }
 
 #[test]
 fn test_ars_1() {
-    test_readability("test-pages/readability/ars-1/", Some("http://fakehost"));
+    test_readability(
+        "test-pages/readability/ars-1/",
+        Some("http://fakehost/test/"),
+    );
 }
 
 #[test]
 fn test_base_url() {
-    test_readability("test-pages/readability/base-url/", Some("http://fakehost/test/"));
+    test_readability(
+        "test-pages/readability/base-url/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+#[test]
+fn test_base_url_base_element_relative() {
+    test_readability(
+        "test-pages/readability/base-url-base-element-relative/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+#[test]
+fn test_qq() {
+    test_readability(
+        "test-pages/controversial/qq/",
+        Some("http://fakehost/test/"),
+    );
 }
 
 #[test]
 fn test_replace_brs() {
     test_readability(
         "test-pages/readability/replace-brs/",
-        Some("http://fakehost"),
+        Some("http://fakehost/test/"),
     );
 }
 
-/*#[test]
+#[test]
 fn table_test_readability() {
-
     let paths = fs::read_dir("./test-pages/readability").unwrap();
 
     for p in paths {
-        test_readability(p.unwrap().path(), Some("http://fakehost"));
+        test_readability(p.unwrap().path(), Some("http://fakehost/test/"));
     }
-}*/
+}

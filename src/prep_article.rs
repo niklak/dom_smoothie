@@ -385,6 +385,7 @@ pub(crate) fn prep_article(article_content: &Node, flags: &FlagSet<GrabFlags>) {
     fix_lazy_images(article_content);
 
     clean_conditionally(article_content, "form", flags);
+
     clean_conditionally(article_content, "fieldset", flags);
 
     // Clean out junk from the article content

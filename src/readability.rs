@@ -82,7 +82,6 @@ pub struct Config {
     pub classes_to_preserve: Vec<String>,
 }
 
-
 pub struct Readability {
     pub doc: Document,
     pub doc_url: Option<url::Url>,
@@ -325,11 +324,12 @@ impl Readability {
         self.prepare();
 
         let metadata = self.get_article_metadata(ld_meta);
+        let base_url = self.parse_base_url();
         let doc: Document = grab_article(&self.doc, Some(metadata.clone())).unwrap();
 
         let text_dir = get_text_dir(&doc);
 
-        self.post_process_content(&doc);
+        self.post_process_content(&doc, base_url);
 
         let text_content = self.doc.text();
         let text_length = text_content.chars().count();
@@ -579,11 +579,11 @@ impl Readability {
         }
     }
 
-    fn post_process_content(&self, doc: &Document) {
+    fn post_process_content(&self, doc: &Document, base_url: Option<url::Url>) {
         // Readability cannot open relative uris so we convert them to absolute uris.
         let root_sel = doc.select(".page");
 
-        self.fix_relative_uris(&root_sel);
+        self.fix_relative_uris(&root_sel, base_url);
 
         simplify_nested_elements(&root_sel);
 
@@ -626,11 +626,20 @@ impl Readability {
         }
     }
 
-    fn fix_relative_uris(&self, root_sel: &Selection) {
-        if let Some(base_url) = self.doc_url.clone() {
-            for a in root_sel.select(r##"a[href]:not([href^="#"]):not([href^="http"])"##).nodes().iter() {
+    fn fix_relative_uris(&self, root_sel: &Selection, base_url: Option<url::Url>) {
+        let url_sel =
+            if base_url.as_ref().map(|u| u.as_str()) == self.doc_url.as_ref().map(|u| u.as_str()) {
+                r##"a[href]:not([href^="#"]):not([href^="http"])"##
+            } else {
+                r##"a[href]:not([href^="http"])"##
+            };
+        if let Some(base_url) = base_url {
+            for a in root_sel
+                .select(url_sel)
+                .nodes()
+                .iter()
+            {
                 let href = a.attr("href").unwrap();
-
                 let abs_href = base_url.join(&href).unwrap();
                 a.set_attr("href", abs_href.as_str());
             }
@@ -643,6 +652,9 @@ impl Readability {
                     let child = children.first().unwrap();
                     if child.is_text() {
                         a.replace_with(child);
+                    } else {
+                        a.remove_all_attrs();
+                        a.rename("span");
                     }
                 } else if children.is_empty() {
                     a.remove_from_parent();
@@ -684,6 +696,20 @@ impl Readability {
                         .collect();
                     media.set_attr("srcset", abs_srcset.join(", ").as_str());
                 }
+            }
+        }
+    }
+
+    fn parse_base_url(&self) -> Option<url::Url> {
+        let sel = self.doc.select_single("base[href]");
+        if sel.is_empty() {
+            self.doc_url.clone()
+        } else {
+            let href = sel.attr("href").unwrap();
+            if let Some(doc_url) = self.doc_url.clone() {
+                doc_url.join(&href).ok()
+            } else {
+                url::Url::parse(&href).ok()
             }
         }
     }
@@ -739,7 +765,6 @@ fn simplify_nested_elements(root_sel: &Selection) {
     nodes.sort_by_key(|n| n.id);
 
     for node in nodes {
-
         let parent = node.parent().unwrap();
         for attr in parent.attrs() {
             node.set_attr(&attr.name.local, &attr.value);
