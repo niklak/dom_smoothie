@@ -130,6 +130,7 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
 
     let first_child = children.first().unwrap();
 
+
     if !first_child
         .node_name()
         .map_or(false, |name| name.as_ref() == tag)
@@ -137,7 +138,7 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
         return false;
     }
 
-    !first_child
+    !node
         .children()
         .iter()
         .any(|n| n.is_text() && RX_HAS_CONTENT.is_match(n.text().as_ref()))
