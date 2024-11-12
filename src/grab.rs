@@ -239,6 +239,7 @@ fn div_into_p<'a>(node: &'a Node, doc: &'a Document, elements_to_score: &mut Vec
     while let Some(ref child) = child_node {
         let next_sibling = child.next_sibling();
         if is_phrasing_content(child) {
+
             if let Some(ref p) = p_node {
                 p.append_child(child);
             } else if !is_whitespace(child) {
@@ -358,6 +359,8 @@ fn handle_candidates<'a>(
             .partial_cmp(&get_node_score(n1).unwrap())
             .unwrap()
     });
+
+    
 
     let mut top_candidates = candidates;
     top_candidates.truncate(DEFAULT_N_TOP_CANDIDATES);
@@ -558,14 +561,14 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
                 }
             } else if sibling_name.as_ref() == "p" {
                 let link_density = link_density(sibling);
-                let node_content = sibling.text();
+                let node_content = normalize_spaces(&sibling.text());
                 let node_length = node_content.chars().count();
 
                 if (node_length > 80 && link_density < 0.25)
                     || node_length < 80
                         && node_length > 0
                         && link_density == 0.0
-                        && !RX_SENTENCE.is_match(&node_content)
+                        && RX_SENTENCE.is_match(&node_content)
                 {
                     append = true;
                 }
