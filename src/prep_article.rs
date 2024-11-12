@@ -283,11 +283,10 @@ fn mark_data_tables(n: &Node) {
 }
 
 fn fix_lazy_images(n: &Node) {
-    for img_sel in Selection::from(n.clone())
+    for node in Selection::from(n.clone())
         .select("img,picture,figure")
-        .iter()
+        .nodes().iter()
     {
-        let node = img_sel.nodes().first().unwrap();
         let src = node.attr_or("src", "");
         // In some sites (e.g. Kotaku), they put 1px square image as base64 data uri in the src attribute.
         // So, here we check if the data uri is too short, just might as well remove it.
@@ -324,7 +323,7 @@ fn fix_lazy_images(n: &Node) {
         }
 
         // also check for "null" to work around https://github.com/jsdom/jsdom/issues/2580
-        if (!src.is_empty() || node.has_attr("srcset")) && !node.has_class("lazy") {
+        if (node.has_attr("src") || node.has_attr("srcset")) && !node.has_class("lazy") {
             continue;
         }
 
@@ -343,7 +342,6 @@ fn fix_lazy_images(n: &Node) {
 
             if let Some(copy_to) = copy_to {
                 //if this is an img or picture, set the attribute directly
-
                 let tag_name = node.node_name().unwrap();
                 if matches!(tag_name.as_ref(), "img" | "picture") {
                     node.set_attr(copy_to, &attr.value);

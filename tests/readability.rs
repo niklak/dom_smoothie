@@ -134,6 +134,16 @@ fn test_base_url_base_element_relative() {
     );
 }
 
+
+#[test]
+fn test_medicalnewstoday() {
+    test_readability(
+        "test-pages/readability/medicalnewstoday/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+
 #[test]
 fn test_qq() {
     test_readability(
