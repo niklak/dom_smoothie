@@ -299,8 +299,8 @@ fn handle_candidates<'a>(
         if !element.is_element() || element.parent().is_none() {
             continue;
         }
-        let inner_text = element.text();
-        if inner_text.len() < 25 {
+        let inner_text = normalize_spaces(&element.text());
+        if inner_text.chars().count() < 25 {
             continue;
         }
         let ancestors = element.ancestors(Some(5));
@@ -311,10 +311,9 @@ fn handle_candidates<'a>(
 
         let mut content_score: usize = 1;
 
-        content_score += RX_COMMAS.captures_iter(inner_text.as_ref()).count();
+        content_score += RX_COMMAS.split(inner_text.as_ref()).count();
 
-        content_score += std::cmp::min(inner_text.len() / 100, 3);
-
+        content_score += std::cmp::min(inner_text.chars().count() / 100, 3);
         for (level, ancestor) in ancestors.iter().enumerate() {
             if !ancestor.is_element() || ancestor.parent().is_none() {
                 continue;
@@ -348,11 +347,16 @@ fn handle_candidates<'a>(
     // Scale the final candidates score based on link density. Good content
     // should have a relatively small link density (5% or less) and be mostly
     // unaffected by this operation.
+
+
     for candidate in candidates.iter() {
         let prev_score = get_node_score(candidate).unwrap();
         let score = prev_score * (1.0 - link_density(candidate));
         set_node_score(candidate, score);
     }
+    
+    
+
     candidates.sort_by(|n1, n2| {
         get_node_score(n2)
             .unwrap()

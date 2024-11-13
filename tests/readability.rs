@@ -134,11 +134,19 @@ fn test_base_url_base_element_relative() {
     );
 }
 
+#[test]
+fn test_ehow_1() {
+    test_readability(
+        "test-pages/readability/ehow-1/",
+        Some("http://fakehost/test/"),
+    );
+}
+
 
 #[test]
 fn test_medicalnewstoday() {
     test_readability(
-        "test-pages/readability/medicalnewstoday/",
+        "test-pages/readability/base-url-base-element-relative/",
         Some("http://fakehost/test/"),
     );
 }
