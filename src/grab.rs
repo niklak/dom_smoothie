@@ -360,10 +360,10 @@ fn handle_candidates<'a>(
             .unwrap()
     });
 
-    
 
     let mut top_candidates = candidates;
     top_candidates.truncate(DEFAULT_N_TOP_CANDIDATES);
+
 
     // TODO: revise everything below till line 460
 
@@ -400,14 +400,15 @@ fn handle_candidates<'a>(
                 alternative_candidate_ancestors.push(alt.ancestors(Some(0)));
             }
         }
-
         if alternative_candidate_ancestors.len() > MINIMUM_TOP_CANDIDATES {
             let mut parent_of_top_candidate = tc.parent();
             while let Some(ref parent_of_tc) = parent_of_top_candidate {
-                let node_name = parent_of_tc.node_name().unwrap();
-                if node_name.as_ref() == "body" {
-                    break;
+                if let Some(node_name) = parent_of_tc.node_name() {
+                    if node_name.as_ref() == "body" {
+                        break;
+                    }
                 }
+                
                 let mut lists_containing_this_ancestor = 0;
 
                 for alt_ancestor in &alternative_candidate_ancestors {
