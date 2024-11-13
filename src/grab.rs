@@ -294,8 +294,18 @@ fn handle_candidates<'a>(
     flags: &FlagSet<GrabFlags>,
 ) -> Option<NodeRef<'a>> {
     let mut candidates = vec![];
+    let mut visited = vec![];
 
     for element in elements_to_score {
+
+        // TODO: made it without duplicates!
+
+        if visited.contains(&element.id) {
+            continue;
+        }
+
+        visited.push(element.id);
+
         if !element.is_element() || element.parent().is_none() {
             continue;
         }
@@ -325,24 +335,17 @@ fn handle_candidates<'a>(
                 _ => (level * 3) as f32,
             };
 
-            let mut was_initialized = false;
-
             if !has_node_score(ancestor) {
                 init_node_score(ancestor, flags.contains(GrabFlags::WeightClasses));
-                was_initialized = true;
+                candidates.push(ancestor.clone());
             }
 
             let mut ancestor_score = get_node_score(ancestor).unwrap();
             ancestor_score += content_score as f32 / score_divider;
             set_node_score(ancestor, ancestor_score);
 
-            if was_initialized {
-                candidates.push(ancestor.clone());
-            }
         }
     }
-
-    //TODO: this is a crap
 
     // Scale the final candidates score based on link density. Good content
     // should have a relatively small link density (5% or less) and be mostly
