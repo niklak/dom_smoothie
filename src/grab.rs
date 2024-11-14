@@ -244,7 +244,7 @@ fn div_into_p<'a>(node: &'a Node, doc: &'a Document, elements_to_score: &mut Vec
                 p.append_child(child);
             } else if !is_whitespace(child) {
                 let raw_p = doc.tree.new_element("p");
-                child.append_prev_sibling(&raw_p);
+                child.insert_before(&raw_p);
                 raw_p.append_child(&child.id);
                 p_node = Some(raw_p);
             }

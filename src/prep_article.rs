@@ -469,7 +469,7 @@ pub(crate) fn prep_article(article_content: &Node, flags: &FlagSet<GrabFlags>) {
                 };
 
                 cell.rename(new_tag);
-                table_node.append_prev_sibling(&cell.id);
+                table_node.insert_before(&cell.id);
                 table_node.remove_from_parent();
             }
         }
