@@ -192,7 +192,11 @@ fn clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>) {
         return;
     }
 
-    for sel in Selection::from(node.clone()).select(tag).iter() {
+    let tag_sel = Selection::from(node.clone()).select(tag);
+    // traversing tag nodes in reverse order, 
+    // so that how children nodes will appear before parent nodes
+    for tag_node in tag_sel.nodes().iter().rev() {
+        let sel = Selection::from(tag_node.clone());
         if should_clean_conditionally(&sel, tag, flags) {
             sel.remove();
         }
