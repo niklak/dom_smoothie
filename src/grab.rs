@@ -19,6 +19,8 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
 
     clean_doc(doc);
 
+
+
     if !metadata.title.is_empty() {
         // if title is not empty then delete duplicate
         remove_header_duplicates_title(doc, &metadata.title);
@@ -33,7 +35,6 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
         let mut elements_to_score: Vec<NodeRef<'_>> = vec![];
         let doc = doc.clone();
         let selection = doc.select("*");
-
         //TODO: maybe this way of iterating through nodes is not the best
         for node in selection.nodes().iter().filter(|n| n.is_element()) {
             if !is_probably_visible(node) {
@@ -57,10 +58,11 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
 
             let node_name = node.node_name().unwrap();
 
-            if TAGS_WITH_CONTENT.contains(&node_name.as_ref())
-                && remove_empty_elements_with_ancestors(node)
-            {
-                continue;
+            if TAGS_WITH_CONTENT.contains(&node_name.as_ref()){
+                if is_element_without_content(node) {
+                    node.remove_from_parent();
+                    continue;
+                } 
             }
 
             if DEFAULT_TAGS_TO_SCORE.contains(&node_name.as_ref()) {
@@ -73,7 +75,7 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
                 div_into_p(node, &doc, &mut elements_to_score);
             }
         }
-
+        
         let article_node = handle_candidates(&mut elements_to_score, &doc, &flags);
         let mut parse_successful = true;
 

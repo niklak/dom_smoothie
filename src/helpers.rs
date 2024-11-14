@@ -145,20 +145,14 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
 }
 
 pub(crate) fn is_element_without_content(node: &Node) -> bool {
-    if !node.is_element() {
-        return false;
-    }
-
-    if !node.text().trim().is_empty() {
-        return false;
-    }
+    let is_element = node.is_element();
+    let no_text = node.text().trim().is_empty();
+    let no_element_children = node.element_children().is_empty();
 
     let sel = Selection::from(node.clone()).select("br,hr");
-    if node.children().is_empty() || node.children().len() == sel.length() {
-        return true;
-    }
-
-    true
+    is_element && no_text && (
+    no_element_children || node.element_children().len() == sel.length())
+     
 }
 
 pub(crate) fn remove_empty_elements_with_ancestors(node: &Node) -> bool {

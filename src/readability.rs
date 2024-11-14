@@ -128,6 +128,8 @@ impl Readability {
     pub fn prepare(&mut self) {
         self.remove_empty_imgs();
 
+        self.unwrap_noscript_images();
+
         // remove scripts
         self.doc.select_matcher(&SCRIPT_MATCHER).remove();
 
@@ -304,7 +306,6 @@ impl Readability {
     }
 
     fn remove_empty_imgs(&mut self) {
-        // TODO: handle noscript images
         for sel in self.doc.select_matcher(&IMG_MATCHER).iter() {
             let attrs = sel.attrs();
             if attrs
@@ -314,7 +315,57 @@ impl Readability {
             {
                 continue;
             }
+            if attrs.iter().any(|a| RX_IMG_ATTR.is_match(&a.value)) {
+                continue;
+            }
+
             sel.remove();
+        }
+    }
+
+    fn unwrap_noscript_images(&self){
+        let noscript_sel = self.doc.select("noscript:has(img:only-child)");
+        for noscript_node in noscript_sel.nodes().iter() {
+            if let Some(prev_sibling) = noscript_node.prev_element_sibling() {
+                let prev_sel = Selection::from(prev_sibling.clone());
+                let prev_img: NodeRef;
+                if prev_sel.is("img") {
+                    prev_img = prev_sibling;
+                }else {
+                    let prev_sel_img = prev_sel.select("img:only-child");
+                    if prev_sel_img.is_empty() {
+                        continue;
+                    }
+                    prev_img = prev_sel_img.nodes().first().unwrap().clone();
+                }
+                let noscript_img_sel = Selection::from(noscript_node.clone()).select("img");
+                let new_img = noscript_img_sel.nodes().first().unwrap();
+
+                for attr in prev_img.attrs() {
+                    if attr.value.as_ref() == "" {
+                        continue;
+                    }
+
+                    if attr.name.local.as_ref() == "src" || attr.name.local.as_ref() == "srcset" || RX_IMG_ATTR.is_match(&attr.value) {
+                        
+                        if new_img.attr_or(&attr.name.local, "") == attr.value {
+                            continue;
+                        }
+                        let attr_name = if new_img.has_attr(&attr.name.local) {
+                            format!("data-old-{}", attr.name.local).to_string()
+                        }else {
+                            attr.name.local.to_string()
+                        };
+
+                        new_img.set_attr(&attr_name, &attr.value);
+                    }
+
+                }
+                prev_img.replace_with(new_img);
+
+
+            }
+
         }
     }
 
