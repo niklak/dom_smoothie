@@ -121,7 +121,8 @@ fn should_clean_conditionally(sel: &Selection, tag: &str, flags: &FlagSet<GrabFl
         }
 
         let inner_text = sel.text();
-        if RX_AD_WORDS.is_match(&inner_text) || RX_LOADING_WORDS.is_match(&inner_text) {
+        let trimmed_text = inner_text.trim();
+        if RX_AD_WORDS.is_match(&trimmed_text) || RX_LOADING_WORDS.is_match(&trimmed_text) {
             return true;
         }
 
