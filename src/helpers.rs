@@ -6,8 +6,13 @@ use crate::glob::*;
 
 pub(crate) fn text_similarity(text_a: &str, text_b: &str) -> f64 {
     //TODO: revise this later (use Jaccard index)
+    //TODO: use unicode_segmentation::UnicodeSegmentation;
     let a = text_a.to_lowercase();
     let b = text_b.to_lowercase();
+
+    if a.contains(&b) {
+        return 1.0;
+    }
     let unique_tokens_a: HashSet<&str> = RX_TOKENIZE.split(&a).filter(|s| !s.is_empty()).collect();
 
     let tokens_b: Vec<&str> = RX_TOKENIZE.split(&b).filter(|s| !s.is_empty()).collect();
@@ -198,10 +203,18 @@ mod tests {
     }
 
     #[test]
-    fn test_text_similarity_similar() {
-        let text_a = "THE QUICK FOX";
-        let text_b = "The quick fox";
+    fn test_text_similarity_contains() {
+        let text_a = "the quick brown fox jumps over the lazy dog";
+        let text_b = "The Quick Brown Fox";
         let similarity = text_similarity(text_a, text_b);
-        assert!(similarity == 1.0);
+        assert_eq!(similarity, 1.0);
+    }
+
+    #[test]
+    fn test_text_similarity_similar() {
+        let text_a = "DeepMind新电脑已可利用记忆自学 人工智能迈上新台阶_科技_腾讯网";
+        let text_b = "DeepMind新电脑已可利用记忆自学 人工智能迈上新台阶";
+        let similarity = text_similarity(text_a, text_b);
+        assert_eq!(similarity, 1.0);
     }
 }

@@ -812,10 +812,7 @@ fn simplify_nested_elements(root_sel: &Selection) {
         .select("div, section")
         .select(":is(div, section) > :is(div, section):only-child");
 
-    let mut nodes = only_sel.nodes().to_vec();
-    nodes.sort_by_key(|n| n.id);
-
-    for node in nodes {
+    for node in only_sel.nodes().iter().rev() {
         let parent = node.parent().unwrap();
         for attr in parent.attrs() {
             node.set_attr(&attr.name.local, &attr.value);
