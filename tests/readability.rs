@@ -144,9 +144,27 @@ fn test_ehow_1() {
 
 
 #[test]
+fn test_hukumusume() {
+    //TODO: ???
+    test_readability(
+        "test-pages/controversial/hukumusume/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+
+#[test]
 fn test_medicalnewstoday() {
     test_readability(
-        "test-pages/readability/base-url-base-element-relative/",
+        "test-pages/readability/medicalnewstoday/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+#[test]
+fn test_medium_3() {
+    test_readability(
+        "test-pages/readability/medium-3/",
         Some("http://fakehost/test/"),
     );
 }
@@ -155,7 +173,7 @@ fn test_medicalnewstoday() {
 #[test]
 fn test_qq() {
     test_readability(
-        "test-pages/controversial/qq/",
+        "test-pages/readability/qq/",
         Some("http://fakehost/test/"),
     );
 }
@@ -169,10 +187,19 @@ fn test_replace_brs() {
 }
 
 #[test]
+fn test_social_buttons() {
+    test_readability(
+        "test-pages/readability/social-buttons/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+#[test]
 fn table_test_readability() {
     let paths = fs::read_dir("./test-pages/readability").unwrap();
 
     for p in paths {
+        println!("{}", p.as_ref().unwrap().path().display());
         test_readability(p.unwrap().path(), Some("http://fakehost/test/"));
     }
 }
