@@ -55,6 +55,10 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
                 node.remove_from_parent();
                 continue;
             }
+        }
+        
+        let selection = doc.select("*");
+        for node in selection.nodes().iter().filter(|n| n.is_element()) {
 
             let node_name = node.node_name().unwrap();
 
@@ -508,6 +512,8 @@ fn handle_candidates<'a>(
         let mut article_content = doc.tree.new_element("div");
         article_content.set_attr("id", "readability-content");
 
+        
+
         handle_top_candidate(tc, &article_content);
 
         //prepare the article
@@ -547,12 +553,9 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
     // Keep potential top candidate's parent node to try to get text direction of it later.
     let parent_of_top_candidate = tc.parent().unwrap();
 
-    let mut siblings: Vec<Node> = parent_of_top_candidate.element_children();
+    let siblings: Vec<Node> = parent_of_top_candidate.element_children();
 
-    let mut s = 0;
-
-    while s < siblings.len() {
-        let sibling = siblings.get(s).unwrap();
+    for sibling in siblings.iter() {
         let sibling_name = sibling.node_name().unwrap();
         let mut append = false;
         if sibling.id == tc.id {
@@ -593,14 +596,9 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
                 sibling.rename("div");
             }
 
-            sibling.remove_from_parent();
             article_content.append_child(&sibling.id);
 
-            siblings = parent_of_top_candidate.element_children();
-
-            s = s.saturating_sub(1);
         }
-        s += 1;
     }
 }
 

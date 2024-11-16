@@ -135,6 +135,14 @@ fn test_base_url_base_element_relative() {
 }
 
 #[test]
+fn test_breitbart() {
+    test_readability(
+        "test-pages/readability/breitbart/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+#[test]
 fn test_ehow_1() {
     test_readability(
         "test-pages/readability/ehow-1/",
