@@ -142,10 +142,27 @@ fn test_breitbart() {
     );
 }
 
+
+#[test]
+fn test_clean_links() {
+    test_readability(
+        "test-pages/readability/clean-links/",
+        Some("http://fakehost/test/"),
+    );
+}
+
 #[test]
 fn test_cnn() {
     test_readability(
         "test-pages/readability/cnn/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+#[test]
+fn test_engadget() {
+    test_readability(
+        "test-pages/controversial /engadget/",
         Some("http://fakehost/test/"),
     );
 }
@@ -214,6 +231,14 @@ fn test_replace_brs() {
 fn test_social_buttons() {
     test_readability(
         "test-pages/readability/social-buttons/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+#[test]
+fn test_wikia() {
+    test_readability(
+        "test-pages/readability/wikia/",
         Some("http://fakehost/test/"),
     );
 }
