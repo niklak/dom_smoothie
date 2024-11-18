@@ -143,6 +143,14 @@ fn test_breitbart() {
 }
 
 #[test]
+fn test_cnn() {
+    test_readability(
+        "test-pages/readability/cnn/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+#[test]
 fn test_ehow_1() {
     test_readability(
         "test-pages/readability/ehow-1/",
@@ -156,6 +164,14 @@ fn test_hukumusume() {
     //TODO: ???
     test_readability(
         "test-pages/controversial/hukumusume/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+#[test]
+fn test_keep_tabular_data() {
+    test_readability(
+        "test-pages/readability/keep-tabular-data/",
         Some("http://fakehost/test/"),
     );
 }

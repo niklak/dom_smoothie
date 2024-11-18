@@ -55,6 +55,7 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
                 node.remove_from_parent();
                 continue;
             }
+
         }
         
         let selection = doc.select("*");
@@ -63,11 +64,18 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
             let node_name = node.node_name().unwrap();
 
             if TAGS_WITH_CONTENT.contains(&node_name.as_ref()){
+                // TODO: this is a controversial moment, it may leave an empty block,
+                // which will have an impact on the result. 
+                // When parent of the top candidate have more than one child, 
+                // then parent will be a new top candidate.
+
                 if is_element_without_content(node) {
                     node.remove_from_parent();
                     continue;
                 } 
             }
+
+
 
             if DEFAULT_TAGS_TO_SCORE.contains(&node_name.as_ref()) {
                 elements_to_score.push(node.clone());
@@ -130,7 +138,7 @@ fn clean_doc(doc: &Document) {
     doc.select_matcher(&DIALOGS_MATCHER).remove();
 
     // Remove DIV, SECTION, and HEADER nodes without any content(e.g. text, image, video, or iframe).
-    doc.select_matcher(&EMPTY_SECTION_MATCHER).remove();
+    //doc.select_matcher(&EMPTY_SECTION_MATCHER).remove();
 
     for node in doc.select_matcher(&ROLES_MATCHER).nodes() {
         if let Some(role) = node.attr("role") {

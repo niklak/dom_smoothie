@@ -231,7 +231,8 @@ impl Readability {
     fn replace_fonts(&mut self) {
         let sel = self.doc.select_matcher(&FONT_MATCHER);
         sel.rename("span");
-        sel.remove_all_attrs();
+        //TODO: remove also all attributes on fonts since they are useless for readability
+        //sel.remove_all_attrs();
     }
 
     fn replace_brs(&mut self) {
