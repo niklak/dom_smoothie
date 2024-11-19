@@ -34,6 +34,80 @@ fn test_la_nacion() {
     );
 }
 
+#[test]
+fn test_lwn_1() {
+    test_readability(
+        "test-pages/controversial/lwn-1/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+
+#[test]
+fn test_wikipedia_3() {
+    test_readability(
+        "test-pages/controversial/wikipedia-3/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+#[test]
+fn test_citylab_1() {
+    test_readability(
+        "test-pages/issues/citylab-1/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+#[test]
+fn test_dev418() {
+    test_readability(
+        "test-pages/issues/dev418/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+
+#[test]
+fn test_ietf_1() {
+    test_readability(
+        "test-pages/issues/ietf-1/",
+        Some("http://fakehost/test/"),
+    )
+}
+
+#[test]
+fn test_table_style_attributes() {
+    test_readability(
+        "test-pages/issues/table-style-attributes/",
+        Some("http://fakehost/test/"),
+    )
+}
+
+#[test]
+fn test_toc_missing() {
+    test_readability(
+        "test-pages/issues/toc-missing/",
+        Some("http://fakehost/test/"),
+    )
+}
+
+#[test]
+fn test_v8_blog() {
+    test_readability(
+        "test-pages/issues/v8-blog/",
+        Some("http://fakehost/test/"),
+    )
+}
+
+
+#[test]
+fn test_videos_1() {
+    test_readability(
+        "test-pages/controversial/videos-1/",
+        Some("http://fakehost/test/"),
+    )
+}
 
 
 #[test]

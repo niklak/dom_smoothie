@@ -183,6 +183,14 @@ fn test_social_buttons() {
 }
 
 #[test]
+fn test_tmz_1() {
+    test_readability(
+        "test-pages/ok/tmz-1/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+#[test]
 fn test_wikia() {
     test_readability(
         "test-pages/ok/wikia/",
@@ -190,3 +198,18 @@ fn test_wikia() {
     );
 }
 
+#[test]
+fn test_wikipedia() {
+    test_readability(
+        "test-pages/ok/wikipedia/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+#[test]
+fn test_gmw() {
+    test_readability(
+        "test-pages/ok/gmw/",
+        Some("http://fakehost/test/"),
+    );
+}
