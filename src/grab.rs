@@ -218,7 +218,7 @@ fn remove_header_duplicates_title(doc: &Document, title: &str) {
         let heading = sel.text();
         if text_similarity(title, heading.trim()) > 0.75 {
             sel.remove();
-            return;
+            //return;
         }
     }
 }

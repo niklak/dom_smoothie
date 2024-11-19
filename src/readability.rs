@@ -332,12 +332,11 @@ impl Readability {
                 let prev_img: NodeRef;
                 if prev_sel.is("img") {
                     prev_img = prev_sibling;
-                }else {
+                }else if prev_sel.is("*:has( > img:only-child)") {
                     let prev_sel_img = prev_sel.select("img:only-child");
-                    if prev_sel_img.is_empty() {
-                        continue;
-                    }
                     prev_img = prev_sel_img.nodes().first().unwrap().clone();
+                }else {
+                    continue;
                 }
                 let noscript_img_sel = Selection::from(noscript_node.clone()).select("img");
                 let new_img = noscript_img_sel.nodes().first().unwrap();
@@ -806,8 +805,7 @@ fn next_significant_node(node: Option<NodeRef>) -> Option<NodeRef> {
 }
 
 fn simplify_nested_elements(root_sel: &Selection) {
-    let empty_sel = root_sel.select(":is(div, section):empty");
-    empty_sel.remove();
+
 
     let only_sel = root_sel
         .select("div, section")
@@ -820,6 +818,9 @@ fn simplify_nested_elements(root_sel: &Selection) {
         }
         parent.replace_with(&node.id);
     }
+
+    let empty_sel = root_sel.select(":is(div, section):empty");
+    empty_sel.remove();
 }
 
 fn get_text_dir(doc: &Document) -> Option<StrTendril> {
