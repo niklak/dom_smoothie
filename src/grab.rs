@@ -533,8 +533,8 @@ fn handle_candidates<'a>(
             // for the previous loop, so there's no point trying to create a new div, and then
             // move all the children over. Just assign IDs and class names here. No need to append
             // because that already happened anyway.
-            article_content.set_attr("id", "readability-page-1");
-            article_content.set_attr("class", "page");
+            tc.set_attr("id", "readability-page-1");
+            tc.set_attr("class", "page");
         } else {
             let div = doc.tree.new_element("div");
             div.set_attr("id", "readability-page-1");

@@ -889,7 +889,7 @@ mod tests {
 
     #[test]
     fn test_parse_json_ld() {
-        let contents = include_str!("../test-pages/readability/aclu/source.html");
+        let contents = include_str!("../test-pages/ok/aclu/source.html");
         let ra = Readability::from(contents);
 
         let meta_contents = include_str!("../test-pages/aclu_ld_meta.json");
