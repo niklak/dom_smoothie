@@ -404,9 +404,7 @@ pub(crate) fn prep_article(article_content: &Node, flags: &FlagSet<GrabFlags>) {
     // Clean out elements with little content that have "share" in their id/class combinations from final top candidates,
     // which means we don't remove the top candidates even they have "share".
 
-    let all_sel = Selection::from(article_content.clone()).select("*");
-
-    for child in all_sel.nodes().iter() {
+    for child in article_content.descendants() {
         let class = child.attr_or("class", "");
         let id = child.attr_or("id", "");
         let class_and_id = format!("{} {}", class, id);

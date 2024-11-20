@@ -539,15 +539,15 @@ impl Readability {
                 let element_property = sel.attr("property");
                 //TODO: looks like redundant checks!
                 if let Some(property) = element_property {
-                    let property: StrTendril = property.trim().into();
+                    let property = property.trim();
                     if RX_META_PROPERTY.is_match(&property) {
-                        values.insert(property.to_string(), content.clone());
+                        values.insert(normalize_meta_key(property), content.clone());
                     }
                 }
                 let element_name = sel.attr("name");
                 if let Some(name) = element_name {
                     if RX_META_NAME.is_match(&name) {
-                        values.insert(name.to_string(), content);
+                        values.insert(normalize_meta_key(&name), content);
                     }
                 }
             }
@@ -822,6 +822,15 @@ fn get_text_dir(doc: &Document) -> Option<StrTendril> {
     } else {
         sel.attr("dir")
     }
+}
+
+fn normalize_meta_key(raw_key: &str) -> String {
+    raw_key
+        .to_lowercase()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .replace('.', ":")
 }
 #[cfg(test)]
 mod tests {
