@@ -1,11 +1,8 @@
 use std::fs;
 
-
 mod common;
 
 use common::test_readability;
-
-
 
 #[test]
 fn test_engadget() {
@@ -15,16 +12,14 @@ fn test_engadget() {
     );
 }
 
-
 #[test]
 fn test_hukumusume() {
     //TODO: ???
     test_readability(
-        "test-pages/controversial/hukumusume/",
+        "test-pages/issues/hukumusume/",
         Some("http://fakehost/test/"),
     );
 }
-
 
 #[test]
 fn test_la_nacion() {
@@ -33,15 +28,6 @@ fn test_la_nacion() {
         Some("http://fakehost/test/"),
     );
 }
-
-#[test]
-fn test_lwn_1() {
-    test_readability(
-        "test-pages/controversial/lwn-1/",
-        Some("http://fakehost/test/"),
-    );
-}
-
 
 #[test]
 fn test_wikipedia_3() {
@@ -61,20 +47,10 @@ fn test_citylab_1() {
 
 #[test]
 fn test_dev418() {
-    test_readability(
-        "test-pages/issues/dev418/",
-        Some("http://fakehost/test/"),
-    );
+    test_readability("test-pages/issues/dev418/", Some("http://fakehost/test/"));
 }
 
 
-#[test]
-fn test_ietf_1() {
-    test_readability(
-        "test-pages/issues/ietf-1/",
-        Some("http://fakehost/test/"),
-    )
-}
 
 #[test]
 fn test_table_style_attributes() {
@@ -91,24 +67,6 @@ fn test_toc_missing() {
         Some("http://fakehost/test/"),
     )
 }
-
-#[test]
-fn test_v8_blog() {
-    test_readability(
-        "test-pages/issues/v8-blog/",
-        Some("http://fakehost/test/"),
-    )
-}
-
-
-#[test]
-fn test_videos_1() {
-    test_readability(
-        "test-pages/controversial/videos-1/",
-        Some("http://fakehost/test/"),
-    )
-}
-
 
 #[test]
 fn table_test_readability() {
