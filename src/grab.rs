@@ -18,8 +18,6 @@ use crate::MetaData;
 pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Document> {
     let mut metadata = metadata.unwrap_or_default();
 
-    clean_doc(doc);
-
     let mut flags =
         GrabFlags::CleanConditionally | GrabFlags::StripUnlikelys | GrabFlags::WeightClasses;
 
@@ -38,17 +36,27 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
             if nodes_to_remove.contains(&node.id) {
                 continue;
             }
+
+            if let Some(parent) = node.parent() {
+                if nodes_to_remove.contains(&parent.id) {
+                    continue;
+                }
+            }
             if !is_probably_visible(&node) {
                 nodes_to_remove.insert(node.id);
-                nodes_to_remove.extend(node.children_it(false).map(|n| n.id));
                 continue;
             }
+
+            if DIALOGS_MATCHER.match_element(&node) {
+                nodes_to_remove.insert(node.id);
+                continue;
+            }
+
             //TODO: byline may be optimized
             let match_string = get_node_matching_string(&node);
             if metadata.byline.is_empty() && is_valid_byline(&node, &match_string) {
                 metadata.byline = node.text().trim().to_string();
                 nodes_to_remove.insert(node.id);
-                nodes_to_remove.extend(node.children_it(false).map(|n| n.id));
                 continue;
             }
 
@@ -58,17 +66,23 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
             {
                 should_remove_title_header = false;
                 nodes_to_remove.insert(node.id);
-                nodes_to_remove.extend(node.children_it(false).map(|n| n.id));
                 continue;
             }
 
-            if flags.contains(GrabFlags::StripUnlikelys)
-                && is_unlikely_candidate(&node, &match_string)
-            {
-                nodes_to_remove.insert(node.id);
-                nodes_to_remove.extend(node.children_it(false).map(|n| n.id));
-                continue;
+            if flags.contains(GrabFlags::StripUnlikelys){
+                if is_unlikely_candidate(&node, &match_string) {
+                    nodes_to_remove.insert(node.id);
+                    continue;
+                }
+                
+
+                if let Some(role) = node.attr("role") {
+                    if UNLIKELY_ROLES.contains(&role.as_ref()) {
+                        nodes_to_remove.insert(node.id);
+                    }
+                }
             }
+            
         }
 
         for node_id in nodes_to_remove {
@@ -154,13 +168,13 @@ fn clean_doc(doc: &Document) {
     // Remove DIV, SECTION, and HEADER nodes without any content(e.g. text, image, video, or iframe).
     //doc.select_matcher(&EMPTY_SECTION_MATCHER).remove();
 
-    for node in doc.select_matcher(&ROLES_MATCHER).nodes() {
+    /*for node in doc.select_matcher(&ROLES_MATCHER).nodes() {
         if let Some(role) = node.attr("role") {
             if UNLIKELY_ROLES.contains(&role.as_ref()) {
                 node.remove_from_parent();
             }
         }
-    }
+    }*/
 }
 
 fn get_node_matching_string(node: &NodeRef) -> String {

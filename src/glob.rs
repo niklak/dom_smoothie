@@ -18,11 +18,9 @@ pub(crate) static JS_LINK_MATCHER: Lazy<Matcher> =
 pub(crate) static JSONLD_MATCHER: Lazy<Matcher> =
     Lazy::new(|| Matcher::new(r#"script[type="application/ld+json"]"#).unwrap());
 pub(crate) static HEADINGS_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new(r#"h1,h2"#).unwrap());
-pub(crate) static ROLES_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new(r#"*[role]"#).unwrap());
 pub(crate) static DIALOGS_MATCHER: Lazy<Matcher> =
     Lazy::new(|| Matcher::new(r#"*[aria-modal="true"][role="dialog"]"#).unwrap());
-pub(crate) static EMPTY_SECTION_MATCHER: Lazy<Matcher> =
-    Lazy::new(|| Matcher::new(r#":is(div,section,header,h1,h2,h3,h4,h5,h6):empty"#).unwrap());
+
 
 pub(crate) static PHRASING_ELEMS: &[&str] = &[
     // "canvas", "iframe", "svg", "video",

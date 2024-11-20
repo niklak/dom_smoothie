@@ -181,3 +181,11 @@ fn test_lwn_1() {
 fn test_ietf_1() {
     test_readability("test-pages/ok/ietf-1/", Some("http://fakehost/test/"))
 }
+
+#[test]
+fn test_toc_missing() {
+    test_readability(
+        "test-pages/ok/toc-missing/",
+        Some("http://fakehost/test/"),
+    )
+}

@@ -60,13 +60,7 @@ fn test_table_style_attributes() {
     )
 }
 
-#[test]
-fn test_toc_missing() {
-    test_readability(
-        "test-pages/issues/toc-missing/",
-        Some("http://fakehost/test/"),
-    )
-}
+
 
 #[test]
 fn table_test_readability() {
