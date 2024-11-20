@@ -1,4 +1,5 @@
 use std::cmp::Reverse;
+use std::collections::HashSet;
 use std::vec;
 
 use dom_query::{Document, Node, NodeRef};
@@ -30,35 +31,48 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
         let doc = doc.clone();
         let selection = doc.select("body");
         let body_node = selection.nodes().first().unwrap();
+        let mut nodes_to_remove = HashSet::new();
         //TODO: maybe this way of iterating through nodes is not the best
-        for node in body_node.descendants().iter().filter(|n| n.is_element()) {
-            if !is_probably_visible(node) {
-                node.remove_from_parent();
+        for  node in body_node.descendants_it().filter(|n| n.is_element()) {
+
+            if nodes_to_remove.contains(&node.id) {
+                continue;
+            }
+            if !is_probably_visible(&node) {
+                nodes_to_remove.insert(node.id);
+                nodes_to_remove.extend(node.children_it(false).map(|n| n.id));
                 continue;
             }
             //TODO: byline may be optimized
-            let match_string = get_node_matching_string(node);
-            if metadata.byline.is_empty() && is_valid_byline(node, &match_string) {
+            let match_string = get_node_matching_string(&node);
+            if metadata.byline.is_empty() && is_valid_byline(&node, &match_string) {
                 metadata.byline = node.text().trim().to_string();
-                node.remove_from_parent();
+                nodes_to_remove.insert(node.id);
+                nodes_to_remove.extend(node.children_it(false).map(|n| n.id));
                 continue;
             }
 
             if should_remove_title_header
-                && HEADINGS_MATCHER.match_element(node)
+                && HEADINGS_MATCHER.match_element(&node)
                 && text_similarity(&metadata.title, &node.text()) > 0.75
             {
                 should_remove_title_header = false;
-                node.remove_from_parent();
+                nodes_to_remove.insert(node.id);
+                nodes_to_remove.extend(node.children_it(false).map(|n| n.id));
                 continue;
             }
 
             if flags.contains(GrabFlags::StripUnlikelys)
-                && is_unlikely_candidate(node, &match_string)
+                && is_unlikely_candidate(&node, &match_string)
             {
-                node.remove_from_parent();
+                nodes_to_remove.insert(node.id);
+                nodes_to_remove.extend(node.children_it(false).map(|n| n.id));
                 continue;
             }
+        }
+
+        for node_id in nodes_to_remove {
+            doc.tree.remove_from_parent(&node_id);
         }
 
         let selection = doc.select("*");
