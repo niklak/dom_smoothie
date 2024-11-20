@@ -139,7 +139,6 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
 
     let first_child = children.first().unwrap();
 
-
     if !first_child
         .node_name()
         .map_or(false, |name| name.as_ref() == tag)
@@ -159,25 +158,7 @@ pub(crate) fn is_element_without_content(node: &Node) -> bool {
     let no_element_children = node.element_children().is_empty();
 
     let sel = Selection::from(node.clone()).select("br,hr");
-    is_element && no_text && (
-    no_element_children || node.element_children().len() == sel.length())
-     
-}
-
-pub(crate) fn remove_empty_elements_with_ancestors(node: &Node) -> bool {
-    let mut node_to_check = Some(node.clone());
-    let mut removed = false;
-    while let Some(ref node) = node_to_check {
-        if is_element_without_content(node) {
-            let parent = node.parent();
-            node.remove_from_parent();
-            node_to_check = parent;
-            removed = true;
-        } else {
-            node_to_check = None;
-        }
-    }
-    removed
+    is_element && no_text && (no_element_children || node.element_children().len() == sel.length())
 }
 
 pub(crate) fn set_dir_attr(node: &Node) {

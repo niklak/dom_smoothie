@@ -324,7 +324,7 @@ impl Readability {
         }
     }
 
-    fn unwrap_noscript_images(&self){
+    fn unwrap_noscript_images(&self) {
         let noscript_sel = self.doc.select("noscript:has(img:only-child)");
         for noscript_node in noscript_sel.nodes().iter() {
             if let Some(prev_sibling) = noscript_node.prev_element_sibling() {
@@ -332,10 +332,10 @@ impl Readability {
                 let prev_img: NodeRef;
                 if prev_sel.is("img") {
                     prev_img = prev_sibling;
-                }else if prev_sel.is("*:has( > img:only-child)") {
+                } else if prev_sel.is("*:has( > img:only-child)") {
                     let prev_sel_img = prev_sel.select("img:only-child");
                     prev_img = prev_sel_img.nodes().first().unwrap().clone();
-                }else {
+                } else {
                     continue;
                 }
                 let noscript_img_sel = Selection::from(noscript_node.clone()).select("img");
@@ -346,26 +346,24 @@ impl Readability {
                         continue;
                     }
 
-                    if attr.name.local.as_ref() == "src" || attr.name.local.as_ref() == "srcset" || RX_IMG_ATTR.is_match(&attr.value) {
-                        
+                    if attr.name.local.as_ref() == "src"
+                        || attr.name.local.as_ref() == "srcset"
+                        || RX_IMG_ATTR.is_match(&attr.value)
+                    {
                         if new_img.attr_or(&attr.name.local, "") == attr.value {
                             continue;
                         }
                         let attr_name = if new_img.has_attr(&attr.name.local) {
                             format!("data-old-{}", attr.name.local).to_string()
-                        }else {
+                        } else {
                             attr.name.local.to_string()
                         };
 
                         new_img.set_attr(&attr_name, &attr.value);
                     }
-
                 }
                 prev_img.replace_with(new_img);
-
-
             }
-
         }
     }
 
@@ -685,11 +683,7 @@ impl Readability {
                 r##"a[href]:not([href^="http"])"##
             };
         if let Some(base_url) = base_url {
-            for a in root_sel
-                .select(url_sel)
-                .nodes()
-                .iter()
-            {
+            for a in root_sel.select(url_sel).nodes().iter() {
                 let href = a.attr("href").unwrap();
                 let abs_href = base_url.join(&href).unwrap();
                 a.set_attr("href", abs_href.as_str());
@@ -805,8 +799,6 @@ fn next_significant_node(node: Option<NodeRef>) -> Option<NodeRef> {
 }
 
 fn simplify_nested_elements(root_sel: &Selection) {
-
-
     let only_sel = root_sel
         .select("div, section")
         .select(":is(div, section) > :is(div, section):only-child");

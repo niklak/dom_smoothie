@@ -19,24 +19,19 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
 
     clean_doc(doc);
 
-
-
-    if !metadata.title.is_empty() {
-        // if title is not empty then delete duplicate
-        remove_header_duplicates_title(doc, &metadata.title);
-    }
-
     let mut flags =
         GrabFlags::CleanConditionally | GrabFlags::StripUnlikelys | GrabFlags::WeightClasses;
 
     let mut attempts = vec![];
 
     loop {
+        let mut should_remove_title_header = !metadata.title.is_empty();
         let mut elements_to_score: Vec<NodeRef<'_>> = vec![];
         let doc = doc.clone();
-        let selection = doc.select("*");
+        let selection = doc.select("body");
+        let body_node = selection.nodes().first().unwrap();
         //TODO: maybe this way of iterating through nodes is not the best
-        for node in selection.nodes().iter().filter(|n| n.is_element()) {
+        for node in body_node.descendants().iter().filter(|n| n.is_element()) {
             if !is_probably_visible(node) {
                 node.remove_from_parent();
                 continue;
@@ -49,33 +44,38 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
                 continue;
             }
 
+            if should_remove_title_header
+                && HEADINGS_MATCHER.match_element(node)
+                && text_similarity(&metadata.title, &node.text()) > 0.75
+            {
+                should_remove_title_header = false;
+                node.remove_from_parent();
+                continue;
+            }
+
             if flags.contains(GrabFlags::StripUnlikelys)
                 && is_unlikely_candidate(node, &match_string)
             {
                 node.remove_from_parent();
                 continue;
             }
-
         }
-        
+
         let selection = doc.select("*");
         for node in selection.nodes().iter().filter(|n| n.is_element()) {
-
             let node_name = node.node_name().unwrap();
 
-            if TAGS_WITH_CONTENT.contains(&node_name.as_ref()){
+            if TAGS_WITH_CONTENT.contains(&node_name.as_ref()) {
                 // TODO: this is a controversial moment, it may leave an empty block,
-                // which will have an impact on the result. 
-                // When parent of the top candidate have more than one child, 
+                // which will have an impact on the result.
+                // When parent of the top candidate have more than one child,
                 // then parent will be a new top candidate.
 
                 if is_element_without_content(node) {
                     node.remove_from_parent();
                     continue;
-                } 
+                }
             }
-
-
 
             if DEFAULT_TAGS_TO_SCORE.contains(&node_name.as_ref()) {
                 elements_to_score.push(node.clone());
@@ -87,7 +87,7 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
                 div_into_p(node, &doc, &mut elements_to_score);
             }
         }
-        
+
         let article_node = handle_candidates(&mut elements_to_score, &doc, &flags);
         let mut parse_successful = true;
 
@@ -212,17 +212,6 @@ fn is_valid_byline(node: &Node, match_string: &str) -> bool {
     RX_BYLINE.is_match(match_string)
 }
 
-// Removes the first occurred title duplicate from the document
-fn remove_header_duplicates_title(doc: &Document, title: &str) {
-    for sel in doc.select_matcher(&HEADINGS_MATCHER).iter() {
-        let heading = sel.text();
-        if text_similarity(title, heading.trim()) > 0.75 {
-            sel.remove();
-            //return;
-        }
-    }
-}
-
 fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
     if !RX_UNLIKELY_CANDIDATES.is_match(match_string) {
         return false;
@@ -253,7 +242,6 @@ fn div_into_p<'a>(node: &'a Node, doc: &'a Document, elements_to_score: &mut Vec
     while let Some(ref child) = child_node {
         let next_sibling = child.next_sibling();
         if is_phrasing_content(child) {
-
             if let Some(ref p) = p_node {
                 p.append_child(child);
             } else if !is_whitespace(child) {
@@ -311,7 +299,6 @@ fn handle_candidates<'a>(
     let mut visited = vec![];
 
     for element in elements_to_score {
-
         // TODO: made it without duplicates!
 
         if visited.contains(&element.id) {
@@ -357,7 +344,6 @@ fn handle_candidates<'a>(
             let mut ancestor_score = get_node_score(ancestor).unwrap();
             ancestor_score += content_score as f32 / score_divider;
             set_node_score(ancestor, ancestor_score);
-
         }
     }
 
@@ -365,14 +351,11 @@ fn handle_candidates<'a>(
     // should have a relatively small link density (5% or less) and be mostly
     // unaffected by this operation.
 
-
     for candidate in candidates.iter() {
         let prev_score = get_node_score(candidate).unwrap();
         let score = prev_score * (1.0 - link_density(candidate));
         set_node_score(candidate, score);
     }
-    
-    
 
     candidates.sort_by(|n1, n2| {
         get_node_score(n2)
@@ -381,10 +364,8 @@ fn handle_candidates<'a>(
             .unwrap()
     });
 
-
     let mut top_candidates = candidates;
     top_candidates.truncate(DEFAULT_N_TOP_CANDIDATES);
-
 
     // TODO: revise everything below till line 460
 
@@ -429,7 +410,7 @@ fn handle_candidates<'a>(
                         break;
                     }
                 }
-                
+
                 let mut lists_containing_this_ancestor = 0;
 
                 for alt_ancestor in &alternative_candidate_ancestors {
@@ -520,8 +501,6 @@ fn handle_candidates<'a>(
         let mut article_content = doc.tree.new_element("div");
         article_content.set_attr("id", "readability-content");
 
-        
-
         handle_top_candidate(tc, &article_content);
 
         //prepare the article
@@ -605,7 +584,6 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
             }
 
             article_content.append_child(&sibling.id);
-
         }
     }
 }

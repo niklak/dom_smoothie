@@ -122,7 +122,7 @@ fn should_clean_conditionally(sel: &Selection, tag: &str, flags: &FlagSet<GrabFl
 
         let inner_text = sel.text();
         let trimmed_text = inner_text.trim();
-        if RX_AD_WORDS.is_match(&trimmed_text) || RX_LOADING_WORDS.is_match(&trimmed_text) {
+        if RX_AD_WORDS.is_match(trimmed_text) || RX_LOADING_WORDS.is_match(trimmed_text) {
             return true;
         }
 
@@ -194,7 +194,7 @@ fn clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>) {
     }
 
     let tag_sel = Selection::from(node.clone()).select(tag);
-    // traversing tag nodes in reverse order, 
+    // traversing tag nodes in reverse order,
     // so that how children nodes will appear before parent nodes
     for tag_node in tag_sel.nodes().iter().rev() {
         let sel = Selection::from(tag_node.clone());
@@ -290,7 +290,8 @@ fn mark_data_tables(n: &Node) {
 fn fix_lazy_images(n: &Node) {
     for node in Selection::from(n.clone())
         .select("img,picture,figure")
-        .nodes().iter()
+        .nodes()
+        .iter()
     {
         let src = node.attr_or("src", "");
         // In some sites (e.g. Kotaku), they put 1px square image as base64 data uri in the src attribute.
