@@ -244,7 +244,7 @@ fn mark_data_tables(n: &Node) {
             continue;
         }
 
-        let data_table = node.attr_or("data-table", "");
+        let data_table = node.attr_or("datatable", "");
         if data_table.as_ref() == "0" {
             set_data_readability_table(node, false);
             continue;
@@ -274,7 +274,7 @@ fn mark_data_tables(n: &Node) {
         }
 
         let (rows, cols) = get_row_and_col_count(&sel);
-        if rows == 1 && cols == 1 {
+        if rows == 1 || cols == 1 {
             set_data_readability_table(node, false);
             continue;
         }

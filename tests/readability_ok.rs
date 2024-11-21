@@ -182,10 +182,7 @@ fn test_ietf_1() {
 
 #[test]
 fn test_toc_missing() {
-    test_readability(
-        "test-pages/ok/toc-missing/",
-        Some("http://fakehost/test/"),
-    )
+    test_readability("test-pages/ok/toc-missing/", Some("http://fakehost/test/"))
 }
 
 #[test]
@@ -201,14 +198,10 @@ fn test_dev418() {
     test_readability("test-pages/ok/dev418/", Some("http://fakehost/test/"));
 }
 
-
 #[test]
 fn test_citylab_1() {
     //TODO: fix, this is bad
-    test_readability(
-        "test-pages/ok/citylab-1/",
-        Some("http://fakehost/test/"),
-    );
+    test_readability("test-pages/ok/citylab-1/", Some("http://fakehost/test/"));
 }
 
 #[test]

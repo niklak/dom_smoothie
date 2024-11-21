@@ -31,8 +31,7 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
         let body_node = selection.nodes().first().unwrap();
         let mut nodes_to_remove = HashSet::new();
         //TODO: maybe this way of iterating through nodes is not the best
-        for  node in body_node.descendants_it().filter(|n| n.is_element()) {
-
+        for node in body_node.descendants_it().filter(|n| n.is_element()) {
             if nodes_to_remove.contains(&node.id) {
                 continue;
             }
@@ -69,12 +68,11 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
                 continue;
             }
 
-            if flags.contains(GrabFlags::StripUnlikelys){
+            if flags.contains(GrabFlags::StripUnlikelys) {
                 if is_unlikely_candidate(&node, &match_string) {
                     nodes_to_remove.insert(node.id);
                     continue;
                 }
-                
 
                 if let Some(role) = node.attr("role") {
                     if UNLIKELY_ROLES.contains(&role.as_ref()) {
@@ -82,7 +80,6 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
                     }
                 }
             }
-            
         }
 
         for node_id in nodes_to_remove {
@@ -223,7 +220,7 @@ fn is_valid_byline(node: &Node, match_string: &str) -> bool {
     let byline_len = node.text().trim().chars().count();
     let byline_len_in_range = byline_len > 0 && byline_len < 100;
 
-    byline_len_in_range && ( BYLINE_MATCHER.match_element(node) || RX_BYLINE.is_match(match_string))
+    byline_len_in_range && (BYLINE_MATCHER.match_element(node) || RX_BYLINE.is_match(match_string))
 }
 
 fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {

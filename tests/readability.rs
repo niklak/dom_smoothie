@@ -23,16 +23,6 @@ fn test_la_nacion() {
 }
 
 #[test]
-fn test_hukumusume() {
-    //TODO: fix, this is bad
-    test_readability(
-        "test-pages/issues/hukumusume/",
-        Some("http://fakehost/test/"),
-    );
-}
-
-
-#[test]
 fn test_wikipedia_3() {
     // this seems ok
     test_readability(
@@ -41,9 +31,14 @@ fn test_wikipedia_3() {
     );
 }
 
-
-
-
+#[test]
+fn test_hukumusume() {
+    //TODO: fix, this is bad
+    test_readability(
+        "test-pages/issues/hukumusume/",
+        Some("http://fakehost/test/"),
+    );
+}
 
 #[test]
 fn table_test_readability() {
