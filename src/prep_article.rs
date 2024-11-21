@@ -173,7 +173,7 @@ fn should_clean_conditionally(sel: &Selection, tag: &str, flags: &FlagSet<GrabFl
 
         if is_list && have_to_remove {
             for child in node.children_it(false) {
-                if child.children().len() > 1 {
+                if child.element_children().len() > 1 {
                     return have_to_remove;
                 }
             }

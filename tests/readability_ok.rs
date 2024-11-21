@@ -189,3 +189,11 @@ fn test_toc_missing() {
         Some("http://fakehost/test/"),
     )
 }
+
+#[test]
+fn test_table_style_attributes() {
+    test_readability(
+        "test-pages/issues/table-style-attributes/",
+        Some("http://fakehost/test/"),
+    )
+}
