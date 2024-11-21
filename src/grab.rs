@@ -221,23 +221,9 @@ fn is_probably_visible(node: &Node) -> bool {
 
 fn is_valid_byline(node: &Node, match_string: &str) -> bool {
     let byline_len = node.text().trim().chars().count();
-    if byline_len > 100 && byline_len != 0 {
-        return false;
-    }
+    let byline_len_in_range = byline_len > 0 && byline_len < 100;
 
-    if let Some(rel) = node.attr("rel") {
-        if rel.as_ref() == "author" {
-            return true;
-        }
-    }
-
-    if let Some(itemprop) = node.attr("itemprop") {
-        if itemprop.contains("author") {
-            return true;
-        }
-    }
-
-    RX_BYLINE.is_match(match_string)
+    byline_len_in_range && ( BYLINE_MATCHER.match_element(node) || RX_BYLINE.is_match(match_string))
 }
 
 fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {

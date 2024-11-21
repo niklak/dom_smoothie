@@ -1,5 +1,3 @@
-use std::fs;
-
 mod common;
 
 use common::test_readability;
@@ -193,7 +191,31 @@ fn test_toc_missing() {
 #[test]
 fn test_table_style_attributes() {
     test_readability(
-        "test-pages/issues/table-style-attributes/",
+        "test-pages/ok/table-style-attributes/",
         Some("http://fakehost/test/"),
     )
+}
+
+#[test]
+fn test_dev418() {
+    test_readability("test-pages/ok/dev418/", Some("http://fakehost/test/"));
+}
+
+
+#[test]
+fn test_citylab_1() {
+    //TODO: fix, this is bad
+    test_readability(
+        "test-pages/ok/citylab-1/",
+        Some("http://fakehost/test/"),
+    );
+}
+
+#[test]
+fn test_lemonde_1() {
+    //TODO: fix, this is bad
+    test_readability(
+        "test-pages/readability/lemonde-1/",
+        Some("http://fakehost/test/"),
+    );
 }

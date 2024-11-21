@@ -41,20 +41,7 @@ fn test_wikipedia_3() {
     );
 }
 
-#[test]
-fn test_citylab_1() {
-    //TODO: fix, this is bad
-    test_readability(
-        "test-pages/issues/citylab-1/",
-        Some("http://fakehost/test/"),
-    );
-}
 
-#[test]
-fn test_dev418() {
-    //TODO: fix, this is bad
-    test_readability("test-pages/issues/dev418/", Some("http://fakehost/test/"));
-}
 
 
 
