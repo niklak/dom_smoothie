@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use dom_query::{Document, Node, NodeData, NodeRef, Selection};
 use tendril::StrTendril;
+use url::Url;
 
 use crate::glob::*;
 use crate::grab::grab_article;
@@ -136,14 +137,11 @@ impl Readability {
         // remove styles
         self.doc.select_matcher(&STYLE_MATCHER).remove();
 
-        // remove javascript urls
-        //self.doc.select_matcher(&UNWANTED_A_MATCHER).remove();
+        // replace duplicating br elements
+        self.replace_brs();
 
         // replace fonts with spans
         self.replace_fonts();
-
-        // replace duplicating br elements
-        self.replace_brs();
 
         // remove comments
         self.remove_comments();
@@ -685,8 +683,8 @@ impl Readability {
         if let Some(base_url) = base_url {
             for a in root_sel.select(url_sel).nodes().iter() {
                 let href = a.attr("href").unwrap();
-                let abs_href = base_url.join(&href).unwrap();
-                a.set_attr("href", abs_href.as_str());
+                let abs_url = to_absolute_url(&href, &base_url);
+                a.set_attr("href", abs_url.as_str());
             }
 
             // Handle links with javascript: URIs, since
@@ -716,13 +714,13 @@ impl Readability {
             {
                 let src = media.attr_or("src", "");
                 if !src.is_empty() {
-                    let abs_src = base_url.join(&src).unwrap();
+                    let abs_src = to_absolute_url(&src, &base_url);
                     media.set_attr("src", abs_src.as_str());
                 }
 
                 let poster = media.attr_or("poster", "");
                 if !poster.is_empty() {
-                    let abs_poster = base_url.join(&poster).unwrap();
+                    let abs_poster = to_absolute_url(&poster, &base_url);
                     media.set_attr("poster", abs_poster.as_str());
                 }
 
@@ -732,7 +730,7 @@ impl Readability {
                         .split(", ")
                         .map(|s| {
                             if let Some((src, cond)) = s.split_once(" ") {
-                                let abs_src = base_url.join(src.trim()).unwrap().to_string();
+                                let abs_src = to_absolute_url(src.trim(), &base_url).to_string();
                                 format!("{} {}", abs_src, cond)
                             } else {
                                 s.to_string()
@@ -832,6 +830,16 @@ fn normalize_meta_key(raw_key: &str) -> String {
         .join(" ")
         .replace('.', ":")
 }
+
+fn to_absolute_url(raw_url: &str, base_uri: &Url) -> Url {
+    if raw_url.starts_with("file://") {
+        let u = raw_url.replace("|/", ":/");
+        base_uri.join(&u).unwrap()
+    } else {
+        base_uri.join(raw_url).unwrap()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
