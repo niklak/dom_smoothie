@@ -1,5 +1,7 @@
 use std::collections::HashSet;
 
+use unicode_segmentation::UnicodeSegmentation;
+
 use dom_query::{Node, Selection};
 
 use crate::glob::*;
@@ -13,14 +15,13 @@ pub(crate) fn text_similarity(text_a: &str, text_b: &str) -> f64 {
     if a.is_empty() || b.is_empty() {
         return 0.0;
     }
-
     if a.contains(&b) {
         return 1.0;
     }
-    let unique_tokens_a: HashSet<&str> = RX_TOKENIZE.split(&a).filter(|s| !s.is_empty()).collect();
 
-    let tokens_b: Vec<&str> = RX_TOKENIZE.split(&b).filter(|s| !s.is_empty()).collect();
+    let unique_tokens_a: HashSet<&str> = a.unicode_words().collect();
 
+    let tokens_b: Vec<&str> = b.unicode_words().collect();
     let unique_tokens_b: Vec<&str> = tokens_b
         .iter()
         .filter(|&&s| !unique_tokens_a.contains(s))

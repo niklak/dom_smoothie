@@ -42,7 +42,6 @@ fn filter_document(doc: &Document, metadata: &mut MetaData, flags: FlagSet<GrabF
             continue;
         }
 
-        //TODO: byline may be optimized
         let match_string = get_node_matching_string(&node);
         if metadata.byline.is_empty() && is_valid_byline(&node, &match_string) {
             metadata.byline = node.text().trim().to_string();
@@ -166,17 +165,6 @@ fn clean_doc(doc: &Document) {
     //remove by selection in any case
     // User is not able to see elements applied with both "aria-modal = true" and "role = dialog"
     doc.select_matcher(&DIALOGS_MATCHER).remove();
-
-    // Remove DIV, SECTION, and HEADER nodes without any content(e.g. text, image, video, or iframe).
-    //doc.select_matcher(&EMPTY_SECTION_MATCHER).remove();
-
-    /*for node in doc.select_matcher(&ROLES_MATCHER).nodes() {
-        if let Some(role) = node.attr("role") {
-            if UNLIKELY_ROLES.contains(&role.as_ref()) {
-                node.remove_from_parent();
-            }
-        }
-    }*/
 }
 
 fn get_node_matching_string(node: &NodeRef) -> String {

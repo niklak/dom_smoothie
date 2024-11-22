@@ -16,3 +16,4 @@ gjson = {version = "0.8.1"}
 html-escape = "0.2.13"
 flagset = "0.4.6"
 url = "2.5.3"
+unicode-segmentation = "1.10.1"
