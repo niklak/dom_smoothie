@@ -15,8 +15,71 @@ use crate::prep_article::prep_article;
 use crate::MetaData;
 //TODO: do not forget FLAGS
 
-pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Document> {
-    let mut metadata = metadata.unwrap_or_default();
+
+fn filter_document(doc: &Document, metadata: &mut MetaData, flags: FlagSet<GrabFlags>) {
+    let mut should_remove_title_header = !metadata.title.is_empty();
+    let selection = doc.select("body");
+    let body_node = selection.nodes().first().unwrap();
+    let mut nodes_to_remove = HashSet::new();
+    //TODO: maybe this way of iterating through nodes is not the best
+    for node in body_node.descendants_it().filter(|n| n.is_element()) {
+        if nodes_to_remove.contains(&node.id) {
+            continue;
+        }
+
+        if let Some(parent) = node.parent() {
+            if nodes_to_remove.contains(&parent.id) {
+                continue;
+            }
+        }
+        if !is_probably_visible(&node) {
+            nodes_to_remove.insert(node.id);
+            continue;
+        }
+
+        if DIALOGS_MATCHER.match_element(&node) {
+            nodes_to_remove.insert(node.id);
+            continue;
+        }
+
+        //TODO: byline may be optimized
+        let match_string = get_node_matching_string(&node);
+        if metadata.byline.is_empty() && is_valid_byline(&node, &match_string) {
+            metadata.byline = node.text().trim().to_string();
+            nodes_to_remove.insert(node.id);
+            continue;
+        }
+
+        if should_remove_title_header
+            && HEADINGS_MATCHER.match_element(&node)
+            && text_similarity(&metadata.title, &node.text()) > 0.75
+        {
+            should_remove_title_header = false;
+            nodes_to_remove.insert(node.id);
+            continue;
+        }
+
+        if flags.contains(GrabFlags::StripUnlikelys) {
+            if is_unlikely_candidate(&node, &match_string) {
+                nodes_to_remove.insert(node.id);
+                continue;
+            }
+
+            if let Some(role) = node.attr("role") {
+                if UNLIKELY_ROLES.contains(&role.as_ref()) {
+                    nodes_to_remove.insert(node.id);
+                }
+            }
+        }
+    }
+
+    for node_id in nodes_to_remove {
+        doc.tree.remove_from_parent(&node_id);
+    }
+
+}
+
+pub fn grab_article(doc: &Document, metadata: &mut MetaData) -> Option<Document> {
 
     let mut flags =
         GrabFlags::CleanConditionally | GrabFlags::StripUnlikelys | GrabFlags::WeightClasses;
@@ -24,67 +87,9 @@ pub fn grab_article(doc: &Document, metadata: Option<MetaData>) -> Option<Docume
     let mut attempts = vec![];
 
     loop {
-        let mut should_remove_title_header = !metadata.title.is_empty();
         let mut elements_to_score: Vec<NodeRef<'_>> = vec![];
         let doc = doc.clone();
-        let selection = doc.select("body");
-        let body_node = selection.nodes().first().unwrap();
-        let mut nodes_to_remove = HashSet::new();
-        //TODO: maybe this way of iterating through nodes is not the best
-        for node in body_node.descendants_it().filter(|n| n.is_element()) {
-            if nodes_to_remove.contains(&node.id) {
-                continue;
-            }
-
-            if let Some(parent) = node.parent() {
-                if nodes_to_remove.contains(&parent.id) {
-                    continue;
-                }
-            }
-            if !is_probably_visible(&node) {
-                nodes_to_remove.insert(node.id);
-                continue;
-            }
-
-            if DIALOGS_MATCHER.match_element(&node) {
-                nodes_to_remove.insert(node.id);
-                continue;
-            }
-
-            //TODO: byline may be optimized
-            let match_string = get_node_matching_string(&node);
-            if metadata.byline.is_empty() && is_valid_byline(&node, &match_string) {
-                metadata.byline = node.text().trim().to_string();
-                nodes_to_remove.insert(node.id);
-                continue;
-            }
-
-            if should_remove_title_header
-                && HEADINGS_MATCHER.match_element(&node)
-                && text_similarity(&metadata.title, &node.text()) > 0.75
-            {
-                should_remove_title_header = false;
-                nodes_to_remove.insert(node.id);
-                continue;
-            }
-
-            if flags.contains(GrabFlags::StripUnlikelys) {
-                if is_unlikely_candidate(&node, &match_string) {
-                    nodes_to_remove.insert(node.id);
-                    continue;
-                }
-
-                if let Some(role) = node.attr("role") {
-                    if UNLIKELY_ROLES.contains(&role.as_ref()) {
-                        nodes_to_remove.insert(node.id);
-                    }
-                }
-            }
-        }
-
-        for node_id in nodes_to_remove {
-            doc.tree.remove_from_parent(&node_id);
-        }
+        filter_document(&doc, metadata, flags);
 
         let selection = doc.select("*");
         for node in selection.nodes().iter().filter(|n| n.is_element()) {
@@ -621,7 +626,8 @@ mod tests {
         </html>"#;
 
         let doc = Document::from(contents);
-        grab_article(&doc, None);
+        let mut meta = MetaData::default();
+        grab_article(&doc, &mut meta);
 
         assert_eq!(2, doc.select("p").length());
     }
@@ -711,7 +717,8 @@ mod tests {
 
         let doc = Document::from(contents);
         // consuming byline during grabbing the article
-        grab_article(&doc, None);
+        let mut meta = MetaData::default();
+        grab_article(&doc, &mut meta);
         assert!(!doc.select("a").exists())
     }
 
@@ -729,7 +736,7 @@ mod tests {
         let mut metadata = MetaData::default();
         metadata.byline = "Cat".to_string();
         // consuming byline during grabbing the article
-        grab_article(&doc, Some(metadata));
+        grab_article(&doc, &mut metadata);
         assert!(doc.select("a").exists())
     }
 
@@ -744,11 +751,11 @@ mod tests {
         </html>"#;
 
         let readability = Readability::from(contents);
-        let metadata = readability.get_article_metadata(None);
+        let mut metadata = readability.get_article_metadata(None);
 
         assert!(readability.doc.select("h1").exists());
 
-        grab_article(&readability.doc, Some(metadata));
+        grab_article(&readability.doc, &mut metadata);
         assert!(!readability.doc.select("h1").exists())
     }
 
@@ -766,7 +773,8 @@ mod tests {
         let doc = Document::from(contents);
         assert!(doc.select("div.banner").exists());
 
-        grab_article(&doc, None);
+        let mut meta = MetaData::default();
+        grab_article(&doc, &mut meta);
         assert!(!doc.select("div.banner").exists())
     }
     #[test]
@@ -782,8 +790,8 @@ mod tests {
 
         let doc = Document::from(contents);
         assert!(doc.select("a.banner").exists());
-
-        grab_article(&doc, None);
+        let mut meta = MetaData::default();
+        grab_article(&doc, &mut meta);
         assert!(doc.select("a.banner").exists())
     }
 }

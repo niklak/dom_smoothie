@@ -370,9 +370,9 @@ impl Readability {
 
         self.prepare();
 
-        let metadata = self.get_article_metadata(ld_meta);
+        let mut metadata = self.get_article_metadata(ld_meta);
         let base_url = self.parse_base_url();
-        let doc: Document = grab_article(&self.doc, Some(metadata.clone())).unwrap();
+        let doc: Document = grab_article(&self.doc, &mut metadata).unwrap();
 
         let text_dir = get_text_dir(&doc);
 
