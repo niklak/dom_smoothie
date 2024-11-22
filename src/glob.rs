@@ -115,8 +115,6 @@ pub(crate) static EMBED_ELEMENTS: &[&str] = &["object", "embed", "iframe"];
 
 pub(crate) static DEPRECATED_SIZE_ATTRIBUTE_ELEMS: &[&str] = &["table", "th", "td", "hr", "pre"];
 
-//TODO: replace \s+
-pub(crate) static RX_TOKENIZE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(?i)\W+"#).unwrap());
 pub(crate) static RX_STYLE_DISPLAY_NONE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#"(?i)display\s*:\s*none|visibility\s*:\s*hidden"#).unwrap());
 pub(crate) static RX_CDATA: Lazy<Regex> =

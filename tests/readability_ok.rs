@@ -213,45 +213,29 @@ fn test_lemonde_1() {
 
 #[test]
 fn test_hukumusume() {
-    test_readability(
-        "test-pages/ok/hukumusume/",
-        Some("http://fakehost/test/"),
-    );
+    test_readability("test-pages/ok/hukumusume/", Some("http://fakehost/test/"));
 }
 
 #[test]
 fn test_engadget() {
     // this seems ok
-    test_readability(
-        "test-pages/ok/engadget/",
-        Some("http://fakehost/test/"),
-    );
+    test_readability("test-pages/ok/engadget/", Some("http://fakehost/test/"));
 }
-
 
 #[test]
 fn test_la_nacion() {
     // this seems ok
-    test_readability(
-        "test-pages/ok/la-nacion/",
-        Some("http://fakehost/test/"),
-    );
+    test_readability("test-pages/ok/la-nacion/", Some("http://fakehost/test/"));
 }
 
 #[test]
 fn test_wikipedia_3() {
     // this seems ok
-    test_readability(
-        "test-pages/ok/wikipedia-3/",
-        Some("http://fakehost/test/"),
-    );
+    test_readability("test-pages/ok/wikipedia-3/", Some("http://fakehost/test/"));
 }
 
 #[test]
 fn test_wikipedia_2() {
     // this seems ok
-    test_readability(
-        "test-pages/ok/wikipedia-2/",
-        Some("http://fakehost/test/"),
-    );
+    test_readability("test-pages/ok/wikipedia-2/", Some("http://fakehost/test/"));
 }

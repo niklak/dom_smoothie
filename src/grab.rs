@@ -15,18 +15,12 @@ use crate::prep_article::prep_article;
 use crate::MetaData;
 //TODO: do not forget FLAGS
 
-
-fn filter_document(doc: &Document, metadata: &mut MetaData, flags: FlagSet<GrabFlags>) {
+fn filter_document(root_node: &NodeRef, metadata: &mut MetaData, flags: FlagSet<GrabFlags>) {
     let mut should_remove_title_header = !metadata.title.is_empty();
-    let selection = doc.select("body");
-    let body_node = selection.nodes().first().unwrap();
-    let mut nodes_to_remove = HashSet::new();
-    //TODO: maybe this way of iterating through nodes is not the best
-    for node in body_node.descendants_it().filter(|n| n.is_element()) {
-        if nodes_to_remove.contains(&node.id) {
-            continue;
-        }
 
+    let mut nodes_to_remove = HashSet::new();
+
+    for node in root_node.descendants_it().filter(|n| n.is_element()) {
         if let Some(parent) = node.parent() {
             if nodes_to_remove.contains(&parent.id) {
                 continue;
@@ -42,13 +36,6 @@ fn filter_document(doc: &Document, metadata: &mut MetaData, flags: FlagSet<GrabF
             continue;
         }
 
-        let match_string = get_node_matching_string(&node);
-        if metadata.byline.is_empty() && is_valid_byline(&node, &match_string) {
-            metadata.byline = node.text().trim().to_string();
-            nodes_to_remove.insert(node.id);
-            continue;
-        }
-
         if should_remove_title_header
             && HEADINGS_MATCHER.match_element(&node)
             && text_similarity(&metadata.title, &node.text()) > 0.75
@@ -58,8 +45,18 @@ fn filter_document(doc: &Document, metadata: &mut MetaData, flags: FlagSet<GrabF
             continue;
         }
 
+        let match_string = get_node_matching_string(&node);
+        if metadata.byline.is_empty()
+            && !match_string.is_empty()
+            && is_valid_byline(&node, &match_string)
+        {
+            metadata.byline = node.text().trim().to_string();
+            nodes_to_remove.insert(node.id);
+            continue;
+        }
+
         if flags.contains(GrabFlags::StripUnlikelys) {
-            if is_unlikely_candidate(&node, &match_string) {
+            if !match_string.is_empty() && is_unlikely_candidate(&node, &match_string) {
                 nodes_to_remove.insert(node.id);
                 continue;
             }
@@ -73,13 +70,11 @@ fn filter_document(doc: &Document, metadata: &mut MetaData, flags: FlagSet<GrabF
     }
 
     for node_id in nodes_to_remove {
-        doc.tree.remove_from_parent(&node_id);
+        root_node.tree.remove_from_parent(&node_id);
     }
-
 }
 
 pub fn grab_article(doc: &Document, metadata: &mut MetaData) -> Option<Document> {
-
     let mut flags =
         GrabFlags::CleanConditionally | GrabFlags::StripUnlikelys | GrabFlags::WeightClasses;
 
@@ -88,10 +83,12 @@ pub fn grab_article(doc: &Document, metadata: &mut MetaData) -> Option<Document>
     loop {
         let mut elements_to_score: Vec<NodeRef<'_>> = vec![];
         let doc = doc.clone();
-        filter_document(&doc, metadata, flags);
+        let selection = doc.select("body");
+        let body_node = selection.nodes().first().unwrap();
+        filter_document(body_node, metadata, flags);
+        let descendants = body_node.descendants();
 
-        let selection = doc.select("*");
-        for node in selection.nodes().iter().filter(|n| n.is_element()) {
+        for node in descendants.iter().filter(|n| n.is_element()) {
             let node_name = node.node_name().unwrap();
 
             if TAGS_WITH_CONTENT.contains(&node_name.as_ref()) {
