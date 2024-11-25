@@ -13,7 +13,6 @@ use crate::score::*;
 use crate::helpers::*;
 use crate::prep_article::prep_article;
 use crate::MetaData;
-//TODO: do not forget FLAGS
 
 fn filter_document(root_node: &NodeRef, metadata: &mut MetaData, flags: FlagSet<GrabFlags>) {
     let mut should_remove_title_header = !metadata.title.is_empty();
@@ -36,9 +35,11 @@ fn filter_document(root_node: &NodeRef, metadata: &mut MetaData, flags: FlagSet<
             continue;
         }
 
+        let text = node.text();
+
         if should_remove_title_header
             && HEADINGS_MATCHER.match_element(&node)
-            && text_similarity(&metadata.title, &node.text()) > 0.75
+            && text_similarity(&metadata.title, &text) > 0.75
         {
             should_remove_title_header = false;
             nodes_to_remove.insert(node.id);
@@ -50,7 +51,7 @@ fn filter_document(root_node: &NodeRef, metadata: &mut MetaData, flags: FlagSet<
             && !match_string.is_empty()
             && is_valid_byline(&node, &match_string)
         {
-            metadata.byline = node.text().trim().to_string();
+            metadata.byline = text.trim().to_string();
             nodes_to_remove.insert(node.id);
             continue;
         }
@@ -166,13 +167,11 @@ fn clean_doc(doc: &Document) {
 
 fn get_node_matching_string(node: &NodeRef) -> String {
     let mut matched_attrs: Vec<String> = vec![];
-    let class = node.attr("class");
-    let id = node.attr("id");
-    if let Some(class) = class {
+    if let Some(class) = node.attr("class") {
         matched_attrs.push(class.to_string());
     }
 
-    if let Some(id) = id {
+    if let Some(id) = node.attr("id") {
         matched_attrs.push(id.to_string());
     }
 
@@ -252,7 +251,6 @@ fn div_into_p<'a>(node: &'a Node, doc: &'a Document, elements_to_score: &mut Vec
                 p_node = Some(raw_p);
             }
         } else if let Some(ref p) = p_node {
-            //TODO: careful! Revise this:
             while let Some(p_last_child) = p.last_child() {
                 if is_whitespace(&p_last_child) {
                     p_last_child.remove_from_parent();

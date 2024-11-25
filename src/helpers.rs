@@ -8,7 +8,6 @@ use crate::glob::*;
 
 pub(crate) fn text_similarity(text_a: &str, text_b: &str) -> f64 {
     //TODO: revise this later (use Jaccard index)
-    //TODO: use unicode_segmentation::UnicodeSegmentation;
     let a = text_a.to_lowercase();
     let b = text_b.to_lowercase();
 
@@ -36,22 +35,20 @@ pub(crate) fn text_similarity(text_a: &str, text_b: &str) -> f64 {
 }
 
 pub(crate) fn is_phrasing_content(node: &Node) -> bool {
-    // TODO: revise this function
     if node.is_text() {
         return true;
     }
 
-    if !node.is_element() {
+    // only elements has a node name
+    let Some(node_name) = node.node_name() else {
         return false;
-    }
+    };
 
-    let node_name_t = node.node_name().unwrap();
-    let node_name: &str = &node_name_t;
-    if PHRASING_ELEMS.contains(&node_name) {
+    if PHRASING_ELEMS.contains(&node_name.as_ref()) {
         return true;
     }
 
-    if matches!(node_name, "a" | "del" | "ins")
+    if matches!(node_name.as_ref(), "a" | "del" | "ins")
         && node.children().into_iter().all(|n| is_phrasing_content(&n))
     {
         return true;
@@ -64,10 +61,9 @@ pub(crate) fn is_whitespace(node: &Node) -> bool {
     if node.is_text() {
         return node.text().trim().is_empty();
     }
-    if node.is_element() {
-        return node.node_name().map_or(false, |name| name == "br".into());
-    }
-    false
+    // only an element node has a node_name
+    node.node_name().map_or(false, |name| name == "br".into())
+
 }
 
 pub(crate) type NodePredicate = fn(&Node) -> bool;
@@ -81,12 +77,15 @@ pub(crate) fn has_ancestor_tag<F>(
 where
     F: Fn(&Node) -> bool,
 {
-    //TODO: revise this with node.ancestors()!
     let max_depth = max_depth.map(|max_depth| if max_depth == 0 { 3 } else { max_depth });
     let mut matched_ancestors = node
         .ancestors_it(max_depth)
-        .filter(|a| a.is_element())
-        .filter(|a| a.node_name().unwrap().as_ref() == tag);
+        .filter(|a| {
+            match a.node_name() {
+                Some(name) => name.as_ref() == tag,
+                None => false,
+            }
+        });
 
     if let Some(filter_fn) = filter_fn {
         matched_ancestors.any(|a| filter_fn(&a))
@@ -116,7 +115,7 @@ pub fn link_density(node: &Node) -> f32 {
     }
     let mut link_length = 0f32;
 
-    let a_sel = Selection::from(node.clone()).select("a");
+    let a_sel = Selection::from(node.clone()).select_matcher(&MATCHER_A);
 
     for a in a_sel.iter() {
         let href = a.attr_or("href", "");
@@ -138,10 +137,10 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
         return false;
     }
 
-    let first_child = children.first().unwrap();
+    let first_child = children.first();
 
     if !first_child
-        .node_name()
+        .and_then(|child| child.node_name())
         .map_or(false, |name| name.as_ref() == tag)
     {
         return false;
@@ -158,12 +157,12 @@ pub(crate) fn is_element_without_content(node: &Node) -> bool {
     let no_text = node.text().trim().is_empty();
     let no_element_children = node.element_children().is_empty();
 
-    let sel = Selection::from(node.clone()).select("br,hr");
+    let sel = Selection::from(node.clone()).select_matcher(&MATCHER_BR_HR);
     is_element && no_text && (no_element_children || node.element_children().len() == sel.length())
 }
 
 pub(crate) fn set_dir_attr(node: &Node) {
-    if let Some(first_child) = node.children().first() {
+    if let Some(first_child) = node.first_child() {
         if first_child.has_attr("dir") {
             return;
         }
