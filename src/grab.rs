@@ -30,7 +30,7 @@ fn filter_document(root_node: &NodeRef, metadata: &mut MetaData, flags: FlagSet<
             continue;
         }
 
-        if DIALOGS_MATCHER.match_element(&node) {
+        if MATCHER_DIALOGS.match_element(&node) {
             nodes_to_remove.insert(node.id);
             continue;
         }
@@ -38,7 +38,7 @@ fn filter_document(root_node: &NodeRef, metadata: &mut MetaData, flags: FlagSet<
         let text = node.text();
 
         if should_remove_title_header
-            && HEADINGS_MATCHER.match_element(&node)
+            && MATCHER_HEADING.match_element(&node)
             && text_similarity(&metadata.title, &text) > 0.75
         {
             should_remove_title_header = false;
@@ -162,7 +162,7 @@ pub fn grab_article(doc: &Document, metadata: &mut MetaData) -> Option<Document>
 fn clean_doc(doc: &Document) {
     //remove by selection in any case
     // User is not able to see elements applied with both "aria-modal = true" and "role = dialog"
-    doc.select_matcher(&DIALOGS_MATCHER).remove();
+    doc.select_matcher(&MATCHER_DIALOGS).remove();
 }
 
 fn get_node_matching_string(node: &NodeRef) -> String {
@@ -209,7 +209,7 @@ fn is_valid_byline(node: &Node, match_string: &str) -> bool {
     let byline_len = node.text().trim().chars().count();
     let byline_len_in_range = byline_len > 0 && byline_len < 100;
 
-    byline_len_in_range && (BYLINE_MATCHER.match_element(node) || RX_BYLINE.is_match(match_string))
+    byline_len_in_range && (MATCHER_BYLINE.match_element(node) || RX_BYLINE.is_match(match_string))
 }
 
 fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {

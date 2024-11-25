@@ -132,10 +132,10 @@ impl Readability {
         self.unwrap_noscript_images();
 
         // remove scripts
-        self.doc.select_matcher(&SCRIPT_MATCHER).remove();
+        self.doc.select_matcher(&MATCHER_SCRIPT).remove();
 
         // remove styles
-        self.doc.select_matcher(&STYLE_MATCHER).remove();
+        self.doc.select_matcher(&MATCHER_STYLE).remove();
 
         // replace duplicating br elements
         self.replace_brs();
@@ -150,7 +150,7 @@ impl Readability {
     pub fn get_article_title(&self) -> StrTendril {
         let orig_title = self
             .doc
-            .select_single_matcher(&TITLE_MATCHER)
+            .select_single_matcher(&MATCHER_TITLE)
             .text()
             .trim()
             .to_string();
@@ -174,7 +174,7 @@ impl Readability {
             }
             // Everything below is such a mess
         } else if cur_title.contains(": ") {
-            let matched = self.doc.select_matcher(&HEADINGS_MATCHER).iter().any(|h| {
+            let matched = self.doc.select_matcher(&MATCHER_HEADING).iter().any(|h| {
                 let text = h.text();
                 text.trim() == cur_title
             });
@@ -227,7 +227,7 @@ impl Readability {
     }
 
     fn replace_fonts(&mut self) {
-        let sel = self.doc.select_matcher(&FONT_MATCHER);
+        let sel = self.doc.select_matcher(&MATCHER_FONT);
         sel.rename("span");
         //TODO: remove also all attributes on fonts since they are useless for readability
         //sel.remove_all_attrs();
@@ -235,7 +235,7 @@ impl Readability {
 
     fn replace_brs(&mut self) {
         // TODO: revise this function
-        let sel = self.doc.select_matcher(&BR_MATCHER);
+        let sel = self.doc.select_matcher(&MATCHER_BR);
 
         for br in sel.nodes().iter() {
             let mut next_sibling = br.next_sibling();
@@ -305,7 +305,7 @@ impl Readability {
     }
 
     fn remove_empty_imgs(&mut self) {
-        for sel in self.doc.select_matcher(&IMG_MATCHER).iter() {
+        for sel in self.doc.select_matcher(&MATCHER_IMG).iter() {
             let attrs = sel.attrs();
             if attrs
                 .iter()
@@ -400,7 +400,7 @@ impl Readability {
     }
 
     pub fn parse_json_ld(&self) -> Option<MetaData> {
-        for sel in self.doc.select_matcher(&JSONLD_MATCHER).iter() {
+        for sel in self.doc.select_matcher(&MATCHER_JSONLD).iter() {
             let text = sel.text();
             let content = RX_CDATA.replace_all(&text, "");
 
@@ -528,7 +528,7 @@ impl Readability {
         let mut values: HashMap<String, StrTendril> = HashMap::new();
         let mut metadata = json_ld.unwrap_or_default();
 
-        let selection = self.doc.select_matcher(&META_MATCHER);
+        let selection = self.doc.select_matcher(&MATCHER_META);
 
         for sel in selection.iter() {
             if let Some(content) = sel.attr("content") {
@@ -619,7 +619,7 @@ impl Readability {
     }
 
     fn get_html_lang(&self) -> Option<StrTendril> {
-        let sel = self.doc.select_single_matcher(&HTML_LANG_MATCHER);
+        let sel = self.doc.select_single_matcher(&MATCHER_HTML_LANG);
         match sel.is_empty() {
             false => sel.attr("lang"),
             true => None,
@@ -689,7 +689,7 @@ impl Readability {
 
             // Handle links with javascript: URIs, since
             // they won't work after scripts have been removed from the page.
-            for a in root_sel.select_matcher(&JS_LINK_MATCHER).nodes().iter() {
+            for a in root_sel.select_matcher(&MATCHER_JS_LINK).nodes().iter() {
                 let children = a.children();
                 if children.len() == 1 {
                     let child = children.first().unwrap();

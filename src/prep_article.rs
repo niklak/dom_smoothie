@@ -368,7 +368,7 @@ fn fix_lazy_images(n: &Node) {
 
 fn clean_headers(n: &Node, flags: &FlagSet<GrabFlags>) {
     for h_sel in Selection::from(n.clone())
-        .select_matcher(&HEADINGS_MATCHER)
+        .select_matcher(&MATCHER_HEADING)
         .iter()
     {
         let h_node = h_sel.nodes().first().unwrap();

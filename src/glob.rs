@@ -1,26 +1,24 @@
 use dom_query::Matcher;
 use once_cell::sync::Lazy;
 use regex::Regex;
-pub(crate) static TITLE_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new("head title").unwrap());
-
-pub(crate) static SCRIPT_MATCHER: Lazy<Matcher> =
+pub(crate) static MATCHER_TITLE: Lazy<Matcher> = Lazy::new(|| Matcher::new("head title").unwrap());
+pub(crate) static MATCHER_SCRIPT: Lazy<Matcher> =
     Lazy::new(|| Matcher::new("script, noscript").unwrap());
-
-pub(crate) static HTML_LANG_MATCHER: Lazy<Matcher> =
+pub(crate) static MATCHER_HTML_LANG: Lazy<Matcher> =
     Lazy::new(|| Matcher::new("html[lang]").unwrap());
-pub(crate) static STYLE_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new("style").unwrap());
-pub(crate) static FONT_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new("font").unwrap());
-pub(crate) static BR_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new("br").unwrap());
-pub(crate) static IMG_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new("img").unwrap());
-pub(crate) static META_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new("meta").unwrap());
-pub(crate) static JS_LINK_MATCHER: Lazy<Matcher> =
+pub(crate) static MATCHER_STYLE: Lazy<Matcher> = Lazy::new(|| Matcher::new("style").unwrap());
+pub(crate) static MATCHER_FONT: Lazy<Matcher> = Lazy::new(|| Matcher::new("font").unwrap());
+pub(crate) static MATCHER_BR: Lazy<Matcher> = Lazy::new(|| Matcher::new("br").unwrap());
+pub(crate) static MATCHER_IMG: Lazy<Matcher> = Lazy::new(|| Matcher::new("img").unwrap());
+pub(crate) static MATCHER_META: Lazy<Matcher> = Lazy::new(|| Matcher::new("meta").unwrap());
+pub(crate) static MATCHER_JS_LINK: Lazy<Matcher> =
     Lazy::new(|| Matcher::new(r#"a[href^="javascript:"]"#).unwrap());
-pub(crate) static JSONLD_MATCHER: Lazy<Matcher> =
+pub(crate) static MATCHER_JSONLD: Lazy<Matcher> =
     Lazy::new(|| Matcher::new(r#"script[type="application/ld+json"]"#).unwrap());
-pub(crate) static HEADINGS_MATCHER: Lazy<Matcher> = Lazy::new(|| Matcher::new(r#"h1,h2"#).unwrap());
-pub(crate) static DIALOGS_MATCHER: Lazy<Matcher> =
+pub(crate) static MATCHER_HEADING: Lazy<Matcher> = Lazy::new(|| Matcher::new(r#"h1,h2"#).unwrap());
+pub(crate) static MATCHER_DIALOGS: Lazy<Matcher> =
     Lazy::new(|| Matcher::new(r#"*[aria-modal="true"][role="dialog"]"#).unwrap());
-pub(crate) static BYLINE_MATCHER: Lazy<Matcher> =
+pub(crate) static MATCHER_BYLINE: Lazy<Matcher> =
     Lazy::new(|| Matcher::new(r#"[rel="author"],[itemprop*="author"]"#).unwrap());
 
 pub(crate) static MATCHER_A: Lazy<Matcher> = Lazy::new(|| Matcher::new("a").unwrap());
