@@ -38,8 +38,11 @@ fn clean(n: &Node, tag: &str) {
 fn clean_styles(n: &Node) {
     if !n.is_element() {
         return;
-    }
-    let node_name = n.node_name().unwrap();
+    }    
+
+    let Some(node_name) = n.node_name() else {
+        return;
+    };
     if node_name.as_ref() == "svg" {
         return;
     }
@@ -55,8 +58,8 @@ fn clean_styles(n: &Node) {
     }
 }
 
-fn should_clean_conditionally(sel: &Selection, tag: &str, flags: &FlagSet<GrabFlags>) -> bool {
-    let node = sel.nodes().first().unwrap();
+fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>) -> bool {
+    let sel = Selection::from(node.clone());
     let mut is_list = matches!(tag, "ul" | "ol");
     if !is_list {
         let list_length = sel
@@ -105,15 +108,14 @@ fn should_clean_conditionally(sel: &Selection, tag: &str, flags: &FlagSet<GrabFl
 
         let embeds_sel = sel.select("object,embed,iframe");
 
-        for embed in embeds_sel.iter() {
+        for embed in embeds_sel.nodes().iter() {
             for attr in embed.attrs().iter() {
                 if RX_VIDEO_ATTRS.is_match(&attr.value) {
                     return false;
                 }
             }
-            let embed_node = embed.nodes().first().unwrap();
-            if embed_node.node_name().unwrap().as_ref() == "object"
-                && RX_VIDEO_ATTRS.is_match(&embed_node.inner_html())
+            if embed.node_name().unwrap().as_ref() == "object"
+                && RX_VIDEO_ATTRS.is_match(&embed.inner_html())
             {
                 return false;
             }
@@ -197,9 +199,8 @@ fn clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>) {
     // traversing tag nodes in reverse order,
     // so that how children nodes will appear before parent nodes
     for tag_node in tag_sel.nodes().iter().rev() {
-        let sel = Selection::from(tag_node.clone());
-        if should_clean_conditionally(&sel, tag, flags) {
-            sel.remove();
+        if should_clean_conditionally(&tag_node, tag, flags) {
+            tag_node.remove_from_parent();
         }
     }
 }
@@ -217,14 +218,14 @@ fn get_row_and_col_count(table: &Selection) -> (usize, usize) {
     let mut cols = 0usize;
     for tr in table.select("tr").iter() {
         let rowspan = table.attr_or("rowspan", "1");
-        rows += rowspan.parse::<usize>().unwrap();
+        rows += rowspan.parse::<usize>().unwrap_or(1);
 
         //Now look for column-related info
         let mut columns_in_this_row = 0;
 
         for cell in tr.select("td").iter() {
             let colspan = cell.attr_or("colspan", "1");
-            columns_in_this_row += colspan.parse::<usize>().unwrap();
+            columns_in_this_row += colspan.parse::<usize>().unwrap_or(1);
         }
         cols = std::cmp::max(cols, columns_in_this_row);
     }
@@ -233,10 +234,11 @@ fn get_row_and_col_count(table: &Selection) -> (usize, usize) {
 }
 
 fn mark_data_tables(n: &Node) {
+    // TODO: revise this
     let table_sel = Selection::from(n.clone()).select("table");
 
-    for sel in table_sel.iter() {
-        let node = sel.nodes().first().unwrap();
+    for node in table_sel.nodes().iter() {
+        let sel = Selection::from(node.clone());
 
         let role = node.attr_or("role", "");
         if role.as_ref() == "presentation" {
@@ -328,7 +330,6 @@ fn fix_lazy_images(n: &Node) {
             }
         }
 
-        // also check for "null" to work around https://github.com/jsdom/jsdom/issues/2580
         if (node.has_attr("src") || node.has_attr("srcset")) && !node.has_class("lazy") {
             continue;
         }
@@ -367,11 +368,11 @@ fn fix_lazy_images(n: &Node) {
 }
 
 fn clean_headers(n: &Node, flags: &FlagSet<GrabFlags>) {
-    for h_sel in Selection::from(n.clone())
+    for h_node in Selection::from(n.clone())
         .select_matcher(&MATCHER_HEADING)
+        .nodes()
         .iter()
     {
-        let h_node = h_sel.nodes().first().unwrap();
         if get_class_weight(h_node, flags.contains(GrabFlags::WeightClasses)) < 0.0 {
             h_node.remove_from_parent();
         }
@@ -445,18 +446,16 @@ pub(crate) fn prep_article(article_content: &Node, flags: &FlagSet<GrabFlags>) {
         }
     }
 
-    for br_sel in article_sel.select("br").iter() {
-        let br_node = br_sel.nodes().first().unwrap();
+    for br_node in article_sel.select("br").nodes().iter() {
         if let Some(next_node) = br_node.next_element_sibling() {
             if next_node.node_name().unwrap().as_ref() == "p" {
-                br_sel.remove();
+                br_node.remove_from_parent();
             }
         }
     }
 
     // Remove single-cell tables
-    for table_sel in article_sel.select("table").iter() {
-        let table_node = table_sel.nodes().first().unwrap();
+    for table_node in article_sel.select("table").nodes().iter() {
         let tbody = if has_single_tag_inside_element(table_node, "tbody") {
             table_node.first_element_child().unwrap()
         } else {
