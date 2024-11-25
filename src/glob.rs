@@ -23,7 +23,7 @@ pub(crate) static MATCHER_BYLINE: Lazy<Matcher> =
 
 pub(crate) static MATCHER_A: Lazy<Matcher> = Lazy::new(|| Matcher::new("a").unwrap());
 pub(crate) static MATCHER_BR_HR: Lazy<Matcher> = Lazy::new(|| Matcher::new("br,hr").unwrap());
-   
+
 pub(crate) static PHRASING_ELEMS: &[&str] = &[
     // "canvas", "iframe", "svg", "video",
     "abbr", "audio", "b", "bdo", "br", "button", "cite", "code", "data", "datalist", "dfn", "em",

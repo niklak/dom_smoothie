@@ -63,7 +63,6 @@ pub(crate) fn is_whitespace(node: &Node) -> bool {
     }
     // only an element node has a node_name
     node.node_name().map_or(false, |name| name == "br".into())
-
 }
 
 pub(crate) type NodePredicate = fn(&Node) -> bool;
@@ -80,11 +79,9 @@ where
     let max_depth = max_depth.map(|max_depth| if max_depth == 0 { 3 } else { max_depth });
     let mut matched_ancestors = node
         .ancestors_it(max_depth)
-        .filter(|a| {
-            match a.node_name() {
-                Some(name) => name.as_ref() == tag,
-                None => false,
-            }
+        .filter(|a| match a.node_name() {
+            Some(name) => name.as_ref() == tag,
+            None => false,
         });
 
     if let Some(filter_fn) = filter_fn {

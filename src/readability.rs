@@ -234,7 +234,6 @@ impl Readability {
     }
 
     fn replace_brs(&mut self) {
-        // TODO: revise this function
         let sel = self.doc.select_matcher(&MATCHER_BR);
 
         for br in sel.nodes().iter() {
@@ -242,11 +241,10 @@ impl Readability {
             let mut replaced = false;
 
             while let Some(next) = next_significant_node(next_sibling) {
-                let node_name = next.node_name();
-                if node_name.is_none() {
+                let Some(node_name) = next.node_name() else {
                     break;
-                }
-                if node_name.unwrap() != "br".into() {
+                };
+                if node_name != "br".into() {
                     break;
                 }
 
@@ -260,16 +258,12 @@ impl Readability {
 
                 let mut next_sibling = p.next_sibling();
                 while let Some(next) = next_sibling {
-                    let node_name = next.node_name();
-
-                    if let Some(node_name) = node_name {
+                    if let Some(node_name) = next.node_name() {
                         if node_name == "br".into() {
                             let next_elem = next_significant_node(next.next_sibling());
-                            if let Some(next_elem) = next_elem {
-                                if let Some(elem_name) = next_elem.node_name() {
-                                    if elem_name == "br".into() {
-                                        break;
-                                    }
+                            if let Some(elem_name) = next_elem.and_then(|n| n.node_name()) {
+                                if elem_name == "br".into() {
+                                    break;
                                 }
                             }
                         }
@@ -280,11 +274,9 @@ impl Readability {
                     }
 
                     next_sibling = next.next_sibling();
-                    next.remove_from_parent();
                     p.append_child(&next);
                 }
 
-                // TODO: is there any profit of this?
                 while let Some(last) = p.last_child() {
                     if is_whitespace(&last) {
                         last.remove_from_parent();
@@ -532,7 +524,6 @@ impl Readability {
 
         for sel in selection.iter() {
             if let Some(content) = sel.attr("content") {
-                // TODO: to trim or not to trim?
                 let content: StrTendril = content.trim().into();
                 let element_property = sel.attr("property");
                 //TODO: looks like redundant checks!
@@ -559,7 +550,6 @@ impl Readability {
             }
         }
 
-        //TODO: why? Leave till tests
         if metadata.title.is_empty() {
             metadata.title = self.get_article_title().to_string();
         }

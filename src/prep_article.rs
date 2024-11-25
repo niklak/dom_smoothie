@@ -38,7 +38,7 @@ fn clean(n: &Node, tag: &str) {
 fn clean_styles(n: &Node) {
     if !n.is_element() {
         return;
-    }    
+    }
 
     let Some(node_name) = n.node_name() else {
         return;
