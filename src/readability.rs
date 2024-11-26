@@ -317,47 +317,49 @@ impl Readability {
     fn unwrap_noscript_images(&self) {
         let noscript_sel = self.doc.select("noscript:has(img:only-child)");
         for noscript_node in noscript_sel.nodes().iter() {
-            if let Some(prev_sibling) = noscript_node.prev_element_sibling() {
-                let prev_sel = Selection::from(prev_sibling.clone());
-                let prev_img: NodeRef;
-                if prev_sel.is("img") {
-                    prev_img = prev_sibling;
-                } else if prev_sel.is("*:has( > img:only-child)") {
-                    let prev_sel_img = prev_sel.select("img:only-child");
-                    prev_img = prev_sel_img.nodes().first().unwrap().clone();
-                } else {
+            let Some(prev_sibling) = noscript_node.prev_element_sibling() else {
+                continue;
+            };
+            let prev_sel = Selection::from(prev_sibling.clone());
+            let prev_img: NodeRef;
+            if prev_sel.is("img") {
+                prev_img = prev_sibling;
+            } else if prev_sel.is("*:has( > img:only-child)") {
+                let prev_sel_img = prev_sel.select("img:only-child");
+                prev_img = prev_sel_img.nodes().first().unwrap().clone();
+            } else {
+                continue;
+            }
+            let noscript_img_sel = Selection::from(noscript_node.clone()).select("img");
+            let new_img = noscript_img_sel.nodes().first().unwrap();
+
+            for attr in prev_img.attrs() {
+                if attr.value.as_ref() == "" {
                     continue;
                 }
-                let noscript_img_sel = Selection::from(noscript_node.clone()).select("img");
-                let new_img = noscript_img_sel.nodes().first().unwrap();
 
-                for attr in prev_img.attrs() {
-                    if attr.value.as_ref() == "" {
+                if attr.name.local.as_ref() == "src"
+                    || attr.name.local.as_ref() == "srcset"
+                    || RX_IMG_ATTR.is_match(&attr.value)
+                {
+                    if new_img.attr_or(&attr.name.local, "") == attr.value {
                         continue;
                     }
+                    let attr_name = if new_img.has_attr(&attr.name.local) {
+                        format!("data-old-{}", attr.name.local).to_string()
+                    } else {
+                        attr.name.local.to_string()
+                    };
 
-                    if attr.name.local.as_ref() == "src"
-                        || attr.name.local.as_ref() == "srcset"
-                        || RX_IMG_ATTR.is_match(&attr.value)
-                    {
-                        if new_img.attr_or(&attr.name.local, "") == attr.value {
-                            continue;
-                        }
-                        let attr_name = if new_img.has_attr(&attr.name.local) {
-                            format!("data-old-{}", attr.name.local).to_string()
-                        } else {
-                            attr.name.local.to_string()
-                        };
-
-                        new_img.set_attr(&attr_name, &attr.value);
-                    }
+                    new_img.set_attr(&attr_name, &attr.value);
                 }
-                prev_img.replace_with(new_img);
             }
+            prev_img.replace_with(new_img);
         }
     }
 
     pub fn parse(&mut self) -> Article {
+        //TODO: make this return Result<Article>
         let ld_meta = self.parse_json_ld();
 
         self.prepare();
@@ -672,7 +674,9 @@ impl Readability {
             };
         if let Some(base_url) = base_url {
             for a in root_sel.select(url_sel).nodes().iter() {
-                let href = a.attr("href").unwrap();
+                let Some(href) = a.attr("href") else {
+                    unreachable!();
+                };
                 let abs_url = to_absolute_url(&href, &base_url);
                 a.set_attr("href", abs_url.as_str());
             }
@@ -738,7 +742,7 @@ impl Readability {
         if sel.is_empty() {
             self.doc_url.clone()
         } else {
-            let href = sel.attr("href").unwrap();
+            let href = sel.attr("href")?;
             if let Some(doc_url) = self.doc_url.clone() {
                 doc_url.join(&href).ok()
             } else {
@@ -792,7 +796,10 @@ fn simplify_nested_elements(root_sel: &Selection) {
         .select(":is(div, section) > :is(div, section):only-child");
 
     for node in only_sel.nodes().iter().rev() {
-        let parent = node.parent().unwrap();
+        let Some(parent) = node.parent() else {
+            //actually this is unreachable case...
+            continue;
+        };
         for attr in parent.attrs() {
             node.set_attr(&attr.name.local, &attr.value);
         }
@@ -821,7 +828,6 @@ fn normalize_meta_key(raw_key: &str) -> String {
 }
 
 fn to_absolute_url(raw_url: &str, base_uri: &Url) -> String {
-
     let u = if raw_url.starts_with("file://") {
         raw_url.replace("|/", ":/")
     } else {
@@ -829,7 +835,6 @@ fn to_absolute_url(raw_url: &str, base_uri: &Url) -> String {
     };
 
     base_uri.join(&u).map_or(u, |uri| uri.to_string())
-
 }
 
 #[cfg(test)]
