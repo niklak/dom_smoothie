@@ -720,7 +720,7 @@ impl Readability {
                         .split(", ")
                         .map(|s| {
                             if let Some((src, cond)) = s.split_once(" ") {
-                                let abs_src = to_absolute_url(src.trim(), &base_url).to_string();
+                                let abs_src = to_absolute_url(src.trim(), &base_url);
                                 format!("{} {}", abs_src, cond)
                             } else {
                                 s.to_string()
@@ -820,13 +820,16 @@ fn normalize_meta_key(raw_key: &str) -> String {
         .replace('.', ":")
 }
 
-fn to_absolute_url(raw_url: &str, base_uri: &Url) -> Url {
-    if raw_url.starts_with("file://") {
-        let u = raw_url.replace("|/", ":/");
-        base_uri.join(&u).unwrap()
+fn to_absolute_url(raw_url: &str, base_uri: &Url) -> String {
+
+    let u = if raw_url.starts_with("file://") {
+        raw_url.replace("|/", ":/")
     } else {
-        base_uri.join(raw_url).unwrap()
-    }
+        raw_url.to_string()
+    };
+
+    base_uri.join(&u).map_or(u, |uri| uri.to_string())
+
 }
 
 #[cfg(test)]
