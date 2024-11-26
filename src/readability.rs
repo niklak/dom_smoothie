@@ -799,8 +799,7 @@ fn simplify_nested_elements(root_sel: &Selection) {
         parent.replace_with(&node.id);
     }
 
-    let empty_sel = root_sel.select(":is(div, section):empty");
-    empty_sel.remove();
+    root_sel.select(":is(div, section):empty").remove();
 }
 
 fn get_text_dir(doc: &Document) -> Option<StrTendril> {

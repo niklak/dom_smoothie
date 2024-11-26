@@ -27,7 +27,9 @@ pub(crate) fn init_node_score(node: &Node, weight_classes: bool) -> f32 {
 }
 
 pub(crate) fn determine_node_score(node: &Node, weight_classes: bool) -> f32 {
-    let node_name = node.node_name().unwrap();
+    let Some(node_name) = node.node_name() else {
+        return 0.0;
+    };
 
     let score: f32 = match node_name.as_ref() {
         "div" => 5.0,

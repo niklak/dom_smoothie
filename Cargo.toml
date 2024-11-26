@@ -5,7 +5,7 @@ edition = "2021"
 exclude = [".*", "test-pagess"]
 
 [dependencies]
-dom_query = {path ="../dom_query"}
+dom_query = {version = "0.10.0"}
 tendril = {version = "0.4.3"}
 once_cell = { version = "1" }
 
