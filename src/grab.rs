@@ -84,7 +84,7 @@ pub fn grab_article(doc: &Document, metadata: &mut MetaData) -> Option<Document>
     loop {
         let mut elements_to_score: Vec<NodeRef<'_>> = vec![];
         let doc = doc.clone();
-        let selection = doc.select("body");
+        let selection = doc.select_single("body");
         let body_node = selection.nodes().first().unwrap();
         filter_document(body_node, metadata, flags);
         let descendants = body_node.descendants();
@@ -340,7 +340,7 @@ fn handle_candidates<'a>(
                 candidates.push(ancestor.clone());
             }
 
-            let mut ancestor_score = get_node_score(ancestor).unwrap();
+            let mut ancestor_score = get_node_score(ancestor);
             ancestor_score += content_score as f32 / score_divider;
             set_node_score(ancestor, ancestor_score);
         }
@@ -351,17 +351,12 @@ fn handle_candidates<'a>(
     // unaffected by this operation.
 
     for candidate in candidates.iter() {
-        let prev_score = get_node_score(candidate).unwrap();
+        let prev_score = get_node_score(candidate);
         let score = prev_score * (1.0 - link_density(candidate));
         set_node_score(candidate, score);
     }
 
-    candidates.sort_by(|n1, n2| {
-        get_node_score(n2)
-            .unwrap()
-            .partial_cmp(&get_node_score(n1).unwrap())
-            .unwrap()
-    });
+    candidates.sort_by(|n1, n2| get_node_score(n2).partial_cmp(&get_node_score(n1)).unwrap());
 
     let mut top_candidates = candidates;
     top_candidates.truncate(DEFAULT_N_TOP_CANDIDATES);
@@ -393,11 +388,11 @@ fn handle_candidates<'a>(
         // and whose scores are quite closed with current `topCandidate` node.
         // TODO: this isn't working
 
-        let tc_score = get_node_score(tc).unwrap();
+        let tc_score = get_node_score(tc);
 
         let mut alternative_candidate_ancestors = vec![];
         for alt in top_candidates.iter().skip(1) {
-            if get_node_score(alt).unwrap() / tc_score >= 0.75 {
+            if get_node_score(alt) / tc_score >= 0.75 {
                 alternative_candidate_ancestors.push(alt.ancestors(Some(0)));
             }
         }
@@ -442,7 +437,7 @@ fn handle_candidates<'a>(
             // lurking in other places that we want to unify in. The sibling stuff
             // below does some of that - but only if we've looked high enough up the DOM
             // tree.
-            let mut last_score = get_node_score(tc).unwrap();
+            let mut last_score = get_node_score(tc);
             let score_threshold = last_score / 3.0;
             let mut parent_of_top_candidate = tc.parent();
             while let Some(ref parent_of_tc) = parent_of_top_candidate {
@@ -455,7 +450,7 @@ fn handle_candidates<'a>(
                     continue;
                 }
 
-                let parent_score = get_node_score(parent_of_tc).unwrap();
+                let parent_score = get_node_score(parent_of_tc);
                 if parent_score < score_threshold {
                     break;
                 }
@@ -531,7 +526,7 @@ fn handle_candidates<'a>(
 }
 
 fn handle_top_candidate(tc: &Node, article_content: &Node) {
-    let tc_node_score = get_node_score(tc).unwrap();
+    let tc_node_score = get_node_score(tc);
     let mut sibling_score_threshold = tc_node_score * 0.2;
     if sibling_score_threshold < 10.0 {
         sibling_score_threshold = 10.0;
@@ -553,8 +548,8 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
             if !tc_class.is_empty() && sibling_class == tc_class {
                 content_bonus += tc_node_score * 0.2;
             }
-
-            if let Some(sibling_score) = get_node_score(sibling) {
+            let sibling_score = get_node_score(sibling);
+            if sibling_score > 0.0 {
                 if sibling_score + content_bonus >= sibling_score_threshold {
                     append = true;
                 }

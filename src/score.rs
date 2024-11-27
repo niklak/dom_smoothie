@@ -2,14 +2,14 @@ use dom_query::Node;
 
 use crate::glob::*;
 
-pub(crate) fn get_node_score(node: &Node) -> Option<f32> {
+pub(crate) fn get_node_score(node: &Node) -> f32 {
     let score = node.attr(SCORE_ATTR);
     if let Some(score) = score {
         if let Ok(score) = score.parse::<f32>() {
-            return Some(score);
+            return score;
         }
     }
-    None
+    0.0
 }
 
 pub(crate) fn has_node_score(node: &Node) -> bool {

@@ -22,7 +22,9 @@ fn clean(n: &Node, tag: &str) {
                 }
             }
 
-            if node.node_name().unwrap().as_ref() == "object"
+            if node
+                .node_name()
+                .map_or(false, |name| name.as_ref() == "embed")
                 && RX_VIDEO_ATTRS.is_match(&node.inner_html())
             {
                 should_remove = false;
@@ -114,7 +116,9 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
                     return false;
                 }
             }
-            if embed.node_name().unwrap().as_ref() == "object"
+            if embed
+                .node_name()
+                .map_or(false, |name| name.as_ref() == "embed")
                 && RX_VIDEO_ATTRS.is_match(&embed.inner_html())
             {
                 return false;
@@ -349,7 +353,9 @@ fn fix_lazy_images(n: &Node) {
 
             if let Some(copy_to) = copy_to {
                 //if this is an img or picture, set the attribute directly
-                let tag_name = node.node_name().unwrap();
+                let Some(tag_name) = node.node_name() else {
+                    continue;
+                };
                 if matches!(tag_name.as_ref(), "img" | "picture") {
                     node.set_attr(copy_to, &attr.value);
                 } else if tag_name.as_ref() == "figure" {
@@ -448,7 +454,10 @@ pub(crate) fn prep_article(article_content: &Node, flags: &FlagSet<GrabFlags>) {
 
     for br_node in article_sel.select("br").nodes().iter() {
         if let Some(next_node) = br_node.next_element_sibling() {
-            if next_node.node_name().unwrap().as_ref() == "p" {
+            if next_node
+                .node_name()
+                .map_or(false, |name| name.as_ref() == "p")
+            {
                 br_node.remove_from_parent();
             }
         }
