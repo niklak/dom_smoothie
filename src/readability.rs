@@ -326,12 +326,13 @@ impl Readability {
                 prev_img = prev_sibling;
             } else if prev_sel.is("*:has( > img:only-child)") {
                 let prev_sel_img = prev_sel.select("img:only-child");
-                prev_img = prev_sel_img.nodes().first().unwrap().clone();
+                prev_img = prev_sel_img.nodes()[0].clone();
             } else {
                 continue;
             }
             let noscript_img_sel = Selection::from(noscript_node.clone()).select("img");
-            let new_img = noscript_img_sel.nodes().first().unwrap();
+            // at this point noscript_img_sel always has one element
+            let new_img = &noscript_img_sel.nodes()[0];
 
             for attr in prev_img.attrs() {
                 if attr.value.as_ref() == "" {
@@ -346,7 +347,7 @@ impl Readability {
                         continue;
                     }
                     let attr_name = if new_img.has_attr(&attr.name.local) {
-                        format!("data-old-{}", attr.name.local).to_string()
+                        format!("data-old-{}", attr.name.local)
                     } else {
                         attr.name.local.to_string()
                     };
@@ -686,7 +687,7 @@ impl Readability {
             for a in root_sel.select_matcher(&MATCHER_JS_LINK).nodes().iter() {
                 let children = a.children();
                 if children.len() == 1 {
-                    let child = children.first().unwrap();
+                    let child = &children[0];
                     if child.is_text() {
                         a.replace_with(child);
                     } else {

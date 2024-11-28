@@ -304,7 +304,10 @@ fn fix_lazy_images(n: &Node) {
         // So, here we check if the data uri is too short, just might as well remove it.
         if !src.is_empty() {
             if let Some(parts) = RX_BASE64_URL.captures(&src) {
-                if parts.get(1).unwrap().as_str() == "image/svg+xml" {
+                if parts.len() != 2 {
+                    continue;
+                }
+                if &parts[1] == "image/svg+xml" {
                     continue;
                 }
 
@@ -313,7 +316,7 @@ fn fix_lazy_images(n: &Node) {
                 let mut src_could_be_removed = false;
 
                 for attr in node.attrs().iter() {
-                    if attr.name.local.as_ref() == "src" {
+                    if &attr.name.local == "src" {
                         continue;
                     }
 
@@ -325,7 +328,7 @@ fn fix_lazy_images(n: &Node) {
                 // Here we assume if image is less than 100 bytes (or 133 after encoded to base64)
                 // it will be too small, therefore it might be placeholder image.
                 if src_could_be_removed {
-                    let base64_starts = parts.get(0).unwrap().as_str().len();
+                    let base64_starts = &parts[1].len();
                     let base64_len = src.len() - base64_starts;
                     if base64_len < 133 {
                         node.remove_attr("src");
