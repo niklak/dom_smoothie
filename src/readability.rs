@@ -532,7 +532,7 @@ impl Readability {
                 //TODO: looks like redundant checks!
                 if let Some(property) = element_property {
                     let property = property.trim();
-                    if RX_META_PROPERTY.is_match(&property) {
+                    if RX_META_PROPERTY.is_match(property) {
                         values.insert(normalize_meta_key(property), content.clone());
                     }
                 }

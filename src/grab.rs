@@ -112,6 +112,7 @@ pub fn grab_article(doc: &Document, metadata: &mut MetaData) -> Option<Document>
 
             if node_name.as_ref() == "div" {
                 div_into_p(node, &doc, &mut elements_to_score);
+                continue;
             }
         }
 
@@ -220,10 +221,14 @@ fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
         return false;
     }
 
-    let name = node.node_name().unwrap();
-    if name.as_ref() == "a" || name.as_ref() == "body" {
+    if node
+        .node_name()
+        .filter(|name| matches!(name.as_ref(), "a" | "body"))
+        .is_some()
+    {
         return false;
     }
+
     if has_ancestor_tag::<NodePredicate>(node, "table", Some(0), None) {
         return false;
     }
@@ -289,11 +294,7 @@ fn has_child_block_element(node: &Node) -> bool {
     })
 }
 
-fn handle_candidates<'a>(
-    elements_to_score: &mut Vec<NodeRef<'a>>,
-    doc: &'a Document,
-    flags: &FlagSet<GrabFlags>,
-) -> Option<NodeRef<'a>> {
+fn score_elements<'a>(elements_to_score: &mut Vec<NodeRef<'a>>, flags: &FlagSet<GrabFlags>) -> Vec<NodeRef<'a>> {
     let mut candidates = vec![];
     let mut visited = vec![];
 
@@ -357,6 +358,17 @@ fn handle_candidates<'a>(
     }
 
     candidates.sort_by(|n1, n2| get_node_score(n2).partial_cmp(&get_node_score(n1)).unwrap());
+    candidates
+
+}
+
+fn handle_candidates<'a>(
+    elements_to_score: &mut Vec<NodeRef<'a>>,
+    doc: &'a Document,
+    flags: &FlagSet<GrabFlags>,
+) -> Option<NodeRef<'a>> {
+
+    let candidates = score_elements(elements_to_score, flags);
 
     let mut top_candidates = candidates;
     top_candidates.truncate(DEFAULT_N_TOP_CANDIDATES);
@@ -532,7 +544,9 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
         sibling_score_threshold = 10.0;
     }
     // Keep potential top candidate's parent node to try to get text direction of it later.
-    let parent_of_top_candidate = tc.parent().unwrap();
+    let Some(parent_of_top_candidate) = tc.parent() else {
+        unreachable!()
+    };
 
     let siblings: Vec<Node> = parent_of_top_candidate.element_children();
 
