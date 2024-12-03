@@ -87,6 +87,7 @@ pub fn grab_article(doc: &Document, metadata: &mut MetaData) -> Option<Document>
         let selection = doc.select_single("body");
         let body_node = selection.nodes().first().unwrap();
         filter_document(body_node, metadata, flags);
+        
         let descendants = body_node.descendants();
 
         for node in descendants.iter().filter(|n| n.is_element()) {
@@ -368,37 +369,33 @@ fn handle_candidates<'a>(
     flags: &FlagSet<GrabFlags>,
 ) -> Option<NodeRef<'a>> {
 
-    let candidates = score_elements(elements_to_score, flags);
-
-    let mut top_candidates = candidates;
+    let mut top_candidates = score_elements(elements_to_score, flags);
     top_candidates.truncate(DEFAULT_N_TOP_CANDIDATES);
 
-    // TODO: revise everything below till line 460
 
     let mut top_candidate = top_candidates.first().cloned();
 
-    let top_candidate_name = top_candidate
-        .clone()
-        .and_then(|ref n| n.node_name())
+    let tc_name = top_candidate
+        .as_ref()
+        .and_then(|n| n.node_name())
         .unwrap_or_else(StrTendril::new);
 
     let page_sel = doc.select("body");
     let page_node = page_sel.nodes().first().unwrap();
     let mut needed_to_create_top_candidate = false;
 
-    if top_candidate.is_none() || top_candidate_name.as_ref() == "body" {
+    if top_candidate.is_none() || tc_name.as_ref() == "body" {
         needed_to_create_top_candidate = true;
 
         let tc = doc.tree.new_element("div");
 
         doc.tree.reparent_children_of(&page_node.id, Some(tc.id));
-        page_node.append_child(&tc.id);
+        page_node.append_child(&tc);
         init_node_score(&tc, flags.contains(GrabFlags::WeightClasses));
-        top_candidate = Some(tc.clone());
+        top_candidate = Some(tc);
     } else if let Some(ref tc) = top_candidate {
         // Find a better top candidate node if it contains (at least three) nodes which belong to `topCandidates` array
         // and whose scores are quite closed with current `topCandidate` node.
-        // TODO: this isn't working
 
         let tc_score = get_node_score(tc);
 
@@ -411,10 +408,9 @@ fn handle_candidates<'a>(
         if alternative_candidate_ancestors.len() > MINIMUM_TOP_CANDIDATES {
             let mut parent_of_top_candidate = tc.parent();
             while let Some(ref parent_of_tc) = parent_of_top_candidate {
-                if let Some(node_name) = parent_of_tc.node_name() {
-                    if node_name.as_ref() == "body" {
-                        break;
-                    }
+
+                if node_name_is(parent_of_tc, "body") {
+                    break;
                 }
 
                 let mut lists_containing_this_ancestor = 0;
@@ -453,10 +449,10 @@ fn handle_candidates<'a>(
             let score_threshold = last_score / 3.0;
             let mut parent_of_top_candidate = tc.parent();
             while let Some(ref parent_of_tc) = parent_of_top_candidate {
-                let node_name = parent_of_tc.node_name().unwrap();
-                if node_name.as_ref() == "body" {
+                if node_name_is(parent_of_tc, "body") {
                     break;
                 }
+
                 if !has_node_score(parent_of_tc) {
                     parent_of_top_candidate = parent_of_tc.parent();
                     continue;
@@ -481,9 +477,7 @@ fn handle_candidates<'a>(
             let mut parent_of_top_candidate = tc.parent();
 
             while let Some(ref parent_of_tc) = parent_of_top_candidate {
-                let node_name = parent_of_tc.node_name().unwrap();
-
-                if node_name.as_ref() == "body" {
+                if node_name_is(parent_of_tc, "body") {
                     break;
                 }
 

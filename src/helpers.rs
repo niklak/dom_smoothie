@@ -171,6 +171,10 @@ pub(crate) fn set_dir_attr(node: &Node) {
     }
 }
 
+pub(crate) fn node_name_is(node: &Node, name: &str) -> bool {
+    node.node_name().map_or(false, |n| n.as_ref() == name)
+}
+
 #[cfg(test)]
 mod tests {
 
