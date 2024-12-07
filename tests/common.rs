@@ -20,8 +20,8 @@ where
         classes_to_preserve: vec!["caption".into()],
         ..Default::default()
     };
-    let mut r = Readability::new(source_contents, host, Some(cfg));
-    let article = r.parse();
+    let mut r = Readability::new(source_contents, host, Some(cfg)).unwrap();
+    let article = r.parse().unwrap();
 
     let contents = article.content;
     let article_doc = Document::from(contents);

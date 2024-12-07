@@ -4,9 +4,9 @@ use dom_query::{Document, Node, NodeData, NodeRef, Selection};
 use tendril::StrTendril;
 use url::Url;
 
-use crate::glob::*;
 use crate::grab::grab_article;
 use crate::helpers::*;
+use crate::{glob::*, ReadabilityError};
 pub struct Article {
     pub title: String,
     pub byline: String,
@@ -115,13 +115,18 @@ impl Readability {
         html: T,
         document_url: Option<&str>,
         cfg: Option<Config>,
-    ) -> Self {
-        let doc_url = document_url.map(|url| url::Url::parse(url).unwrap());
-        Self {
+    ) -> Result<Self, ReadabilityError> {
+        let doc_url = if let Some(u) = document_url {
+            Some(Url::parse(u)?)
+        } else {
+            None
+        };
+
+        Ok(Self {
             doc: Document::from(html),
             doc_url,
             config: cfg.unwrap_or_default(),
-        }
+        })
     }
 }
 
@@ -359,15 +364,16 @@ impl Readability {
         }
     }
 
-    pub fn parse(&mut self) -> Article {
-        //TODO: make this return Result<Article>
+    pub fn parse(&mut self) -> Result<Article, ReadabilityError> {
         let ld_meta = self.parse_json_ld();
 
         self.prepare();
 
         let mut metadata = self.get_article_metadata(ld_meta);
         let base_url = self.parse_base_url();
-        let doc: Document = grab_article(&self.doc, &mut metadata).unwrap();
+        let Some(doc) = grab_article(&self.doc, &mut metadata) else {
+            return Err(ReadabilityError::GrabFailed);
+        };
 
         let text_dir = get_text_dir(&doc);
 
@@ -376,7 +382,7 @@ impl Readability {
         let text_content = self.doc.text();
         let text_length = text_content.chars().count();
 
-        Article {
+        Ok(Article {
             title: metadata.title,
             byline: metadata.byline,
             dir: text_dir.map(|s| s.to_string()),
@@ -391,7 +397,7 @@ impl Readability {
             image: metadata.image,
             favicon: metadata.favicon,
             url: metadata.url,
-        }
+        })
     }
 
     pub fn parse_json_ld(&self) -> Option<MetaData> {

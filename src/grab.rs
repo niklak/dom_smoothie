@@ -87,7 +87,7 @@ pub fn grab_article(doc: &Document, metadata: &mut MetaData) -> Option<Document>
         let selection = doc.select_single("body");
         let body_node = selection.nodes().first().unwrap();
         filter_document(body_node, metadata, flags);
-        
+
         let descendants = body_node.descendants();
 
         for node in descendants.iter().filter(|n| n.is_element()) {
@@ -295,7 +295,10 @@ fn has_child_block_element(node: &Node) -> bool {
     })
 }
 
-fn score_elements<'a>(elements_to_score: &mut Vec<NodeRef<'a>>, flags: &FlagSet<GrabFlags>) -> Vec<NodeRef<'a>> {
+fn score_elements<'a>(
+    elements_to_score: &mut Vec<NodeRef<'a>>,
+    flags: &FlagSet<GrabFlags>,
+) -> Vec<NodeRef<'a>> {
     let mut candidates = vec![];
     let mut visited = vec![];
 
@@ -360,7 +363,6 @@ fn score_elements<'a>(elements_to_score: &mut Vec<NodeRef<'a>>, flags: &FlagSet<
 
     candidates.sort_by(|n1, n2| get_node_score(n2).partial_cmp(&get_node_score(n1)).unwrap());
     candidates
-
 }
 
 fn handle_candidates<'a>(
@@ -368,10 +370,8 @@ fn handle_candidates<'a>(
     doc: &'a Document,
     flags: &FlagSet<GrabFlags>,
 ) -> Option<NodeRef<'a>> {
-
     let mut top_candidates = score_elements(elements_to_score, flags);
     top_candidates.truncate(DEFAULT_N_TOP_CANDIDATES);
-
 
     let mut top_candidate = top_candidates.first().cloned();
 
@@ -408,7 +408,6 @@ fn handle_candidates<'a>(
         if alternative_candidate_ancestors.len() > MINIMUM_TOP_CANDIDATES {
             let mut parent_of_top_candidate = tc.parent();
             while let Some(ref parent_of_tc) = parent_of_top_candidate {
-
                 if node_name_is(parent_of_tc, "body") {
                     break;
                 }
