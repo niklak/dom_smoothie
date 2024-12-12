@@ -14,7 +14,7 @@ use crate::helpers::*;
 use crate::prep_article::prep_article;
 use crate::MetaData;
 
-fn filter_document(root_node: &NodeRef, metadata: &mut MetaData, flags: FlagSet<GrabFlags>) {
+fn filter_document(root_node: &NodeRef, metadata: &mut MetaData, strip_unlikely: bool) {
     let mut should_remove_title_header = !metadata.title.is_empty();
 
     let mut nodes_to_remove = HashSet::new();
@@ -56,7 +56,7 @@ fn filter_document(root_node: &NodeRef, metadata: &mut MetaData, flags: FlagSet<
             continue;
         }
 
-        if flags.contains(GrabFlags::StripUnlikelys) {
+        if strip_unlikely {
             if !match_string.is_empty() && is_unlikely_candidate(&node, &match_string) {
                 nodes_to_remove.insert(node.id);
                 continue;
@@ -86,12 +86,15 @@ pub fn grab_article(doc: &Document, metadata: &mut MetaData) -> Option<Document>
         let doc = doc.clone();
         let selection = doc.select_single("body");
         let body_node = selection.nodes().first().unwrap();
-        filter_document(body_node, metadata, flags);
+        let strip_unlikely = flags.contains(GrabFlags::StripUnlikelys);
+        filter_document(body_node, metadata, strip_unlikely);
 
         let descendants = body_node.descendants();
 
         for node in descendants.iter().filter(|n| n.is_element()) {
-            let node_name = node.node_name().unwrap();
+            let Some(node_name) = node.node_name() else {
+                unreachable!()
+            };
 
             if TAGS_WITH_CONTENT.contains(&node_name.as_ref()) {
                 // TODO: this is a controversial moment, it may leave an empty block,
@@ -105,15 +108,14 @@ pub fn grab_article(doc: &Document, metadata: &mut MetaData) -> Option<Document>
                 }
             }
 
-            if DEFAULT_TAGS_TO_SCORE.contains(&node_name.as_ref()) {
-                elements_to_score.push(node.clone());
-            }
-
             // TODO: div_matcher.match_element(node)
-
             if node_name.as_ref() == "div" {
                 div_into_p(node, &doc, &mut elements_to_score);
                 continue;
+            }
+
+            if DEFAULT_TAGS_TO_SCORE.contains(&node_name.as_ref()) {
+                elements_to_score.push(node.clone());
             }
         }
 
@@ -159,12 +161,6 @@ pub fn grab_article(doc: &Document, metadata: &mut MetaData) -> Option<Document>
         // finding the content, and the sieve approach gives us a higher likelihood of
         // finding the -right- content.
     }
-}
-
-fn clean_doc(doc: &Document) {
-    //remove by selection in any case
-    // User is not able to see elements applied with both "aria-modal = true" and "role = dialog"
-    doc.select_matcher(&MATCHER_DIALOGS).remove();
 }
 
 fn get_node_matching_string(node: &NodeRef) -> String {
@@ -633,7 +629,7 @@ mod tests {
         let doc = Document::from(contents);
         assert!(doc.select("#dialog1").exists());
 
-        clean_doc(&doc);
+        filter_document(&doc.root(), &mut MetaData::default(), true);
         assert!(!doc.select("#dialog1").exists());
         assert!(!doc.select("#close1").exists());
     }
@@ -655,7 +651,7 @@ mod tests {
         let doc = Document::from(contents);
         assert!(doc.select("*[role]").exists());
 
-        clean_doc(&doc);
+        filter_document(&doc.root(), &mut MetaData::default(), true);
         assert!(!doc.select("*[role]").exists());
     }
 
@@ -683,7 +679,7 @@ mod tests {
         let count_before = sel.nodes().iter().filter(|n| n.is_element()).count();
 
         assert_eq!(count_before, 10);
-        clean_doc(&doc);
+        filter_document(&doc.root(), &mut MetaData::default(), true);
 
         let sel = doc.select("body > *");
         let count_after = sel.nodes().iter().filter(|n| n.is_element()).count();
