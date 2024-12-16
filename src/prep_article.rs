@@ -108,7 +108,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
 
         let mut embed_count = 0;
 
-        let embeds_sel = sel.select("object,embed,iframe");
+        let embeds_sel = sel.select_matcher(&MATCHER_EMBEDS);
 
         for embed in embeds_sel.nodes().iter() {
             for attr in embed.attrs().iter() {
@@ -388,33 +388,33 @@ fn clean_headers(n: &Node, flags: &FlagSet<GrabFlags>) {
     }
 }
 
-pub(crate) fn prep_article(article_content: &Node, flags: &FlagSet<GrabFlags>) {
-    clean_styles(article_content);
+pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>) {
+    clean_styles(article_node);
 
     // Check for data tables before we continue, to avoid removing items in
     // those tables, which will often be isolated even though they're
     // visually linked to other content-ful elements (text, images, etc.).
 
-    mark_data_tables(article_content);
-    fix_lazy_images(article_content);
+    mark_data_tables(article_node);
+    fix_lazy_images(article_node);
 
-    clean_conditionally(article_content, "form", flags);
+    clean_conditionally(article_node, "form", flags);
 
-    clean_conditionally(article_content, "fieldset", flags);
+    clean_conditionally(article_node, "fieldset", flags);
 
     // Clean out junk from the article content
-    clean(article_content, "object");
-    clean(article_content, "embed");
-    clean(article_content, "footer");
-    clean(article_content, "link");
-    clean(article_content, "aside");
+    clean(article_node, "object");
+    clean(article_node, "embed");
+    clean(article_node, "footer");
+    clean(article_node, "link");
+    clean(article_node, "aside");
 
     let share_element_threshold = DEFAULT_CHAR_THRESHOLD;
 
     // Clean out elements with little content that have "share" in their id/class combinations from final top candidates,
     // which means we don't remove the top candidates even they have "share".
 
-    for child in article_content.descendants() {
+    for child in article_node.descendants() {
         let class = child.attr_or("class", "");
         let id = child.attr_or("id", "");
         let class_and_id = format!("{} {}", class, id);
@@ -424,22 +424,22 @@ pub(crate) fn prep_article(article_content: &Node, flags: &FlagSet<GrabFlags>) {
         }
     }
 
-    clean(article_content, "iframe");
-    clean(article_content, "input");
-    clean(article_content, "textarea");
-    clean(article_content, "select");
-    clean(article_content, "button");
-    clean_headers(article_content, flags);
+    clean(article_node, "iframe");
+    clean(article_node, "input");
+    clean(article_node, "textarea");
+    clean(article_node, "select");
+    clean(article_node, "button");
+    clean_headers(article_node, flags);
 
     // Do these last as the previous stuff may have removed junk
     // that will affect these
-    clean_conditionally(article_content, "table", flags);
-    clean_conditionally(article_content, "ul", flags);
-    clean_conditionally(article_content, "div", flags);
+    clean_conditionally(article_node, "table", flags);
+    clean_conditionally(article_node, "ul", flags);
+    clean_conditionally(article_node, "div", flags);
 
     // replace H1 with H2 as H1 should be only title that is displayed separately
 
-    let article_sel = Selection::from(article_content.clone());
+    let article_sel = Selection::from(article_node.clone());
 
     article_sel.select("h1").rename("h2");
 
