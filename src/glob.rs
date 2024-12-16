@@ -147,7 +147,7 @@ pub(crate) static RX_META_PROPERTY: Lazy<Regex> = Lazy::new(|| {
 pub(crate) static RX_JSONLD_ARTICLE_TYPES: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r#"(?i)^Article|AdvertiserContentArticle|NewsArticle|AnalysisNewsArticle|AskPublicNewsArticle|BackgroundNewsArticle|OpinionNewsArticle|ReportageNewsArticle|ReviewNewsArticle|Report|SatiricalArticle|ScholarlyArticle|MedicalScholarlyArticle|SocialMediaPosting|BlogPosting|LiveBlogPosting|DiscussionForumPosting|TechArticle|APIReference$"#).unwrap()
 });
-pub(crate) static RX_HAS_CONTENT: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\S$"#).unwrap());
+
 pub(crate) static RX_HASH_URL: Lazy<Regex> = Lazy::new(|| Regex::new(r#"^#.+"#).unwrap());
 pub(crate) static RX_COMMAS: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r#"\u002C|\u060C|\uFE50|\uFE10|\uFE11|\u2E41|\u2E34|\u2E32|\uFF0C"#).unwrap()

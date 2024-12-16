@@ -134,9 +134,7 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
         return false;
     }
 
-    let first_child = children.first();
-
-    if !first_child
+    if !children.first()
         .and_then(|child| child.node_name())
         .map_or(false, |name| name.as_ref() == tag)
     {
@@ -144,9 +142,8 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
     }
 
     !node
-        .children()
-        .iter()
-        .any(|n| n.is_text() && RX_HAS_CONTENT.is_match(n.text().as_ref()))
+        .children_it(false)
+        .any(|n| n.is_text() && !n.text().trim().is_empty())
 }
 
 pub(crate) fn is_element_without_content(node: &Node) -> bool {

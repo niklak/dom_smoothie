@@ -4,10 +4,8 @@ use crate::glob::*;
 
 pub(crate) fn get_node_score(node: &Node) -> f32 {
     let score = node.attr(SCORE_ATTR);
-    if let Some(score) = score {
-        if let Ok(score) = score.parse::<f32>() {
-            return score;
-        }
+    if let Some(Ok(score)) = score.map(|s| s.parse::<f32>()) {
+        return score;
     }
     0.0
 }
