@@ -307,7 +307,7 @@ impl Readability {
             if attrs
                 .iter()
                 .map(|a| &a.name.local)
-                .any(|k| k == "src" || k == "data-src" || k == "data-srcset" || k == "srcset")
+                .any(|k| matches!(k.as_ref(), "src" | "data-src" | "data-srcset" | "srcset"))
             {
                 continue;
             }
@@ -344,20 +344,20 @@ impl Readability {
                     continue;
                 }
 
-                if attr.name.local.as_ref() == "src"
-                    || attr.name.local.as_ref() == "srcset"
+                if matches!(attr.name.local.as_ref(), "src" | "srcset")
                     || RX_IMG_ATTR.is_match(&attr.value)
                 {
                     if new_img.attr_or(&attr.name.local, "") == attr.value {
                         continue;
                     }
-                    let attr_name = if new_img.has_attr(&attr.name.local) {
-                        format!("data-old-{}", attr.name.local)
+                    if new_img.has_attr(&attr.name.local) {
+                        let attr_name = format!("data-old-{}", attr.name.local);
+                        new_img.set_attr(&attr_name, &attr.value);
                     } else {
-                        attr.name.local.to_string()
+                        new_img.set_attr(&attr.name.local, &attr.value);
                     };
 
-                    new_img.set_attr(&attr_name, &attr.value);
+                    
                 }
             }
             prev_img.replace_with(new_img);
@@ -661,14 +661,15 @@ impl Readability {
         let class_sel = doc.select(&format!(".page {}", class_sel));
 
         for node in class_sel.nodes().iter() {
-            if let Some(class_string) = node.attr("class") {
+            let Some(class_string) = node.attr("class")  else {
+                unreachable!();
+            };
                 let classes_to_remove = class_string
                     .split_whitespace()
                     .filter(|s| !classes_to_preserve.contains(s))
                     .collect::<Vec<&str>>()
                     .join(" ");
-                node.remove_class(classes_to_remove.as_str());
-            }
+                node.remove_class(classes_to_remove.as_str()); 
         }
     }
 
@@ -709,24 +710,21 @@ impl Readability {
             }
 
             for media in root_sel
-                .select(r#"img,picture,figure,video,audio,source"#)
+                .select_matcher(&MATCHER_SOURCES)
                 .nodes()
                 .iter()
             {
-                let src = media.attr_or("src", "");
-                if !src.is_empty() {
+                if let Some(src) = media.attr("src") {
                     let abs_src = to_absolute_url(&src, &base_url);
                     media.set_attr("src", abs_src.as_str());
                 }
 
-                let poster = media.attr_or("poster", "");
-                if !poster.is_empty() {
+                if let Some(poster) = media.attr("poster") {
                     let abs_poster = to_absolute_url(&poster, &base_url);
                     media.set_attr("poster", abs_poster.as_str());
                 }
 
-                let srcset = media.attr_or("srcset", "");
-                if !srcset.is_empty() {
+                if let Some(srcset) = media.attr("srcset") {
                     let abs_srcset: Vec<String> = srcset
                         .split(", ")
                         .map(|s| {
@@ -745,7 +743,7 @@ impl Readability {
     }
 
     fn parse_base_url(&self) -> Option<url::Url> {
-        let sel = self.doc.select_single("base[href]");
+        let sel = self.doc.select_single_matcher(&MATCHER_BASE);
         if sel.is_empty() {
             self.doc_url.clone()
         } else {
@@ -804,25 +802,18 @@ fn simplify_nested_elements(root_sel: &Selection) {
 
     for node in only_sel.nodes().iter().rev() {
         let Some(parent) = node.parent() else {
-            //actually this is unreachable case...
-            continue;
+            unreachable!();
         };
         for attr in parent.attrs() {
             node.set_attr(&attr.name.local, &attr.value);
         }
         parent.replace_with(&node.id);
     }
-
     root_sel.select(":is(div, section):empty").remove();
 }
 
 fn get_text_dir(doc: &Document) -> Option<StrTendril> {
-    let sel = doc.select_single("*[dir]");
-    if sel.is_empty() {
-        None
-    } else {
-        sel.attr("dir")
-    }
+    doc.select_single_matcher(&MATCHER_DIR).attr("dir")
 }
 
 fn normalize_meta_key(raw_key: &str) -> String {

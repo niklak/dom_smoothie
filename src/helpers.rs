@@ -134,7 +134,8 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
         return false;
     }
 
-    if !children.first()
+    if !children
+        .first()
         .and_then(|child| child.node_name())
         .map_or(false, |name| name.as_ref() == tag)
     {
