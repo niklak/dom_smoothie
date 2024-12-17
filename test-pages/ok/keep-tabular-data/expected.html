@@ -1,7 +1,7 @@
 <div id="readability-page-1" class="page">
     <div>
         <p>Posted by kovarex, TOGos, Ernestas, Albert on 2019-02-15, <a href="http://fakehost/blog/">all posts</a></p>
-        <h2>The release plan <span size="2">(kovarex)</span>
+        <h2>The release plan <span>(kovarex)</span>
         </h2>
         <p>This week was the time to close and finish all the things that will go to 0.17.0.</p>
         <p>Not all of the things that we originally planned to be done were done (surprise), but we just left any non-essential stuff for later so we won't postpone the release any further. The plan is, that next week will be dedicated to the office playtesting and bugfixing. Many would argue, that we could just release instantly and let the players find the bugs for us, but we want to fix the most obvious problems in-house to avoid too many duplicate bug reports and chaos after the release. Also, some potential bugs, like save corruptions, are much more easily worked on in-house.</p>
@@ -16,7 +16,7 @@
             <li>Mini tutorial additions and tweaks.</li>
         </ul>
         <p> This is actually quite a large change to our procedures, and there are many ways we will be trying to maximize the effectiveness of smaller and more regular content updates. </p>
-        <h2>The GUI progress <span size="2">(kovarex)</span>
+        <h2>The GUI progress <span>(kovarex)</span>
         </h2>
         <p> There are several GUI screens that are finished. Others (most of them) are just left there as they are in 0.16. They are a combination of the new GUI styles and old ones. They sometimes look funny and out of place, but they should be functional. </p>
         <table>
@@ -310,7 +310,7 @@
             <img src="https://cdn.factorio.com/assets/img/blog/fff-282-the-hand.png" width="900px" /><br />
             <i>The hand is protecting the slot from the robots.</i>
         </p>
-        <h2>Terrain generation updates <span size="2">(TOGoS)</span>
+        <h2>Terrain generation updates <span>(TOGoS)</span>
         </h2>
         <p>Everyone has different opinions about what makes a good Factorio world. I've been working on several changes for 0.17, but the overarching theme has been to make the map generator options screen more intuitive and more powerful.</p>
         <p> This was talked about somewhat in an earlier FFF (<a href="https://www.factorio.com/blog/post/fff-258">FFF-258</a>) regarding ore placement, but since then we found more stuff to fix. </p>
@@ -368,7 +368,7 @@
         </p>
         <p> And speaking of scale sliders, we're expanding their range from ± a factor of 2 (the old 'very low' to 'very high' settings) to ± a factor of 6 (shown as '17%' to '600%'). Previously the values were stored internally as one of 5 discrete options, but as the recent terrain generation changes have made actual numeric multipliers more meaningful in most contexts (e.g. the number of ore patches is directly proportional to the value of the 'frequency' slider, rather than being just vaguely related to it somehow), we're switching to storing them as numbers. This has the side-effect that if you don't mind <a href="https://gist.github.com/Bilka2/a17841d0ff1028b63c60c2bbf6fa7e4f">editing some JSON</a>, you'll be able to create maps with values outside the range provided by the GUI sliders. </p>
         <p> Mods will be able to add their own 'map types' to the map type drop-down, too. If you really liked the shape of landmasses in 0.16 and want to be able to continue creating new maps with it, please let us know on the forum. </p>
-        <h2>High-res accumulators <span size="2">(Ernestas, Albert)</span>
+        <h2>High-res accumulators <span>(Ernestas, Albert)</span>
         </h2>
         <p>
             <img src="https://cdn.factorio.com/assets/img/blog/fff-282-accumulator.gif" />
