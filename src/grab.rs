@@ -713,8 +713,7 @@ mod tests {
         </html>"#;
 
         let doc = Document::from(contents);
-        let mut metadata = MetaData::default();
-        metadata.byline = "Cat".to_string();
+        let mut metadata = MetaData { byline: "Cat".to_string(), ..Default::default() };
         // consuming byline during grabbing the article
         grab_article(&doc, &mut metadata);
         assert!(doc.select("a").exists())

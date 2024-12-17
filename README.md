@@ -12,7 +12,6 @@ DOM_SMOOTHIE closely follows the implementation of [readability.js](https://gith
 ```rust
 use std::error::Error;
 
-use dom_query::Document;
 use dom_smoothie::Readability;
 
 fn main() -> Result<(), Box<dyn Error>> {

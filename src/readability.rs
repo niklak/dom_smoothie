@@ -892,7 +892,7 @@ mod tests {
         let ra = Readability::from(contents);
 
         let meta_contents = include_str!("../test-pages/aclu_ld_meta.json");
-        let expected_meta: MetaData = serde_json::from_str(&meta_contents).unwrap();
+        let expected_meta: MetaData = serde_json::from_str(meta_contents).unwrap();
 
         let meta = ra.parse_json_ld().unwrap();
 
