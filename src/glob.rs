@@ -23,10 +23,12 @@ pub(crate) static MATCHER_BYLINE: Lazy<Matcher> =
 
 pub(crate) static MATCHER_A: Lazy<Matcher> = Lazy::new(|| Matcher::new("a").unwrap());
 pub(crate) static MATCHER_BR_HR: Lazy<Matcher> = Lazy::new(|| Matcher::new("br,hr").unwrap());
-pub(crate) static MATCHER_SOURCES: Lazy<Matcher> = Lazy::new(|| Matcher::new("img,picture,figure,video,audio,sources").unwrap());
+pub(crate) static MATCHER_SOURCES: Lazy<Matcher> =
+    Lazy::new(|| Matcher::new("img,picture,figure,video,audio,sources").unwrap());
 pub(crate) static MATCHER_BASE: Lazy<Matcher> = Lazy::new(|| Matcher::new("base[href]").unwrap());
 pub(crate) static MATCHER_DIR: Lazy<Matcher> = Lazy::new(|| Matcher::new("*[dir]").unwrap());
-pub(crate) static MATCHER_EMBEDS: Lazy<Matcher> = Lazy::new(|| Matcher::new("object,embed,iframe").unwrap());
+pub(crate) static MATCHER_EMBEDS: Lazy<Matcher> =
+    Lazy::new(|| Matcher::new("object,embed,iframe").unwrap());
 
 pub(crate) static PHRASING_ELEMS: &[&str] = &[
     // "canvas", "iframe", "svg", "video",

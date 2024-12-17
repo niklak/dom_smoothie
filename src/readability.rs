@@ -356,8 +356,6 @@ impl Readability {
                     } else {
                         new_img.set_attr(&attr.name.local, &attr.value);
                     };
-
-                    
                 }
             }
             prev_img.replace_with(new_img);
@@ -661,15 +659,15 @@ impl Readability {
         let class_sel = doc.select(&format!(".page {}", class_sel));
 
         for node in class_sel.nodes().iter() {
-            let Some(class_string) = node.attr("class")  else {
+            let Some(class_string) = node.attr("class") else {
                 unreachable!();
             };
-                let classes_to_remove = class_string
-                    .split_whitespace()
-                    .filter(|s| !classes_to_preserve.contains(s))
-                    .collect::<Vec<&str>>()
-                    .join(" ");
-                node.remove_class(classes_to_remove.as_str()); 
+            let classes_to_remove = class_string
+                .split_whitespace()
+                .filter(|s| !classes_to_preserve.contains(s))
+                .collect::<Vec<&str>>()
+                .join(" ");
+            node.remove_class(classes_to_remove.as_str());
         }
     }
 
@@ -709,11 +707,7 @@ impl Readability {
                 }
             }
 
-            for media in root_sel
-                .select_matcher(&MATCHER_SOURCES)
-                .nodes()
-                .iter()
-            {
+            for media in root_sel.select_matcher(&MATCHER_SOURCES).nodes().iter() {
                 if let Some(src) = media.attr("src") {
                     let abs_src = to_absolute_url(&src, &base_url);
                     media.set_attr("src", abs_src.as_str());

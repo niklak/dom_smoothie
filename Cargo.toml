@@ -2,7 +2,7 @@
 name = "dom_smoothie"
 version = "0.1.0"
 edition = "2021"
-exclude = [".*", "test-pagess"]
+exclude = [".*", "test-pages"]
 
 [dependencies]
 dom_query = {version = "0.11.0"}

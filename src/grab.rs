@@ -107,8 +107,7 @@ pub fn grab_article(doc: &Document, metadata: &mut MetaData) -> Option<Document>
                     continue;
                 }
             }
-
-            // TODO: div_matcher.match_element(node)
+            // this block is relate to previous block
             if node_name.as_ref() == "div" {
                 div_into_p(node, &doc, &mut elements_to_score);
                 continue;
