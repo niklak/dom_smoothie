@@ -600,14 +600,14 @@ mod tests {
                  <p aria-hidden="true">This paragraph should be hidden.</p>
                  <p style="display:none">This paragraph should be hidden.</p>
                  <p style="visibility:hidden">This paragraph should be hidden.</p>
-                 <p aria-hidden="true" class="mwe-math-fallback-image-inline"></p>
+                 <p aria-hidden="true" class="mwe-math-fallback-image-inline">123*123</p>
                  <p>This paragraph is visible</p>
             </body>
         </html>"#;
 
         let doc = Document::from(contents);
         let mut meta = MetaData::default();
-        grab_article(&doc, &mut meta);
+        filter_document(&doc.root(), &mut meta, true);
 
         assert_eq!(2, doc.select("p").length());
     }
@@ -678,9 +678,8 @@ mod tests {
         let count_before = sel.nodes().iter().filter(|n| n.is_element()).count();
 
         assert_eq!(count_before, 10);
-        filter_document(&doc.root(), &mut MetaData::default(), true);
-
-        let sel = doc.select("body > *");
+        let clean_doc = grab_article(&doc, &mut MetaData::default()).unwrap();
+        let sel = clean_doc.select("body > *");
         let count_after = sel.nodes().iter().filter(|n| n.is_element()).count();
         assert_eq!(count_after, 1);
     }
@@ -691,14 +690,16 @@ mod tests {
         <html>
             <head><title>Test</title></head>
             <body>
+                <div>
                  <a class="site-title" rel="author" href="/">Cat's Blog</a>
+                <p>Content</p>
+                 </div>
             </body>
         </html>"#;
 
         let doc = Document::from(contents);
         // consuming byline during grabbing the article
-        let mut meta = MetaData::default();
-        grab_article(&doc, &mut meta);
+        filter_document(&doc.root(), &mut MetaData::default(), true);
         assert!(!doc.select("a").exists())
     }
 
@@ -713,9 +714,12 @@ mod tests {
         </html>"#;
 
         let doc = Document::from(contents);
-        let mut metadata = MetaData { byline: "Cat".to_string(), ..Default::default() };
+        let mut metadata = MetaData {
+            byline: "Cat".to_string(),
+            ..Default::default()
+        };
         // consuming byline during grabbing the article
-        grab_article(&doc, &mut metadata);
+        filter_document(&doc.root(), &mut metadata, true);
         assert!(doc.select("a").exists())
     }
 
@@ -733,8 +737,8 @@ mod tests {
         let mut metadata = readability.get_article_metadata(None);
 
         assert!(readability.doc.select("h1").exists());
+        filter_document(&readability.doc.root(), &mut metadata, true);
 
-        grab_article(&readability.doc, &mut metadata);
         assert!(!readability.doc.select("h1").exists())
     }
 
@@ -752,8 +756,7 @@ mod tests {
         let doc = Document::from(contents);
         assert!(doc.select("div.banner").exists());
 
-        let mut meta = MetaData::default();
-        grab_article(&doc, &mut meta);
+        filter_document(&doc.root(), &mut MetaData::default(), true);
         assert!(!doc.select("div.banner").exists())
     }
     #[test]
@@ -769,8 +772,7 @@ mod tests {
 
         let doc = Document::from(contents);
         assert!(doc.select("a.banner").exists());
-        let mut meta = MetaData::default();
-        grab_article(&doc, &mut meta);
+        filter_document(&doc.root(), &mut MetaData::default(), true);
         assert!(doc.select("a.banner").exists())
     }
 }

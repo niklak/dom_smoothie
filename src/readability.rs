@@ -626,6 +626,8 @@ impl Readability {
         // Readability cannot open relative uris so we convert them to absolute uris.
         let root_sel = doc.select(".page");
 
+        self.fix_js_links(&root_sel);
+
         self.fix_relative_uris(&root_sel, base_url);
 
         simplify_nested_elements(&root_sel);
@@ -670,6 +672,28 @@ impl Readability {
         }
     }
 
+    fn fix_js_links(&self, root_sel: &Selection) {
+        // Handle links with javascript: URIs, since
+        // they won't work after scripts have been removed from the page.
+        for a in root_sel.select_matcher(&MATCHER_JS_LINK).nodes().iter() {
+            let children = a.children();
+            if children.len() == 1 {
+                let child = &children[0];
+                if child.is_text() {
+                    a.replace_with(child);
+                } else {
+                    a.remove_all_attrs();
+                    a.rename("span");
+                }
+            } else if children.is_empty() {
+                a.remove_from_parent();
+            } else {
+                a.remove_all_attrs();
+                a.rename("span");
+            }
+        }
+    }
+
     fn fix_relative_uris(&self, root_sel: &Selection, base_url: Option<url::Url>) {
         let url_sel =
             if base_url.as_ref().map(|u| u.as_str()) == self.doc_url.as_ref().map(|u| u.as_str()) {
@@ -684,26 +708,6 @@ impl Readability {
                 };
                 let abs_url = to_absolute_url(&href, &base_url);
                 a.set_attr("href", abs_url.as_str());
-            }
-
-            // Handle links with javascript: URIs, since
-            // they won't work after scripts have been removed from the page.
-            for a in root_sel.select_matcher(&MATCHER_JS_LINK).nodes().iter() {
-                let children = a.children();
-                if children.len() == 1 {
-                    let child = &children[0];
-                    if child.is_text() {
-                        a.replace_with(child);
-                    } else {
-                        a.remove_all_attrs();
-                        a.rename("span");
-                    }
-                } else if children.is_empty() {
-                    a.remove_from_parent();
-                } else {
-                    a.remove_all_attrs();
-                    a.rename("span");
-                }
             }
 
             for media in root_sel.select_matcher(&MATCHER_SOURCES).nodes().iter() {
@@ -862,8 +866,8 @@ mod tests {
                 <a href="javascript:void(0)">Click me</a>
             </body>
         </html>"#;
-        let mut readability = Readability::from(contents);
-        readability.prepare();
+        let readability = Readability::from(contents);
+        readability.fix_js_links(&readability.doc.select("body"));
         assert_eq!(readability.doc.select("a").length(), 1);
     }
 
