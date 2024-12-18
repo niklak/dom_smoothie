@@ -9,7 +9,7 @@
 
 > A Rust crate for extracting relevant content from web pages.
 
-DOM_SMOOTHIE closely follows the implementation of [readability.js](https://github.com/mozilla/readability), bringing its functionality to Rust.
+**dom_smoothie** closely follows the implementation of [readability.js](https://github.com/mozilla/readability), bringing its functionality to Rust.
 
 
 ## Examples
@@ -33,9 +33,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let article = readability.parse()?;
 
     println!("Title: {}", &article.title);
-
-
     println!("Content:\n {}", &article.content);
+    
     Ok(())
 }
 ```
