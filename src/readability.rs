@@ -7,27 +7,44 @@ use url::Url;
 use crate::grab::grab_article;
 use crate::helpers::*;
 use crate::{glob::*, ReadabilityError};
+
+/// This struct represents the content of the article
+#[derive(Debug, Clone)]
 pub struct Article {
+    /// The title
     pub title: String,
+    /// The author
     pub byline: String,
+    /// The relevant HTML content
     pub content: StrTendril,
+    /// The relevant text content
     pub text_content: StrTendril,
+    /// The text length
     pub length: usize,
+    /// The excerpt
     pub excerpt: String,
+    /// The name of the site
     pub site_name: String,
+    /// The text direction
     pub dir: Option<String>,
+    /// The document language
     pub lang: Option<String>,
+    /// The published time of the document
     pub published_time: Option<String>,
+    /// The modified time of the document
     pub modified_time: Option<String>,
+    /// The image of the document
     pub image: Option<String>,
+    /// The favicon of the document
     pub favicon: Option<String>,
+    /// The metadata's url
     pub url: Option<String>,
 }
 
+/// This struct represents the metadata extracted from the document
 #[derive(Debug, Default, Clone, serde::Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
-//TODO: better to convert each field to Option<String>
-pub struct MetaData {
+pub struct Metadata {
     pub title: String,
     pub byline: String,
     pub excerpt: String,
@@ -40,7 +57,7 @@ pub struct MetaData {
     pub url: Option<String>,
 }
 
-impl MetaData {
+impl Metadata {
     fn is_empty(&self) -> bool {
         self.title.is_empty()
             && self.byline.is_empty()
@@ -77,15 +94,22 @@ impl MetaData {
     }
 }
 
+/// Configuration options for [`Readability`]
 #[derive(Default)]
 pub struct Config {
+    /// Set to `true` to keep all classes in the document
     pub keep_classes: bool,
+    /// List of classes that will be preserved and not removed during the post-process.
     pub classes_to_preserve: Vec<String>,
 }
 
+/// A struct that provides readability functionality
 pub struct Readability {
+    /// The [Document] to be processed
     pub doc: Document,
+    /// The base URL of the document
     pub doc_url: Option<url::Url>,
+    /// Configuration options for the readability
     pub config: Config,
 }
 
@@ -108,9 +132,17 @@ impl Readability {
     ///
     /// # Arguments
     ///
-    /// * `html` - HTML content
+    /// - `html` -- HTML content
+    /// - `document_url` -- a base URL of the page
+    /// - `cfg` -- an optional `Config` instance
     ///
-    /// * `document_url` - URL of the HTML content
+    /// # Returns
+    ///
+    /// A new [`Readability`] instance
+    /// 
+    /// # Errors
+    /// 
+    /// Returns [`ReadabilityError::BadDocumentURL`] if `document_url` is not a valid URL
     pub fn new<T: Into<StrTendril>>(
         html: T,
         document_url: Option<&str>,
@@ -131,7 +163,16 @@ impl Readability {
 }
 
 impl Readability {
-    pub fn prepare(&mut self) {
+    /// Prepares the document for parsing:
+    ///
+    /// 1. Remove empty images
+    /// 2. Unwrap images inside `noscript` tags
+    /// 3. Remove `script` tags
+    /// 4. Remove `style` tags
+    /// 5. Replace multiple `br` tags with a single `br` tag
+    /// 6. Replace `font` tags with `span` tags
+    /// 7. Remove comments
+    fn prepare(&mut self) {
         self.remove_empty_imgs();
 
         self.unwrap_noscript_images();
@@ -152,6 +193,16 @@ impl Readability {
         self.remove_comments();
     }
 
+
+    /// Return the title of the article as a `StrTendril`.
+    ///
+    /// This method will try to guess the title of the article by looking at the
+    /// content of the page. It will first look for a `<title>` tag in the HTML
+    /// document, and if it doesn't find it, it will look for a `<h1>` tag.
+    /// If it still doesn't find one, it will return an empty string.
+    ///
+    /// The method will also try to clean up the title by removing any
+    /// unnecessary characters from it.
     pub fn get_article_title(&self) -> StrTendril {
         let orig_title = self
             .doc
@@ -361,12 +412,29 @@ impl Readability {
         }
     }
 
+    /// Extracts the relevant content from the document and provides it as a [`Article`] object.
+    ///
+    /// This is the primary method of the crate. It performs the following steps:
+    /// 
+    /// - Extracts the metadata
+    /// - Cleans the document
+    /// - Extracts the main content of the document
+    /// - Post-processes the content
+    /// - Returns the content and the metadata as an [`Article`] object
+    /// 
+    /// # Returns
+    /// 
+    /// An [`Article`] object containing the content and the metadata.
+    /// 
+    /// # Errors
+    /// 
+    /// If the document fails to extract the content, a [`ReadabilityError::GrabFailed`] error is returned.
     pub fn parse(&mut self) -> Result<Article, ReadabilityError> {
         let ld_meta = self.parse_json_ld();
+        let mut metadata = self.get_article_metadata(ld_meta);
 
         self.prepare();
 
-        let mut metadata = self.get_article_metadata(ld_meta);
         let base_url = self.parse_base_url();
         let Some(doc) = grab_article(&self.doc, &mut metadata) else {
             return Err(ReadabilityError::GrabFailed);
@@ -397,7 +465,15 @@ impl Readability {
         })
     }
 
-    pub fn parse_json_ld(&self) -> Option<MetaData> {
+
+        /// This method will search for a JSON-LD block in the page and
+        /// extract the metadata from it.
+        /// 
+        /// # Returns
+        /// 
+        /// A [Metadata] object containing the metadata extracted from the JSON-LD block.
+        /// If no valid JSON-LD block is found, this method returns `None`.
+    pub fn parse_json_ld(&self) -> Option<Metadata> {
         for sel in self.doc.select_matcher(&MATCHER_JSONLD).iter() {
             let text = sel.text();
             let content = RX_CDATA.replace_all(&text, "");
@@ -453,7 +529,7 @@ impl Readability {
                 String::new()
             };
 
-            let mut ld_meta = MetaData::default();
+            let mut ld_meta = Metadata::default();
 
             if name_is_string && headline_is_string && name != headline {
                 let title = self.get_article_title();
@@ -521,8 +597,30 @@ impl Readability {
         }
         None
     }
-
-    pub fn get_article_metadata(&self, json_ld: Option<MetaData>) -> MetaData {
+    
+    /// Extracts metadata from a web page.
+    ///
+    /// This function takes into account standard metadata formats like OpenGraph, Dublin Core,
+    /// schema.org, and also tries to extract some metadata from HTML tags like `<title>`.
+    ///
+    /// The function takes an optional `Metadata` object as input, which is used as a fallback
+    /// if no metadata can be found on the page. If the input `Metadata` object contains any
+    /// of the following fields, they will not be overwritten by this function:
+    /// - `title`
+    /// - `byline`
+    /// - `excerpt`
+    /// - `site_name`
+    /// - `published_time`
+    /// - `lang`
+    ///
+    /// # Arguments
+    ///
+    /// - `json_ld` -- An optional [`Metadata`] object, containing metadata extracted from JSON-LD.
+    /// 
+    /// # Returns
+    /// 
+    /// A [`Metadata`] object containing the extracted metadata.
+    pub fn get_article_metadata(&self, json_ld: Option<Metadata>) -> Metadata {
         let mut values: HashMap<String, StrTendril> = HashMap::new();
         let mut metadata = json_ld.unwrap_or_default();
 
@@ -532,7 +630,6 @@ impl Readability {
             if let Some(content) = sel.attr("content") {
                 let content: StrTendril = content.trim().into();
                 let element_property = sel.attr("property");
-                //TODO: looks like redundant checks!
                 if let Some(property) = element_property {
                     let property = property.trim();
                     if RX_META_PROPERTY.is_match(property) {
@@ -597,7 +694,7 @@ impl Readability {
 
     fn assign_extra_article_metadata(
         &self,
-        metadata: &mut MetaData,
+        metadata: &mut Metadata,
         values: &HashMap<String, StrTendril>,
     ) {
         // thumbnail
@@ -895,7 +992,7 @@ mod tests {
         let ra = Readability::from(contents);
 
         let meta_contents = include_str!("../test-pages/aclu_ld_meta.json");
-        let expected_meta: MetaData = serde_json::from_str(meta_contents).unwrap();
+        let expected_meta: Metadata = serde_json::from_str(meta_contents).unwrap();
 
         let meta = ra.parse_json_ld().unwrap();
 

@@ -7,8 +7,9 @@ mod readability;
 mod score;
 
 pub use readability::Config;
-pub use readability::MetaData;
+pub use readability::Metadata;
 pub use readability::Readability;
+pub use readability::Article;
 
 use thiserror::Error;
 

@@ -12,9 +12,9 @@ use crate::score::*;
 
 use crate::helpers::*;
 use crate::prep_article::prep_article;
-use crate::MetaData;
+use crate::Metadata;
 
-fn filter_document(root_node: &NodeRef, metadata: &mut MetaData, strip_unlikely: bool) {
+fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely: bool) {
     let mut should_remove_title_header = !metadata.title.is_empty();
 
     let mut nodes_to_remove = HashSet::new();
@@ -75,7 +75,7 @@ fn filter_document(root_node: &NodeRef, metadata: &mut MetaData, strip_unlikely:
     }
 }
 
-pub fn grab_article(doc: &Document, metadata: &mut MetaData) -> Option<Document> {
+pub fn grab_article(doc: &Document, metadata: &mut Metadata) -> Option<Document> {
     let mut flags =
         GrabFlags::CleanConditionally | GrabFlags::StripUnlikelys | GrabFlags::WeightClasses;
 
@@ -606,7 +606,7 @@ mod tests {
         </html>"#;
 
         let doc = Document::from(contents);
-        let mut meta = MetaData::default();
+        let mut meta = Metadata::default();
         filter_document(&doc.root(), &mut meta, true);
 
         assert_eq!(2, doc.select("p").length());
@@ -628,7 +628,7 @@ mod tests {
         let doc = Document::from(contents);
         assert!(doc.select("#dialog1").exists());
 
-        filter_document(&doc.root(), &mut MetaData::default(), true);
+        filter_document(&doc.root(), &mut Metadata::default(), true);
         assert!(!doc.select("#dialog1").exists());
         assert!(!doc.select("#close1").exists());
     }
@@ -650,7 +650,7 @@ mod tests {
         let doc = Document::from(contents);
         assert!(doc.select("*[role]").exists());
 
-        filter_document(&doc.root(), &mut MetaData::default(), true);
+        filter_document(&doc.root(), &mut Metadata::default(), true);
         assert!(!doc.select("*[role]").exists());
     }
 
@@ -678,7 +678,7 @@ mod tests {
         let count_before = sel.nodes().iter().filter(|n| n.is_element()).count();
 
         assert_eq!(count_before, 10);
-        let clean_doc = grab_article(&doc, &mut MetaData::default()).unwrap();
+        let clean_doc = grab_article(&doc, &mut Metadata::default()).unwrap();
         let sel = clean_doc.select("body > *");
         let count_after = sel.nodes().iter().filter(|n| n.is_element()).count();
         assert_eq!(count_after, 1);
@@ -699,7 +699,7 @@ mod tests {
 
         let doc = Document::from(contents);
         // consuming byline during grabbing the article
-        filter_document(&doc.root(), &mut MetaData::default(), true);
+        filter_document(&doc.root(), &mut Metadata::default(), true);
         assert!(!doc.select("a").exists())
     }
 
@@ -714,7 +714,7 @@ mod tests {
         </html>"#;
 
         let doc = Document::from(contents);
-        let mut metadata = MetaData {
+        let mut metadata = Metadata {
             byline: "Cat".to_string(),
             ..Default::default()
         };
@@ -756,7 +756,7 @@ mod tests {
         let doc = Document::from(contents);
         assert!(doc.select("div.banner").exists());
 
-        filter_document(&doc.root(), &mut MetaData::default(), true);
+        filter_document(&doc.root(), &mut Metadata::default(), true);
         assert!(!doc.select("div.banner").exists())
     }
     #[test]
@@ -772,7 +772,7 @@ mod tests {
 
         let doc = Document::from(contents);
         assert!(doc.select("a.banner").exists());
-        filter_document(&doc.root(), &mut MetaData::default(), true);
+        filter_document(&doc.root(), &mut Metadata::default(), true);
         assert!(doc.select("a.banner").exists())
     }
 }

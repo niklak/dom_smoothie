@@ -28,15 +28,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let html = include_str!("../test-pages/ok/001/source.html");
-    let doc_url = Some("http://fakehost/test/");
 
-    let mut readability = Readability::new(html, doc_url, Some(cfg))?;
-
-    println!("Title: {}", &readability.get_article_title());
-
+    let mut readability = Readability::new(html, Some("http://fakehost/test/"), Some(cfg))?;
     let article = readability.parse()?;
 
-    println!("Content:\n {}", article.content);
+    println!("Title: {}", &article.title);
+
+
+    println!("Content:\n {}", &article.content);
     Ok(())
 }
 ```
