@@ -96,7 +96,7 @@ dependencies = [
 
 [[package]]
 name = "dom_smoothie"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "dom_query",
  "flagset",
