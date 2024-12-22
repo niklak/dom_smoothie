@@ -47,11 +47,11 @@ fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely:
         }
 
         let match_string = get_node_matching_string(&node);
-        if metadata.byline.is_empty()
+        if metadata.byline.is_none()
             && !match_string.is_empty()
             && is_valid_byline(&node, &match_string)
         {
-            metadata.byline = text.trim().to_string();
+            metadata.byline = Some(text.trim().to_string());
             nodes_to_remove.insert(node.id);
             continue;
         }
@@ -715,7 +715,7 @@ mod tests {
 
         let doc = Document::from(contents);
         let mut metadata = Metadata {
-            byline: "Cat".to_string(),
+            byline: Some("Cat".to_string()),
             ..Default::default()
         };
         // consuming byline during grabbing the article

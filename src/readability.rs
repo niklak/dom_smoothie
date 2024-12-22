@@ -14,7 +14,7 @@ pub struct Article {
     /// The title
     pub title: String,
     /// The author
-    pub byline: String,
+    pub byline: Option<String>,
     /// The relevant HTML content
     pub content: StrTendril,
     /// The relevant text content
@@ -22,9 +22,9 @@ pub struct Article {
     /// The text length
     pub length: usize,
     /// The excerpt
-    pub excerpt: String,
+    pub excerpt: Option<String>,
     /// The name of the site
-    pub site_name: String,
+    pub site_name: Option<String>,
     /// The text direction
     pub dir: Option<String>,
     /// The document language
@@ -46,9 +46,9 @@ pub struct Article {
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
     pub title: String,
-    pub byline: String,
-    pub excerpt: String,
-    pub site_name: String,
+    pub byline: Option<String>,
+    pub excerpt: Option<String>,
+    pub site_name: Option<String>,
     pub published_time: Option<String>,
     pub modified_time: Option<String>,
     pub image: Option<String>,
@@ -60,9 +60,9 @@ pub struct Metadata {
 impl Metadata {
     fn is_empty(&self) -> bool {
         self.title.is_empty()
-            && self.byline.is_empty()
-            && self.excerpt.is_empty()
-            && self.site_name.is_empty()
+            && self.byline.is_none()
+            && self.excerpt.is_none()
+            && self.site_name.is_none()
             && self.published_time.is_none()
             && self.modified_time.is_none()
             && self.image.is_none()
@@ -72,9 +72,18 @@ impl Metadata {
 
     fn unescape_html_entities(&mut self) {
         self.title = html_escape::decode_html_entities(&self.title).to_string();
-        self.byline = html_escape::decode_html_entities(&self.byline).to_string();
-        self.excerpt = html_escape::decode_html_entities(&self.excerpt).to_string();
-        self.site_name = html_escape::decode_html_entities(&self.site_name).to_string();
+        self.byline = self
+            .byline
+            .as_ref()
+            .map(|s| html_escape::decode_html_entities(&s).to_string());
+        self.excerpt = self
+            .excerpt
+            .as_ref()
+            .map(|s| html_escape::decode_html_entities(&s).to_string());
+        self.site_name = self
+            .site_name
+            .as_ref()
+            .map(|s| html_escape::decode_html_entities(&s).to_string());
         self.published_time = self
             .published_time
             .as_ref()
@@ -210,6 +219,7 @@ impl Readability {
             .text()
             .trim()
             .to_string();
+        let orig_title = normalize_spaces(&orig_title);
         let mut cur_title = orig_title.to_string();
         let char_count = orig_title.chars().count();
         let mut has_hierarchy_sep = false;
@@ -278,7 +288,7 @@ impl Readability {
         if cur_title_wc <= 4 || (!has_hierarchy_sep || cur_title_wc != orig_wc - 1) {
             cur_title = orig_title;
         }
-
+        
         cur_title.into()
     }
 
@@ -565,19 +575,19 @@ impl Readability {
             };
 
             if let Some(byline) = byline {
-                ld_meta.byline = byline;
+                ld_meta.byline = Some(byline);
             }
 
             // Description
             let excerpt_val = gjson::get(&content, "description");
             if matches!(excerpt_val.kind(), gjson::Kind::String) {
-                ld_meta.excerpt = excerpt_val.str().trim().to_string();
+                ld_meta.excerpt = Some(excerpt_val.str().trim().to_string());
             }
 
             // Publisher
             let publisher_val = gjson::get(&content, "publisher.name");
             if matches!(publisher_val.kind(), gjson::Kind::String) {
-                ld_meta.site_name = publisher_val.str().trim().to_string();
+                ld_meta.site_name = Some(publisher_val.str().trim().to_string());
             }
 
             // DatePublished
@@ -658,23 +668,23 @@ impl Readability {
         }
 
         // author
-        if metadata.byline.is_empty() {
+        if metadata.byline.is_none() {
             if let Some(val) = get_map_any_value(&values, META_BYLINE_KEYS) {
-                metadata.byline = val.to_string();
+                metadata.byline = Some(val.to_string());
             }
         }
 
         // description
-        if metadata.excerpt.is_empty() {
+        if metadata.excerpt.is_none() {
             if let Some(val) = get_map_any_value(&values, META_EXCERPT_KEYS) {
-                metadata.excerpt = val.to_string();
+                metadata.excerpt = Some(val.to_string());
             }
         }
 
         //site name
-        if metadata.site_name.is_empty() {
+        if metadata.site_name.is_none() {
             if let Some(val) = values.get("og:site_name") {
-                metadata.site_name = val.to_string();
+                metadata.site_name = Some(val.to_string());
             }
         }
 
