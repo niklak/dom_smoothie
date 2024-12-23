@@ -129,9 +129,11 @@ pub(crate) static RX_CDATA: Lazy<Regex> =
 
 pub(crate) static RX_SCHEMA_ORG: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#"(?i)^https?://schema\.org/?$"#).unwrap());
-pub(crate) static RX_TITLE_SEP: Lazy<Regex> = Lazy::new(|| Regex::new(r#"[\|\-\\—/>»]"#).unwrap());
+pub(crate) static RX_TITLE_SEP: Lazy<Regex> = Lazy::new(|| Regex::new(r#" [\|\-\\/>»] "#).unwrap());
+pub(crate) static RX_TITLE_W_LAST: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(.*)[\|\-\\/>»] .*"#).unwrap());
+pub(crate) static RX_TITLE_W_FIRST: Lazy<Regex> = Lazy::new(|| Regex::new(r#"[^\|\-\\/>»]*[\|\-\\/>»](.*)"#).unwrap());
 pub(crate) static RX_TITLE_ANY_SEP: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r#"[\|\-\\—/>»]+"#).unwrap());
+    Lazy::new(|| Regex::new(r#"[\|\-\\/>»]+"#).unwrap());
 pub(crate) static RX_HIERARCHY_SEP: Lazy<Regex> = Lazy::new(|| Regex::new(r#"[\\/>»]"#).unwrap());
 pub(crate) static RX_BYLINE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#"(?i)byline|author|dateline|writtenby|p-author"#).unwrap());

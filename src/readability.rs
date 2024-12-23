@@ -219,24 +219,17 @@ impl Readability {
             .text()
             .trim()
             .to_string();
-        let orig_title = normalize_spaces(&orig_title);
+        //let orig_title = normalize_spaces(&orig_title);
         let mut cur_title = orig_title.to_string();
         let char_count = orig_title.chars().count();
         let mut has_hierarchy_sep = false;
-
+        //TODO: handle `—` or not?
         if RX_TITLE_SEP.is_match(&orig_title) {
             has_hierarchy_sep = RX_HIERARCHY_SEP.is_match(&orig_title);
+            cur_title = RX_TITLE_W_LAST.replace(&orig_title, "$1").to_string();
 
-            let mut parts = RX_TITLE_SEP.splitn(&orig_title, 2);
-
-            if let Some(first) = parts.next() {
-                if first.split_whitespace().count() < 3 {
-                    if let Some(last) = parts.next() {
-                        cur_title = last.trim().to_string();
-                    }
-                } else {
-                    cur_title = first.trim().to_string();
-                }
+            if cur_title.split_whitespace().count() < 3 {
+                cur_title = RX_TITLE_W_FIRST.replace(&orig_title, "$1").to_string();
             }
             // Everything below is such a mess
         } else if cur_title.contains(": ") {
@@ -260,7 +253,7 @@ impl Readability {
                         }
                     } else if orig_title
                         .find(":")
-                        .map_or(0, |idx| orig_title[idx + 1..].split_whitespace().count())
+                        .map_or(0, |idx| orig_title[0..idx + 1].split_whitespace().count())
                         > 5
                     {
                         cur_title = orig_title.to_string();
@@ -274,6 +267,8 @@ impl Readability {
             }
         }
         cur_title = normalize_spaces(&cur_title);
+        
+
 
         // If we now have 4 words or fewer as our title, and either no
         // 'hierarchical' separators (\, /, > or ») were found in the original
@@ -284,8 +279,7 @@ impl Readability {
             .replace_all(&orig_title, "")
             .split_whitespace()
             .count();
-
-        if cur_title_wc <= 4 || (!has_hierarchy_sep || cur_title_wc != orig_wc - 1) {
+        if cur_title_wc <= 4 && (!has_hierarchy_sep || cur_title_wc != orig_wc - 1) {
             cur_title = orig_title;
         }
         
@@ -643,7 +637,10 @@ impl Readability {
                 if let Some(property) = element_property {
                     let property = property.trim();
                     if RX_META_PROPERTY.is_match(property) {
-                        values.insert(normalize_meta_key(property), content.clone());
+                        if let Some(caps) = RX_META_PROPERTY.captures(property) {
+                            let k = caps[0].to_string().trim().to_string();
+                            values.insert(k, content.clone());
+                        }
                     }
                 }
                 let element_name = sel.attr("name");
@@ -656,7 +653,6 @@ impl Readability {
         }
 
         // title
-
         if metadata.title.is_empty() {
             if let Some(val) = get_map_any_value(&values, META_TITLE_KEYS) {
                 metadata.title = val.to_string();
