@@ -496,7 +496,7 @@ impl Readability {
             if !matches!(context_val.kind(), gjson::Kind::String)
                 || !RX_SCHEMA_ORG.is_match(context_val.str())
             {
-                break;
+                continue;
             }
             // validating @type
             let mut article_type = String::new();
@@ -512,7 +512,7 @@ impl Readability {
                 article_type = type_val.str().to_string();
             }
             if !RX_JSONLD_ARTICLE_TYPES.is_match(&article_type) {
-                break;
+                continue;
             }
 
             // Title

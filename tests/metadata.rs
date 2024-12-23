@@ -7,7 +7,7 @@ use common::test_metadata;
 
 #[test]
 fn test_metadata_archive() {
-    test_metadata("./test-pages/ok/archive-of-our-own", Some("http://fakehost/test/"));
+    test_metadata("./test-pages/ok/engadget", Some("http://fakehost/test/"));
 }
 
 #[test]

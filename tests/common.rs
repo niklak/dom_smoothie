@@ -74,5 +74,6 @@ where
     let expected: Metadata = serde_json::from_str(&meta_contents).unwrap();
 
     assert_eq!(article.title, expected.title, "title does not match expected");
+    assert_eq!(article.byline, expected.byline, "byline does not match expected");
     
 }
