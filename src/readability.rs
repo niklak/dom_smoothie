@@ -148,9 +148,9 @@ impl Readability {
     /// # Returns
     ///
     /// A new [`Readability`] instance
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// Returns [`ReadabilityError::BadDocumentURL`] if `document_url` is not a valid URL
     pub fn new<T: Into<StrTendril>>(
         html: T,
@@ -202,7 +202,6 @@ impl Readability {
         self.remove_comments();
     }
 
-
     /// Return the title of the article as a `StrTendril`.
     ///
     /// This method will try to guess the title of the article by looking at the
@@ -219,24 +218,17 @@ impl Readability {
             .text()
             .trim()
             .to_string();
-        let orig_title = normalize_spaces(&orig_title);
+        //let orig_title = normalize_spaces(&orig_title);
         let mut cur_title = orig_title.to_string();
         let char_count = orig_title.chars().count();
         let mut has_hierarchy_sep = false;
-
+        //TODO: handle `—` or not?
         if RX_TITLE_SEP.is_match(&orig_title) {
             has_hierarchy_sep = RX_HIERARCHY_SEP.is_match(&orig_title);
+            cur_title = RX_TITLE_W_LAST.replace(&orig_title, "$1").to_string();
 
-            let mut parts = RX_TITLE_SEP.splitn(&orig_title, 2);
-
-            if let Some(first) = parts.next() {
-                if first.split_whitespace().count() < 3 {
-                    if let Some(last) = parts.next() {
-                        cur_title = last.trim().to_string();
-                    }
-                } else {
-                    cur_title = first.trim().to_string();
-                }
+            if cur_title.split_whitespace().count() < 3 {
+                cur_title = RX_TITLE_W_FIRST.replace(&orig_title, "$1").to_string();
             }
             // Everything below is such a mess
         } else if cur_title.contains(": ") {
@@ -260,7 +252,7 @@ impl Readability {
                         }
                     } else if orig_title
                         .find(":")
-                        .map_or(0, |idx| orig_title[idx + 1..].split_whitespace().count())
+                        .map_or(0, |idx| orig_title[0..idx + 1].split_whitespace().count())
                         > 5
                     {
                         cur_title = orig_title.to_string();
@@ -284,11 +276,10 @@ impl Readability {
             .replace_all(&orig_title, "")
             .split_whitespace()
             .count();
-
-        if cur_title_wc <= 4 || (!has_hierarchy_sep || cur_title_wc != orig_wc - 1) {
+        if cur_title_wc <= 4 && (!has_hierarchy_sep || cur_title_wc != orig_wc - 1) {
             cur_title = orig_title;
         }
-        
+
         cur_title.into()
     }
 
@@ -425,19 +416,19 @@ impl Readability {
     /// Extracts the relevant content from the document and provides it as a [`Article`] object.
     ///
     /// This is the primary method of the crate. It performs the following steps:
-    /// 
+    ///
     /// - Extracts the metadata
     /// - Cleans the document
     /// - Extracts the main content of the document
     /// - Post-processes the content
     /// - Returns the content and the metadata as an [`Article`] object
-    /// 
+    ///
     /// # Returns
-    /// 
+    ///
     /// An [`Article`] object containing the content and the metadata.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If the document fails to extract the content, a [`ReadabilityError::GrabFailed`] error is returned.
     pub fn parse(&mut self) -> Result<Article, ReadabilityError> {
         let ld_meta = self.parse_json_ld();
@@ -449,10 +440,17 @@ impl Readability {
         let Some(doc) = grab_article(&self.doc, &mut metadata) else {
             return Err(ReadabilityError::GrabFailed);
         };
-
         let text_dir = get_text_dir(&doc);
 
         self.post_process_content(&doc, base_url);
+
+        // If we haven't found an excerpt in the article's metadata, use the article's
+        // first paragraph as the excerpt. This is used for displaying a preview of
+        // the article's content.
+
+        if metadata.excerpt.is_none() {
+            metadata.excerpt = extract_excerpt(&doc)
+        }
 
         let text_content = self.doc.text();
         let text_length = text_content.chars().count();
@@ -475,14 +473,13 @@ impl Readability {
         })
     }
 
-
-        /// This method will search for a JSON-LD block in the page and
-        /// extract the metadata from it.
-        /// 
-        /// # Returns
-        /// 
-        /// A [Metadata] object containing the metadata extracted from the JSON-LD block.
-        /// If no valid JSON-LD block is found, this method returns `None`.
+    /// This method will search for a JSON-LD block in the page and
+    /// extract the metadata from it.
+    ///
+    /// # Returns
+    ///
+    /// A [Metadata] object containing the metadata extracted from the JSON-LD block.
+    /// If no valid JSON-LD block is found, this method returns `None`.
     pub fn parse_json_ld(&self) -> Option<Metadata> {
         for sel in self.doc.select_matcher(&MATCHER_JSONLD).iter() {
             let text = sel.text();
@@ -502,7 +499,7 @@ impl Readability {
             if !matches!(context_val.kind(), gjson::Kind::String)
                 || !RX_SCHEMA_ORG.is_match(context_val.str())
             {
-                break;
+                continue;
             }
             // validating @type
             let mut article_type = String::new();
@@ -518,7 +515,7 @@ impl Readability {
                 article_type = type_val.str().to_string();
             }
             if !RX_JSONLD_ARTICLE_TYPES.is_match(&article_type) {
-                break;
+                continue;
             }
 
             // Title
@@ -607,7 +604,7 @@ impl Readability {
         }
         None
     }
-    
+
     /// Extracts metadata from a web page.
     ///
     /// This function takes into account standard metadata formats like OpenGraph, Dublin Core,
@@ -626,9 +623,9 @@ impl Readability {
     /// # Arguments
     ///
     /// - `json_ld` -- An optional [`Metadata`] object, containing metadata extracted from JSON-LD.
-    /// 
+    ///
     /// # Returns
-    /// 
+    ///
     /// A [`Metadata`] object containing the extracted metadata.
     pub fn get_article_metadata(&self, json_ld: Option<Metadata>) -> Metadata {
         let mut values: HashMap<String, StrTendril> = HashMap::new();
@@ -639,15 +636,19 @@ impl Readability {
         for sel in selection.iter() {
             if let Some(content) = sel.attr("content") {
                 let content: StrTendril = content.trim().into();
-                let element_property = sel.attr("property");
-                if let Some(property) = element_property {
+                if content.is_empty() {
+                    continue;
+                }
+                if let Some(property) = sel.attr("property") {
                     let property = property.trim();
                     if RX_META_PROPERTY.is_match(property) {
-                        values.insert(normalize_meta_key(property), content.clone());
+                        if let Some(caps) = RX_META_PROPERTY.captures(property) {
+                            let k = caps[0].to_string().trim().to_string();
+                            values.insert(k, content.clone());
+                        }
                     }
                 }
-                let element_name = sel.attr("name");
-                if let Some(name) = element_name {
+                if let Some(name) = sel.attr("name") {
                     if RX_META_NAME.is_match(&name) {
                         values.insert(normalize_meta_key(&name), content);
                     }
@@ -656,7 +657,6 @@ impl Readability {
         }
 
         // title
-
         if metadata.title.is_empty() {
             if let Some(val) = get_map_any_value(&values, META_TITLE_KEYS) {
                 metadata.title = val.to_string();
@@ -918,6 +918,15 @@ fn simplify_nested_elements(root_sel: &Selection) {
 
 fn get_text_dir(doc: &Document) -> Option<StrTendril> {
     doc.select_single_matcher(&MATCHER_DIR).attr("dir")
+}
+
+fn extract_excerpt(doc: &Document) -> Option<String> {
+    let p_sel = doc.select_single_matcher(&MATCHER_P);
+    if p_sel.is_empty() {
+        None
+    } else {
+        Some(p_sel.text().trim().to_string())
+    }
 }
 
 fn normalize_meta_key(raw_key: &str) -> String {

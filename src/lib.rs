@@ -6,10 +6,10 @@ mod prep_article;
 mod readability;
 mod score;
 
+pub use readability::Article;
 pub use readability::Config;
 pub use readability::Metadata;
 pub use readability::Readability;
-pub use readability::Article;
 
 use thiserror::Error;
 

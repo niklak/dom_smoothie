@@ -27,6 +27,7 @@ pub(crate) static MATCHER_SOURCES: Lazy<Matcher> =
     Lazy::new(|| Matcher::new("img,picture,figure,video,audio,sources").unwrap());
 pub(crate) static MATCHER_BASE: Lazy<Matcher> = Lazy::new(|| Matcher::new("base[href]").unwrap());
 pub(crate) static MATCHER_DIR: Lazy<Matcher> = Lazy::new(|| Matcher::new("*[dir]").unwrap());
+pub(crate) static MATCHER_P: Lazy<Matcher> = Lazy::new(|| Matcher::new("p").unwrap());
 pub(crate) static MATCHER_EMBEDS: Lazy<Matcher> =
     Lazy::new(|| Matcher::new("object,embed,iframe").unwrap());
 
@@ -129,9 +130,13 @@ pub(crate) static RX_CDATA: Lazy<Regex> =
 
 pub(crate) static RX_SCHEMA_ORG: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#"(?i)^https?://schema\.org/?$"#).unwrap());
-pub(crate) static RX_TITLE_SEP: Lazy<Regex> = Lazy::new(|| Regex::new(r#"[\|\-\\—/>»]"#).unwrap());
+pub(crate) static RX_TITLE_SEP: Lazy<Regex> = Lazy::new(|| Regex::new(r#" [\|\-\\/>»] "#).unwrap());
+pub(crate) static RX_TITLE_W_LAST: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"(.*)[\|\-\\/>»] .*"#).unwrap());
+pub(crate) static RX_TITLE_W_FIRST: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"[^\|\-\\/>»]*[\|\-\\/>»](.*)"#).unwrap());
 pub(crate) static RX_TITLE_ANY_SEP: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r#"[\|\-\\—/>»]+"#).unwrap());
+    Lazy::new(|| Regex::new(r#"[\|\-\\/>»]+"#).unwrap());
 pub(crate) static RX_HIERARCHY_SEP: Lazy<Regex> = Lazy::new(|| Regex::new(r#"[\\/>»]"#).unwrap());
 pub(crate) static RX_BYLINE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#"(?i)byline|author|dateline|writtenby|p-author"#).unwrap());
