@@ -75,5 +75,6 @@ where
 
     assert_eq!(article.title, expected.title, "title does not match expected");
     assert_eq!(article.byline, expected.byline, "byline does not match expected");
+    assert_eq!(article.excerpt, expected.excerpt, "excerpt does not match expected");
     
 }

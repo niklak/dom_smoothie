@@ -443,10 +443,19 @@ impl Readability {
         let Some(doc) = grab_article(&self.doc, &mut metadata) else {
             return Err(ReadabilityError::GrabFailed);
         };
-
         let text_dir = get_text_dir(&doc);
 
         self.post_process_content(&doc, base_url);
+
+        // If we haven't found an excerpt in the article's metadata, use the article's
+        // first paragraph as the excerpt. This is used for displaying a preview of
+        // the article's content.
+
+        if metadata.excerpt.is_none() {
+            metadata.excerpt = extract_excerpt(&doc)
+        }
+
+
 
         let text_content = self.doc.text();
         let text_length = text_content.chars().count();
@@ -915,6 +924,15 @@ fn simplify_nested_elements(root_sel: &Selection) {
 
 fn get_text_dir(doc: &Document) -> Option<StrTendril> {
     doc.select_single_matcher(&MATCHER_DIR).attr("dir")
+}
+
+fn extract_excerpt(doc: &Document) -> Option<String> {
+    let p_sel = doc.select_single_matcher(&MATCHER_P);
+    if p_sel.is_empty() {
+        None
+    } else {
+        Some(p_sel.text().trim().to_string())
+    }
 }
 
 fn normalize_meta_key(raw_key: &str) -> String {
