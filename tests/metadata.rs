@@ -4,10 +4,12 @@ mod common;
 
 use common::test_metadata;
 
-
 #[test]
 fn test_metadata_last_fail() {
-    test_metadata("./test-pages/ok/005-unescape-html-entities", Some("http://fakehost/test/"));
+    test_metadata(
+        "./test-pages/ok/005-unescape-html-entities",
+        Some("http://fakehost/test/"),
+    );
 }
 
 #[test]

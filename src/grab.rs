@@ -48,9 +48,7 @@ fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely:
         }
 
         let match_string = get_node_matching_string(&node);
-        if metadata.byline.is_none()
-            && is_valid_byline(&node, &match_string)
-        {
+        if metadata.byline.is_none() && is_valid_byline(&node, &match_string) {
             metadata.byline = Some(text.trim().to_string());
             nodes_to_remove.insert(node.id);
             continue;

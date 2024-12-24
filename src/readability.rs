@@ -148,9 +148,9 @@ impl Readability {
     /// # Returns
     ///
     /// A new [`Readability`] instance
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// Returns [`ReadabilityError::BadDocumentURL`] if `document_url` is not a valid URL
     pub fn new<T: Into<StrTendril>>(
         html: T,
@@ -201,7 +201,6 @@ impl Readability {
         // remove comments
         self.remove_comments();
     }
-
 
     /// Return the title of the article as a `StrTendril`.
     ///
@@ -267,8 +266,6 @@ impl Readability {
             }
         }
         cur_title = normalize_spaces(&cur_title);
-        
-
 
         // If we now have 4 words or fewer as our title, and either no
         // 'hierarchical' separators (\, /, > or ») were found in the original
@@ -282,7 +279,7 @@ impl Readability {
         if cur_title_wc <= 4 && (!has_hierarchy_sep || cur_title_wc != orig_wc - 1) {
             cur_title = orig_title;
         }
-        
+
         cur_title.into()
     }
 
@@ -419,19 +416,19 @@ impl Readability {
     /// Extracts the relevant content from the document and provides it as a [`Article`] object.
     ///
     /// This is the primary method of the crate. It performs the following steps:
-    /// 
+    ///
     /// - Extracts the metadata
     /// - Cleans the document
     /// - Extracts the main content of the document
     /// - Post-processes the content
     /// - Returns the content and the metadata as an [`Article`] object
-    /// 
+    ///
     /// # Returns
-    /// 
+    ///
     /// An [`Article`] object containing the content and the metadata.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If the document fails to extract the content, a [`ReadabilityError::GrabFailed`] error is returned.
     pub fn parse(&mut self) -> Result<Article, ReadabilityError> {
         let ld_meta = self.parse_json_ld();
@@ -455,8 +452,6 @@ impl Readability {
             metadata.excerpt = extract_excerpt(&doc)
         }
 
-
-
         let text_content = self.doc.text();
         let text_length = text_content.chars().count();
 
@@ -478,14 +473,13 @@ impl Readability {
         })
     }
 
-
-        /// This method will search for a JSON-LD block in the page and
-        /// extract the metadata from it.
-        /// 
-        /// # Returns
-        /// 
-        /// A [Metadata] object containing the metadata extracted from the JSON-LD block.
-        /// If no valid JSON-LD block is found, this method returns `None`.
+    /// This method will search for a JSON-LD block in the page and
+    /// extract the metadata from it.
+    ///
+    /// # Returns
+    ///
+    /// A [Metadata] object containing the metadata extracted from the JSON-LD block.
+    /// If no valid JSON-LD block is found, this method returns `None`.
     pub fn parse_json_ld(&self) -> Option<Metadata> {
         for sel in self.doc.select_matcher(&MATCHER_JSONLD).iter() {
             let text = sel.text();
@@ -610,7 +604,7 @@ impl Readability {
         }
         None
     }
-    
+
     /// Extracts metadata from a web page.
     ///
     /// This function takes into account standard metadata formats like OpenGraph, Dublin Core,
@@ -629,9 +623,9 @@ impl Readability {
     /// # Arguments
     ///
     /// - `json_ld` -- An optional [`Metadata`] object, containing metadata extracted from JSON-LD.
-    /// 
+    ///
     /// # Returns
-    /// 
+    ///
     /// A [`Metadata`] object containing the extracted metadata.
     pub fn get_article_metadata(&self, json_ld: Option<Metadata>) -> Metadata {
         let mut values: HashMap<String, StrTendril> = HashMap::new();

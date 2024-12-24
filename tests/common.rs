@@ -1,7 +1,7 @@
 use std::{fs, path::Path};
 
 use dom_query::{Document, Matcher};
-use dom_smoothie::{Readability, Metadata};
+use dom_smoothie::{Metadata, Readability};
 
 use once_cell::sync::Lazy;
 pub(crate) static R_MATCHER: Lazy<Matcher> =
@@ -51,15 +51,12 @@ where
     );
 }
 
-
-
 pub fn test_metadata<P>(test_path: P, host: Option<&str>)
 where
     P: AsRef<Path>,
 {
     let base_path = test_path.as_ref();
     let source_path = base_path.join("source.html");
-    
 
     let source_contents = fs::read_to_string(source_path).unwrap();
     let cfg = dom_smoothie::Config {
@@ -73,8 +70,16 @@ where
     let meta_contents = fs::read_to_string(expected_metadata_path).unwrap();
     let expected: Metadata = serde_json::from_str(&meta_contents).unwrap();
 
-    assert_eq!(article.title, expected.title, "title does not match expected");
-    assert_eq!(article.byline, expected.byline, "byline does not match expected");
-    assert_eq!(article.excerpt, expected.excerpt, "excerpt does not match expected");
-    
+    assert_eq!(
+        article.title, expected.title,
+        "title does not match expected"
+    );
+    assert_eq!(
+        article.byline, expected.byline,
+        "byline does not match expected"
+    );
+    assert_eq!(
+        article.excerpt, expected.excerpt,
+        "excerpt does not match expected"
+    );
 }
