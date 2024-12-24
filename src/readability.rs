@@ -633,8 +633,7 @@ impl Readability {
         for sel in selection.iter() {
             if let Some(content) = sel.attr("content") {
                 let content: StrTendril = content.trim().into();
-                let element_property = sel.attr("property");
-                if let Some(property) = element_property {
+                if let Some(property) = sel.attr("property") {
                     let property = property.trim();
                     if RX_META_PROPERTY.is_match(property) {
                         if let Some(caps) = RX_META_PROPERTY.captures(property) {
@@ -643,8 +642,7 @@ impl Readability {
                         }
                     }
                 }
-                let element_name = sel.attr("name");
-                if let Some(name) = element_name {
+                if let Some(name) = sel.attr("name") {
                     if RX_META_NAME.is_match(&name) {
                         values.insert(normalize_meta_key(&name), content);
                     }
