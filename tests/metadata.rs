@@ -6,8 +6,8 @@ use common::test_metadata;
 
 
 #[test]
-fn test_metadata_buzzfeed_1() {
-    test_metadata("./test-pages/readability/buzzfeed-1", Some("http://fakehost/test/"));
+fn test_metadata_simplyfound_1() {
+    test_metadata("./test-pages/readability/simplyfound-1", Some("http://fakehost/test/"));
 }
 
 #[test]

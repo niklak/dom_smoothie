@@ -633,6 +633,9 @@ impl Readability {
         for sel in selection.iter() {
             if let Some(content) = sel.attr("content") {
                 let content: StrTendril = content.trim().into();
+                if content.is_empty() {
+                    continue;
+                }
                 if let Some(property) = sel.attr("property") {
                     let property = property.trim();
                     if RX_META_PROPERTY.is_match(property) {
