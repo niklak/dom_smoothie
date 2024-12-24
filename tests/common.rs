@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use std::{fs, path::Path};
 
 use dom_query::{Document, Matcher};
@@ -7,7 +8,7 @@ use once_cell::sync::Lazy;
 pub(crate) static R_MATCHER: Lazy<Matcher> =
     Lazy::new(|| Matcher::new("#readability-page-1").unwrap());
 
-pub fn test_readability<P>(test_path: P, host: Option<&str>)
+pub(crate) fn test_readability<P>(test_path: P, host: Option<&str>)
 where
     P: AsRef<Path>,
 {
