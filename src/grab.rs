@@ -22,6 +22,7 @@ fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely:
     for node in root_node.descendants_it().filter(|n| n.is_element()) {
         if let Some(parent) = node.parent() {
             if nodes_to_remove.contains(&parent.id) {
+                nodes_to_remove.insert(node.id);
                 continue;
             }
         }
@@ -80,7 +81,6 @@ pub fn grab_article(doc: &Document, metadata: &mut Metadata) -> Option<Document>
         GrabFlags::CleanConditionally | GrabFlags::StripUnlikelys | GrabFlags::WeightClasses;
 
     let mut attempts = vec![];
-
     loop {
         let mut elements_to_score: Vec<NodeRef<'_>> = vec![];
         let doc = doc.clone();
