@@ -55,6 +55,7 @@ pub struct Metadata {
     pub favicon: Option<String>,
     pub lang: Option<String>,
     pub url: Option<String>,
+    pub dir: Option<String>,
 }
 
 impl Metadata {
@@ -440,7 +441,6 @@ impl Readability {
         let Some(doc) = grab_article(&self.doc, &mut metadata) else {
             return Err(ReadabilityError::GrabFailed);
         };
-        let text_dir = get_text_dir(&doc);
 
         self.post_process_content(&doc, base_url);
 
@@ -458,7 +458,7 @@ impl Readability {
         Ok(Article {
             title: metadata.title,
             byline: metadata.byline,
-            dir: text_dir.map(|s| s.to_string()),
+            dir: metadata.dir,
             lang: metadata.lang,
             content: doc.select("#readability-page-1").html(),
             text_content,
@@ -916,9 +916,6 @@ fn simplify_nested_elements(root_sel: &Selection) {
     root_sel.select(":is(div, section):empty").remove();
 }
 
-fn get_text_dir(doc: &Document) -> Option<StrTendril> {
-    doc.select_single_matcher(&MATCHER_DIR).attr("dir")
-}
 
 fn extract_excerpt(doc: &Document) -> Option<String> {
     let p_sel = doc.select_single_matcher(&MATCHER_P);
