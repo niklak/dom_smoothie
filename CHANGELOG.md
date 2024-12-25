@@ -7,6 +7,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ### Fixed
 
 - Improve parsing of article's title, byline and excerpt.
+- Improve parsing of `dir` attribute.
 
 
 ## [0.1.1] - 2024-12-18

@@ -156,17 +156,18 @@ pub(crate) fn is_element_without_content(node: &Node) -> bool {
     is_element && no_text && (no_element_children || node.element_children().len() == sel.length())
 }
 
-pub(crate) fn set_dir_attr(node: &Node) {
+pub(crate) fn get_dir_attr(node: &Node) -> Option<String> {
     if let Some(first_child) = node.first_child() {
-        if first_child.has_attr("dir") {
-            return;
+        if let Some(dir_attr) = first_child.attr("dir") {
+            return Some(dir_attr.to_string());
         }
 
         let dir_attr = first_child.ancestors_it(None).find_map(|a| a.attr("dir"));
         if let Some(dir_attr) = dir_attr {
-            node.set_attr("dir", dir_attr.as_ref());
+            return Some(dir_attr.to_string());
         }
     }
+    None
 }
 
 pub(crate) fn node_name_is(node: &Node, name: &str) -> bool {

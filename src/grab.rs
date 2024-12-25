@@ -121,6 +121,7 @@ pub fn grab_article(doc: &Document, metadata: &mut Metadata) -> Option<Document>
         let mut article_doc: Option<Document> = None;
 
         if let Some(ref article_node) = article_node {
+            metadata.dir = get_dir_attr(article_node);
             article_doc = Some(Document::from(article_node.html()));
             let text_length = normalize_spaces(&article_node.text()).chars().count();
             if text_length < DEFAULT_CHAR_THRESHOLD {
@@ -515,8 +516,6 @@ fn handle_candidates<'a>(
             article_content = div;
         }
 
-        set_dir_attr(&article_content);
-
         return Some(article_content);
     }
     None
@@ -578,8 +577,10 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
 
             article_content.append_child(&sibling.id);
         }
+        parent_of_top_candidate.append_child(article_content);
     }
 }
+
 
 #[cfg(test)]
 mod tests {
