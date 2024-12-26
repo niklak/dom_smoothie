@@ -111,6 +111,8 @@ pub struct Config {
     pub keep_classes: bool,
     /// List of classes that will be preserved and not removed during the post-process.
     pub classes_to_preserve: Vec<String>,
+    /// Maximum number of elements to parse
+    pub max_elements_to_parse: usize,
 }
 
 /// A struct that provides readability functionality
@@ -429,9 +431,13 @@ impl Readability {
     /// An [`Article`] object containing the content and the metadata.
     ///
     /// # Errors
-    ///
+    /// If `config.max_elements_to_parse` is > 0 and the document's number of element nodes exceeds this limit,
+    /// a [`ReadabilityError::TooManyElements`] error is returned. 
     /// If the document fails to extract the content, a [`ReadabilityError::GrabFailed`] error is returned.
     pub fn parse(&mut self) -> Result<Article, ReadabilityError> {
+
+        self.verify_doc()?;
+
         let ld_meta = self.parse_json_ld();
         let mut metadata = self.get_article_metadata(ld_meta);
 
@@ -748,6 +754,11 @@ impl Readability {
     }
 
     fn clean_classes(&self, doc: &Document) {
+
+        if self.config.classes_to_preserve.is_empty() {
+            doc.select(".page *[class]").remove_attr("class");
+            return;
+        }
         let classes_to_preserve: Vec<&str> = self
             .config
             .classes_to_preserve
@@ -858,6 +869,16 @@ impl Readability {
                 url::Url::parse(&href).ok()
             }
         }
+    }
+
+    fn verify_doc(&self) -> Result<(), ReadabilityError> {
+        if self.config.max_elements_to_parse > 0 {
+            let total_elements = self.doc.root().descendants_it().filter(|n| n.is_element()).count();
+            if total_elements > self.config.max_elements_to_parse {
+                return Err(ReadabilityError::TooManyElements(total_elements, self.config.max_elements_to_parse));
+            }
+        }
+        Ok(())
     }
 }
 
@@ -1013,5 +1034,21 @@ mod tests {
         let meta = ra.parse_json_ld().unwrap();
 
         assert_eq!(expected_meta, meta);
+    }
+
+
+    #[test]
+    fn test_max_elements() {
+        let contents = include_str!("../test-pages/rustwiki_2024.html");
+        let cfg = Config {max_elements_to_parse: 10, ..Default::default()};
+        let mut readability = Readability::new(contents,None, Some(cfg)).unwrap();
+
+        let res = readability.parse();
+        assert!(matches!(res.err().unwrap(), ReadabilityError::TooManyElements(_, 10)));
+
+        let cfg = Config {max_elements_to_parse: 0, ..Default::default()};
+        let mut readability = Readability::new(contents,None, Some(cfg)).unwrap();
+        let res = readability.parse();
+        assert!(res.is_ok());
     }
 }
