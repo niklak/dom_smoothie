@@ -581,7 +581,6 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
 

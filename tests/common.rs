@@ -91,12 +91,6 @@ where
         article.published_time, expected.published_time,
         "published_time does not match expected"
     );
-    assert_eq!(
-        article.lang, expected.lang,
-        "lang does not match expected"
-    );
-    assert_eq!(
-        article.dir, expected.dir,
-        "dirs does not match expected"
-    );
+    assert_eq!(article.lang, expected.lang, "lang does not match expected");
+    assert_eq!(article.dir, expected.dir, "dirs does not match expected");
 }
