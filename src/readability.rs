@@ -1075,24 +1075,24 @@ mod tests {
     #[test]
     fn test_max_elements() {
         let contents = include_str!("../test-pages/rustwiki_2024.html");
-        let cfg = Config {
-            max_elements_to_parse: 10,
-            ..Default::default()
-        };
-        let mut readability = Readability::new(contents, None, Some(cfg)).unwrap();
+        // each element represent a test parameters, where 0 is max_elements_to_parse, 1 is want_err
+        let tests = [(10, true), (0, false), (10000, false)];
 
-        let res = readability.parse();
-        assert!(matches!(
-            res.err().unwrap(),
-            ReadabilityError::TooManyElements(_, 10)
-        ));
-
-        let cfg = Config {
-            max_elements_to_parse: 0,
-            ..Default::default()
-        };
-        let mut readability = Readability::new(contents, None, Some(cfg)).unwrap();
-        let res = readability.parse();
-        assert!(res.is_ok());
+        for (max_elements_to_parse, want_err) in tests {
+            let cfg = Config {
+                max_elements_to_parse,
+                ..Default::default()
+            };
+            let mut readability = Readability::new(contents, None, Some(cfg)).unwrap();
+            let res = readability.parse();
+            if want_err {
+                assert!(matches!(
+                    res.err().unwrap(),
+                    ReadabilityError::TooManyElements(_, _)
+                ));
+            } else {
+                assert!(res.is_ok());
+            }
+        }
     }
 }
