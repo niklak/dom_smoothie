@@ -47,9 +47,7 @@ pub(crate) fn get_class_weight(node: &Node, weight_classes: bool) -> f32 {
         return weight;
     }
 
-    let class_name = node.attr("class");
-
-    if let Some(class_name) = class_name {
+    if let Some(class_name) = node.attr("class") {
         if RX_CLASSES_NEGATIVE.is_match(&class_name) {
             weight -= 25.0;
         }
@@ -58,8 +56,7 @@ pub(crate) fn get_class_weight(node: &Node, weight_classes: bool) -> f32 {
         }
     }
 
-    let id = node.attr("id");
-    if let Some(id) = id {
+    if let Some(id) =  node.attr("id") {
         if RX_CLASSES_NEGATIVE.is_match(&id) {
             weight -= 25.0;
         }

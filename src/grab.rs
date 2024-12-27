@@ -278,7 +278,6 @@ fn div_into_p<'a>(node: &'a Node, doc: &'a Document, elements_to_score: &mut Vec
 }
 
 fn has_child_block_element(node: &Node) -> bool {
-    //TODO: try to improve this! Matcher.match_element()
     node.children().iter().any(|n| {
         if let Some(name) = n.node_name() {
             BLOCK_ELEMS.contains(&name.as_ref()) || has_child_block_element(n)

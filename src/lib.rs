@@ -19,6 +19,6 @@ pub enum ReadabilityError {
     BadDocumentURL(#[from] url::ParseError),
     #[error("failed to grab the article")]
     GrabFailed,
-    #[error("too many elements ({0} > {1}) in the documents to parse")]
+    #[error("too many elements in the document to parse (found {0}, maximum {1})")]
     TooManyElements(usize, usize),
 }

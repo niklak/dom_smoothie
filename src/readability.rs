@@ -963,7 +963,7 @@ fn normalize_meta_key(raw_key: &str) -> String {
         .to_lowercase()
         .split_whitespace()
         .collect::<Vec<_>>()
-        .join(" ")
+        .join("")
         .replace('.', ":")
 }
 
