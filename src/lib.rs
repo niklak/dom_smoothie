@@ -5,11 +5,13 @@ mod helpers;
 mod prep_article;
 mod readability;
 mod score;
+mod config;
 
 pub use readability::Article;
-pub use readability::Config;
 pub use readability::Metadata;
 pub use readability::Readability;
+pub use config::Config;
+
 
 use thiserror::Error;
 

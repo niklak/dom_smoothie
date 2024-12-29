@@ -4,10 +4,9 @@ use dom_query::{Document, Node, NodeData, NodeRef, Selection};
 use tendril::StrTendril;
 use url::Url;
 
-use crate::grab::grab_article;
 use crate::helpers::*;
 use crate::{glob::*, ReadabilityError};
-
+use crate::Config;
 /// This struct represents the content of the article
 #[derive(Debug, Clone)]
 pub struct Article {
@@ -104,18 +103,6 @@ impl Metadata {
     }
 }
 
-/// Configuration options for [`Readability`]
-#[derive(Default)]
-pub struct Config {
-    /// Set to `true` to keep all classes in the document
-    pub keep_classes: bool,
-    /// List of classes that will be preserved and not removed during the post-process.
-    pub classes_to_preserve: Vec<String>,
-    /// Maximum number of elements to parse
-    pub max_elements_to_parse: usize,
-    /// Disable JSON-LD extracting
-    pub disable_json_ld: bool,
-}
 
 /// A struct that provides readability functionality
 pub struct Readability {
@@ -449,7 +436,7 @@ impl Readability {
         self.prepare();
 
         let base_url = self.parse_base_url();
-        let Some(doc) = grab_article(&self.doc, &mut metadata) else {
+        let Some(doc) = self.grab_article(&mut metadata) else {
             return Err(ReadabilityError::GrabFailed);
         };
 
