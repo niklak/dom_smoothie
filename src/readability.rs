@@ -5,8 +5,8 @@ use tendril::StrTendril;
 use url::Url;
 
 use crate::helpers::*;
-use crate::{glob::*, ReadabilityError};
 use crate::Config;
+use crate::{glob::*, ReadabilityError};
 /// This struct represents the content of the article
 #[derive(Debug, Clone)]
 pub struct Article {
@@ -102,7 +102,6 @@ impl Metadata {
             .map(|s| html_escape::decode_html_entities(&s).to_string());
     }
 }
-
 
 /// A struct that provides readability functionality
 pub struct Readability {

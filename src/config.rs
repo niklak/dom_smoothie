@@ -17,7 +17,6 @@ pub struct Config {
     pub char_threshold: usize,
 }
 
-
 impl Default for Config {
     fn default() -> Self {
         Self {

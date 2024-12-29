@@ -16,10 +16,10 @@ use crate::Metadata;
 use crate::Readability;
 
 impl Readability {
-    pub fn grab_article(&self, metadata: &mut Metadata) -> Option<Document> {
+    pub(crate) fn grab_article(&self, metadata: &mut Metadata) -> Option<Document> {
         let mut flags =
             GrabFlags::CleanConditionally | GrabFlags::StripUnlikelys | GrabFlags::WeightClasses;
-    
+
         let mut attempts = vec![];
         loop {
             let mut elements_to_score: Vec<NodeRef<'_>> = vec![];
@@ -28,20 +28,20 @@ impl Readability {
             let body_node = selection.nodes().first().unwrap();
             let strip_unlikely = flags.contains(GrabFlags::StripUnlikelys);
             filter_document(body_node, metadata, strip_unlikely);
-    
+
             let descendants = body_node.descendants();
-    
+
             for node in descendants.iter().filter(|n| n.is_element()) {
                 let Some(node_name) = node.node_name() else {
                     unreachable!()
                 };
-    
+
                 if TAGS_WITH_CONTENT.contains(&node_name.as_ref()) {
                     // TODO: this is a controversial moment, it may leave an empty block,
                     // which will have an impact on the result.
                     // When parent of the top candidate have more than one child,
                     // then parent will be a new top candidate.
-    
+
                     if is_element_without_content(node) {
                         node.remove_from_parent();
                         continue;
@@ -52,24 +52,24 @@ impl Readability {
                     div_into_p(node, &doc, &mut elements_to_score);
                     continue;
                 }
-    
+
                 if DEFAULT_TAGS_TO_SCORE.contains(&node_name.as_ref()) {
                     elements_to_score.push(node.clone());
                 }
             }
-    
+
             let article_node = self.handle_candidates(&mut elements_to_score, &doc, &flags);
             let mut parse_successful = true;
-    
+
             let mut article_doc: Option<Document> = None;
-    
+
             if let Some(ref article_node) = article_node {
                 metadata.dir = get_dir_attr(article_node);
                 article_doc = Some(Document::from(article_node.html()));
                 let text_length = normalize_spaces(&article_node.text()).chars().count();
                 if text_length < self.config.char_threshold {
                     parse_successful = false;
-    
+
                     attempts.push((article_doc.clone(), text_length));
                     if flags.contains(GrabFlags::StripUnlikelys) {
                         flags -= GrabFlags::StripUnlikelys;
@@ -80,7 +80,7 @@ impl Readability {
                     } else {
                         // No luck after removing flags, just return the longest text we found during the different loops
                         attempts.sort_by_key(|i| Reverse(i.1));
-    
+
                         if attempts[0].1 == 0 {
                             return None;
                         }
@@ -91,7 +91,7 @@ impl Readability {
             } else {
                 parse_successful = false;
             }
-    
+
             if parse_successful {
                 return article_doc;
             }
@@ -111,23 +111,23 @@ impl Readability {
     ) -> Option<NodeRef<'a>> {
         let mut top_candidates = score_elements(elements_to_score, flags);
         top_candidates.truncate(self.config.n_top_candidates);
-    
+
         let mut top_candidate = top_candidates.first().cloned();
-    
+
         let tc_name = top_candidate
             .as_ref()
             .and_then(|n| n.node_name())
             .unwrap_or_else(StrTendril::new);
-    
+
         let page_sel = doc.select("body");
         let page_node = page_sel.nodes().first().unwrap();
         let mut needed_to_create_top_candidate = false;
-    
+
         if top_candidate.is_none() || tc_name.as_ref() == "body" {
             needed_to_create_top_candidate = true;
-    
+
             let tc = doc.tree.new_element("div");
-    
+
             doc.tree.reparent_children_of(&page_node.id, Some(tc.id));
             page_node.append_child(&tc);
             init_node_score(&tc, flags.contains(GrabFlags::WeightClasses));
@@ -135,9 +135,9 @@ impl Readability {
         } else if let Some(ref tc) = top_candidate {
             // Find a better top candidate node if it contains (at least three) nodes which belong to `topCandidates` array
             // and whose scores are quite closed with current `topCandidate` node.
-    
+
             let tc_score = get_node_score(tc);
-    
+
             let mut alternative_candidate_ancestors = vec![];
             for alt in top_candidates.iter().skip(1) {
                 if get_node_score(alt) / tc_score >= 0.75 {
@@ -150,28 +150,28 @@ impl Readability {
                     if node_name_is(parent_of_tc, "body") {
                         break;
                     }
-    
+
                     let mut lists_containing_this_ancestor = 0;
-    
+
                     for alt_ancestor in &alternative_candidate_ancestors {
                         if lists_containing_this_ancestor >= MINIMUM_TOP_CANDIDATES {
                             break;
                         }
-    
+
                         if alt_ancestor.iter().any(|n| n.id == parent_of_tc.id) {
                             lists_containing_this_ancestor += 1;
                         }
                     }
-    
+
                     if lists_containing_this_ancestor >= MINIMUM_TOP_CANDIDATES {
                         top_candidate = parent_of_top_candidate;
                         break;
                     }
-    
+
                     parent_of_top_candidate = parent_of_tc.parent();
                 }
             }
-    
+
             if let Some(ref tc) = top_candidate {
                 if !has_node_score(tc) {
                     init_node_score(tc, flags.contains(GrabFlags::WeightClasses));
@@ -190,12 +190,12 @@ impl Readability {
                     if node_name_is(parent_of_tc, "body") {
                         break;
                     }
-    
+
                     if !has_node_score(parent_of_tc) {
                         parent_of_top_candidate = parent_of_tc.parent();
                         continue;
                     }
-    
+
                     let parent_score = get_node_score(parent_of_tc);
                     if parent_score < score_threshold {
                         break;
@@ -208,17 +208,17 @@ impl Readability {
                     parent_of_top_candidate = parent_of_tc.parent();
                 }
             }
-    
+
             // If the top candidate is the only child, use parent instead. This will help sibling
             // joining logic when adjacent content is actually located in parent's sibling node.
             if let Some(ref tc) = top_candidate {
                 let mut parent_of_top_candidate = tc.parent();
-    
+
                 while let Some(ref parent_of_tc) = parent_of_top_candidate {
                     if node_name_is(parent_of_tc, "body") {
                         break;
                     }
-    
+
                     if parent_of_tc.element_children().len() != 1 {
                         break;
                     }
@@ -231,19 +231,19 @@ impl Readability {
             if !has_node_score(tc) {
                 init_node_score(tc, flags.contains(GrabFlags::WeightClasses));
             }
-    
+
             // Now that we have the top candidate, look through its siblings for content
             // that might also be related. Things like preambles, content split by ads
             // that we removed, etc.
-    
+
             let mut article_content = doc.tree.new_element("div");
             article_content.set_attr("id", "readability-content");
-    
+
             handle_top_candidate(tc, &article_content);
-    
+
             //prepare the article
             prep_article(&article_content, flags, &self.config);
-    
+
             if needed_to_create_top_candidate {
                 // This looks like nonsense
                 // We already created a fake div thing, and there wouldn't have been any siblings left
@@ -261,13 +261,12 @@ impl Readability {
                 article_content.replace_with(&div);
                 article_content = div;
             }
-    
+
             return Some(article_content);
         }
         None
     }
 }
-
 
 fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely: bool) {
     let mut should_remove_title_header = !metadata.title.is_empty();
@@ -327,8 +326,6 @@ fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely:
         root_node.tree.remove_from_parent(&node_id);
     }
 }
-
-
 
 fn get_node_matching_string(node: &NodeRef) -> String {
     let mut matched_attrs: Vec<String> = vec![];
@@ -527,8 +524,6 @@ fn score_elements<'a>(
     candidates
 }
 
-
-
 fn handle_top_candidate(tc: &Node, article_content: &Node) {
     let tc_node_score = get_node_score(tc);
     let mut sibling_score_threshold = tc_node_score * 0.2;
@@ -677,7 +672,7 @@ mod tests {
                  <h6></h6>
             </body>
         </html>"#;
-        
+
         let ra = Readability::new(contents, None, None).unwrap();
         let sel = ra.doc.select("body > *");
         let count_before = sel.nodes().iter().filter(|n| n.is_element()).count();

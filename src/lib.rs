@@ -1,3 +1,4 @@
+mod config;
 mod glob;
 mod grab;
 mod grab_flags;
@@ -5,13 +6,11 @@ mod helpers;
 mod prep_article;
 mod readability;
 mod score;
-mod config;
 
+pub use config::Config;
 pub use readability::Article;
 pub use readability::Metadata;
 pub use readability::Readability;
-pub use config::Config;
-
 
 use thiserror::Error;
 
