@@ -195,5 +195,4 @@ pub(crate) static RX_SHARE_ELEMENTS: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#"(?i)(\b|_)(share|sharedaddy)(\b|_)"#).unwrap());
 
 pub(crate) static MINIMUM_TOP_CANDIDATES: usize = 3;
-pub(crate) static DEFAULT_CHAR_THRESHOLD: usize = 500;
 pub(crate) static SCORE_ATTR: &str = "data-readability-score";

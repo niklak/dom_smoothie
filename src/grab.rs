@@ -67,7 +67,7 @@ impl Readability {
                 metadata.dir = get_dir_attr(article_node);
                 article_doc = Some(Document::from(article_node.html()));
                 let text_length = normalize_spaces(&article_node.text()).chars().count();
-                if text_length < DEFAULT_CHAR_THRESHOLD {
+                if text_length < self.config.char_threshold {
                     parse_successful = false;
     
                     attempts.push((article_doc.clone(), text_length));
@@ -242,7 +242,7 @@ impl Readability {
             handle_top_candidate(tc, &article_content);
     
             //prepare the article
-            prep_article(&article_content, flags);
+            prep_article(&article_content, flags, &self.config);
     
             if needed_to_create_top_candidate {
                 // This looks like nonsense
