@@ -56,7 +56,7 @@ pub(crate) fn get_class_weight(node: &Node, weight_classes: bool) -> f32 {
         }
     }
 
-    if let Some(id) =  node.attr("id") {
+    if let Some(id) = node.attr("id") {
         if RX_CLASSES_NEGATIVE.is_match(&id) {
             weight -= 25.0;
         }

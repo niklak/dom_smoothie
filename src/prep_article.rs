@@ -5,6 +5,7 @@ use crate::glob::*;
 use crate::grab_flags::GrabFlags;
 use crate::helpers::*;
 use crate::score::*;
+use crate::Config;
 
 fn clean(n: &Node, tag: &str) {
     let is_embed = EMBED_ELEMENTS.contains(&tag);
@@ -388,7 +389,7 @@ fn clean_headers(n: &Node, flags: &FlagSet<GrabFlags>) {
     }
 }
 
-pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>) {
+pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg: &Config) {
     clean_styles(article_node);
 
     // Check for data tables before we continue, to avoid removing items in
@@ -409,7 +410,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>) {
     clean(article_node, "link");
     clean(article_node, "aside");
 
-    let share_element_threshold = DEFAULT_CHAR_THRESHOLD;
+    let share_element_threshold = cfg.char_threshold;
 
     // Clean out elements with little content that have "share" in their id/class combinations from final top candidates,
     // which means we don't remove the top candidates even they have "share".

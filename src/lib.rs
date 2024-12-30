@@ -1,3 +1,4 @@
+mod config;
 mod glob;
 mod grab;
 mod grab_flags;
@@ -6,8 +7,8 @@ mod prep_article;
 mod readability;
 mod score;
 
+pub use config::Config;
 pub use readability::Article;
-pub use readability::Config;
 pub use readability::Metadata;
 pub use readability::Readability;
 
