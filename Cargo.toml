@@ -1,6 +1,6 @@
 [package]
 name = "dom_smoothie"
-version = "0.1.1"
+version = "0.2.0"
 description = "A Rust crate for extracting relevant content from web pages"
 license = "MIT"
 repository = "https://github.com/niklak/dom_smoothie"
