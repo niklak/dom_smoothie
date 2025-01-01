@@ -7,7 +7,7 @@
 
 [![Rust CI](https://github.com/niklak/dom_smoothie/actions/workflows/rust.yml/badge.svg)](https://github.com/niklak/dom_smoothie/actions/workflows/rust.yml)
 
-> A Rust crate for extracting relevant content from web pages.
+> A Rust crate for extracting readable content from web pages.
 
 **dom_smoothie** closely follows the implementation of [readability.js](https://github.com/mozilla/readability), bringing its functionality to Rust.
 
