@@ -5,6 +5,7 @@ on:
     tags:
       - "[0-9]+.[0-9]+.[0-9]+"
 
+
 permissions:
   contents: write
 
@@ -18,15 +19,21 @@ jobs:
         include:
           - build: linux
             os: ubuntu-latest
-            target: x86_64-unknown-linux-musl
+            target: x86_64-unknown-linux-gnu
+            src_file: dom_smoothie_cli
+            dst_file: dom_smoothie_cli-x86_64-unknown-linux-gnu
 
           - build: macos
             os: macos-latest
             target: x86_64-apple-darwin
+            src_file: dom_smoothie_cli
+            dst_file: dom_smoothie_cli-x86_64-apple-darwin
         
           - build: windows-gnu
             os: windows-latest
             target: x86_64-pc-windows-gnu
+            src_file: dom_smoothie_cli.exe
+            dst_file: dom_smoothie_cli-x86_64-pc-windows-gnu.exe
 
     runs-on: ${{ matrix.os }}
 
@@ -51,7 +58,7 @@ jobs:
         run: cargo build --release --target ${{ matrix.target }}
         working-directory: dom_smoothie_cli
     
-      - name: Prepare Binary
+      - name: Prepare Binary (Linux and macOS)
         run: |
             mkdir -p binaries
-            cp target/${{ matrix.target }}/release/dom_smoothie_cli binaries/dom_smoothie_cli-${{ matrix.os }}
+            cp target/${{ matrix.target }}/release/${{ matrix.src_file }} binaries/${{ matrix.dst_file }}
