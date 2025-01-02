@@ -12,7 +12,6 @@ readme = "README.md"
 rust-version = "1.65"
 exclude = [".*", "test-pages"]
 
-
 [dependencies]
 dom_query = {version = "0.11.0"}
 tendril = {version = "0.4.3"}
@@ -20,10 +19,17 @@ once_cell = { version = "1" }
 
 regex = {version = "1.11.1"}
 serde = {version = "1.0", features = ["derive"]}
-serde_json = {version = "1.0"}
 gjson = {version = "0.8.1"}
 html-escape = "0.2.13"
 flagset = "0.4.6"
 url = "2.5.4"
 unicode-segmentation = "1.10.1"
 thiserror = "2.0"
+
+[dev-dependencies]
+serde_json = {version = "1.0"}
+
+[workspace]
+members = [
+    "dom_smoothie_cli"
+]
