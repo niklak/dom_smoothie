@@ -1,9 +1,8 @@
 name: Build and Release Binaries
 
 on:
-  push:
-    tags:
-      - "[0-9]+.[0-9]+.[0-9]+"
+  release:
+    types: [published, prereleased]
 
 
 permissions:
@@ -21,29 +20,26 @@ jobs:
             os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             src_file: dom_smoothie_cli
-            dst_file: dom_smoothie_cli-x86_64-unknown-linux-gnu
+            dst_file: dom_smoothie_cli-${{ github.ref_name }}-x86_64-unknown-linux-gnu
+            
 
           - build: macos
             os: macos-latest
             target: x86_64-apple-darwin
             src_file: dom_smoothie_cli
-            dst_file: dom_smoothie_cli-x86_64-apple-darwin
+            dst_file: dom_smoothie_cli-${{ github.ref_name }}-x86_64-apple-darwin
         
           - build: windows-gnu
             os: windows-latest
             target: x86_64-pc-windows-gnu
             src_file: dom_smoothie_cli.exe
-            dst_file: dom_smoothie_cli-x86_64-pc-windows-gnu.exe
+            dst_file: dom_smoothie_cli-${{ github.ref_name }}-x86_64-pc-windows-gnu.exe
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Get the release version from the tag
-        shell: bash
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Install Rust
         # Or @nightly if you want
@@ -58,7 +54,14 @@ jobs:
         run: cargo build --release --target ${{ matrix.target }}
         working-directory: dom_smoothie_cli
     
-      - name: Prepare Binary (Linux and macOS)
+      - name: Prepare Binary
         run: |
             mkdir -p binaries
             cp target/${{ matrix.target }}/release/${{ matrix.src_file }} binaries/${{ matrix.dst_file }}
+
+    
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            binaries/${{ matrix.dst_file }}
