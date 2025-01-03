@@ -2,10 +2,12 @@
 name = "dom_smoothie_cli"
 version = "0.1.0"
 edition = "2021"
-description = "A reference cli for dom_smoothie"
+description = "A reference implementation of a CLI tool for the `dom_smoothie`"
 authors = ["niklak <morgenpurple@gmail.com>"]
 
 
 [dependencies]
 dom_smoothie = {path = "./.."}
 clap = {version = "4.5.23", features = ["derive"]}
+serde = {version = "1.0", features = ["derive"]}
+serde_json = {version = "1.0"}
