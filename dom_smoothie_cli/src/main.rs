@@ -1,6 +1,6 @@
 //! This is a reference implementation of a CLI tool for the `dom_smoothie` crate.
 //!
-//! The tool processes an HTML document using `dom_smoothie::Readability` to extract
+//! The tool processes an HTML document using [`dom_smoothie::Readability`] to extract
 //! relevant content and metadata. It accepts an input HTML file and outputs the
 //! parsed article content as both HTML and plain text, along with metadata in JSON format.
 //!
@@ -17,11 +17,12 @@ use std::error::Error;
 use std::{fs, path::PathBuf};
 
 use clap::Parser;
-use dom_smoothie::{Readability, Article};
+use dom_smoothie::{Article, Config, Readability};
 
 
 #[derive(Parser)]
-#[clap(author, version, about, long_about = None)]
+#[clap(version, about, long_about = None)]
+#[clap(help_template = "{name} {version}\n\n{about}\n\n{usage}\n\n{all-args}")]
 struct Cli {
     /// Sets an input path to the html document
     #[clap(short, long, value_parser)]
@@ -32,6 +33,25 @@ struct Cli {
     /// Sets an optional base document URL
     #[clap(short, long, value_parser, value_name = "URL")]
     document_url: Option<String>,
+    /// Keeps elements' classes if set true 
+    #[clap(long, value_parser)]
+    keep_classes: bool,
+    /// Sets a list of classes that will be preserved and not removed during the post-process.
+    /// Multiple classes should be separated by a comma (`,`)
+    #[clap(long, value_parser, value_delimiter = ',')]
+    preserved_classes: Vec<String>,
+    /// Skips parsing metadata from ld+json script elements
+    #[clap(long, value_parser)]
+    disable_json_ld: bool,
+    /// Sets a maximum number of elements to parse. If it equals 0, then there is no limit.
+    #[clap(long, value_parser, default_value="0")]
+    max_elements: usize,
+    /// Sets a character threshold for content extraction
+    #[clap(long, value_parser, default_value="500")]
+    char_threshold: usize,
+    /// Sets a number of top candidates for content extraction
+    #[clap(long, value_parser, default_value="5")]
+    n_top_candidates: usize
 }
 
 
@@ -80,7 +100,19 @@ fn main() -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(cli.input)?;
     let document_url = cli.document_url.as_deref();
 
-    let mut ra = Readability::new(contents, document_url, None)?;
+    let cfg = Config {
+        keep_classes: cli.keep_classes,
+        classes_to_preserve: cli.preserved_classes,
+        max_elements_to_parse: cli.max_elements,
+        disable_json_ld: cli.disable_json_ld,
+        n_top_candidates: cli.n_top_candidates,
+        char_threshold: cli.char_threshold,
+        ..Default::default()
+    };
+
+    println!("config: {:?}", &cfg);
+
+    let mut ra = Readability::new(contents, document_url, Some(cfg))?;
     let article = ra.parse()?;
 
     let Some(output_path) = cli.output else {

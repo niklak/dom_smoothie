@@ -2,7 +2,7 @@
 name = "dom_smoothie_cli"
 version = "0.1.0"
 edition = "2021"
-description = "A reference cli for dom_smoothie"
+description = "A reference implementation of a CLI tool for the `dom_smoothie`"
 authors = ["niklak <morgenpurple@gmail.com>"]
 
 

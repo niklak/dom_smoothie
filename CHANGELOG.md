@@ -4,6 +4,9 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- - Implemented a CLI tool (`dom_smoothie_cli`) for demonstration purposes.
+
 ### Fixed
 - `Article.text_content` accidentally contained text content of the original document. Now it contains only the text content of the article after processing.
 
