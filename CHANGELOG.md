@@ -2,6 +2,11 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- `Article.text_content` accidentally contained text content of the original document. Now it contains only the text content of the article after processing.
+
 ## [0.2.0] - 2024-12-30
 
 ### Added

@@ -449,7 +449,7 @@ impl Readability {
             metadata.excerpt = extract_excerpt(&doc)
         }
 
-        let text_content = self.doc.text();
+        let text_content = doc.text();
         let text_length = text_content.chars().count();
 
         Ok(Article {
