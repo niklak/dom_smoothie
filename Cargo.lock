@@ -213,6 +213,8 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dom_smoothie",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
