@@ -1,3 +1,18 @@
+//! This is a reference implementation of a CLI tool for the `dom_smoothie` crate.
+//!
+//! The tool processes an HTML document using `dom_smoothie::Readability` to extract
+//! relevant content and metadata. It accepts an input HTML file and outputs the
+//! parsed article content as both HTML and plain text, along with metadata in JSON format.
+//!
+//! ## Usage
+//! ```bash
+//! dom_smoothie_cli --input path/to/input.html --output path/to/output/dir
+//! ```
+//!
+//! If the `--output` argument is omitted, the results will be saved in the same directory
+//! as the input file. An optional `--document-url` parameter can be provided to enhance
+//! parsing accuracy by specifying the base document URL.
+
 use std::error::Error;
 use std::{fs, path::PathBuf};
 
