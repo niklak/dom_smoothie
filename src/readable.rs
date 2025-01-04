@@ -1,0 +1,58 @@
+use once_cell::sync::Lazy;
+
+use dom_query::{Document, Matcher};
+use tendril::format_tendril;
+
+use crate::glob::*;
+use crate::helpers::is_probably_visible;
+
+static MIN_SCORE: f32 = 20.0;
+static MIN_CONTENT_LENGTH: usize = 140;
+
+static MATCHER_LI_P: Lazy<Matcher> = Lazy::new(|| Matcher::new("li p").unwrap());
+
+pub fn is_probably_readable(
+    doc: &Document,
+    min_score: Option<f32>,
+    min_content_length: Option<usize>,
+) -> bool {
+    let min_score = min_score.unwrap_or(MIN_SCORE);
+    let min_content_length = min_content_length.unwrap_or(MIN_CONTENT_LENGTH);
+
+    let mut nodes = doc.select("p,pre,article").nodes().to_vec();
+
+    let br_parent_sel = doc.select("div > br").parent();
+    let br_parent_nodes = br_parent_sel.nodes();
+    nodes.extend_from_slice(br_parent_nodes);
+
+    let mut score: f32 = 0.0;
+
+    nodes.iter().any(|node| {
+        if !is_probably_visible(node) {
+            return false;
+        }
+        let match_string =
+            format_tendril!("{} {}", node.attr_or("class", ""), node.attr_or("id", ""));
+
+        if RX_UNLIKELY_CANDIDATES.is_match(&match_string)
+            && !RX_MAYBE_CANDIDATES.is_match(&match_string)
+        {
+            return false;
+        }
+
+        if MATCHER_LI_P.match_element(node) {
+            return false;
+        }
+
+        let text_content_length = node.text().trim().chars().count();
+        if text_content_length < min_content_length {
+            return false;
+        }
+
+        score += ((text_content_length - min_content_length) as f32).sqrt();
+        if score > min_score {
+            return true;
+        }
+        false
+    })
+}

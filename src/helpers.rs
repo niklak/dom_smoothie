@@ -174,6 +174,33 @@ pub(crate) fn node_name_is(node: &Node, name: &str) -> bool {
     node.node_name().map_or(false, |n| n.as_ref() == name)
 }
 
+pub(crate) fn is_probably_visible(node: &Node) -> bool {
+    if node.has_attr("hidden") {
+        return false;
+    }
+
+    let is_invisible_style = node
+        .attr("style")
+        .map_or(false, |s| RX_STYLE_DISPLAY_NONE.is_match(&s));
+
+    if is_invisible_style {
+        return false;
+    }
+
+    let is_aria_hidden = node
+        .attr("aria-hidden")
+        .map_or(false, |a| a.as_ref() == "true");
+    let has_fallback_image = node
+        .attr("class")
+        .map_or(false, |s| s.contains("fallback-image"));
+
+    if is_aria_hidden && !has_fallback_image {
+        return false;
+    }
+
+    true
+}
+
 #[cfg(test)]
 mod tests {
 

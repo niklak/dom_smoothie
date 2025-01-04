@@ -2,11 +2,24 @@
 use std::{fs, path::Path};
 
 use dom_query::{Document, Matcher};
-use dom_smoothie::{Metadata, Readability};
+use dom_smoothie::Readability;
 
 use once_cell::sync::Lazy;
 pub(crate) static R_MATCHER: Lazy<Matcher> =
     Lazy::new(|| Matcher::new("#readability-page-1").unwrap());
+
+#[derive(Debug, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ExpectedMetadata {
+    title: String,
+    byline: Option<String>,
+    excerpt: Option<String>,
+    site_name: Option<String>,
+    published_time: Option<String>,
+    lang: Option<String>,
+    dir: Option<String>,
+    readerable: bool,
+}
 
 pub(crate) fn test_readability<P>(test_path: P, host: Option<&str>)
 where
@@ -69,7 +82,7 @@ where
 
     let expected_metadata_path = base_path.join("expected-metadata.json");
     let meta_contents = fs::read_to_string(expected_metadata_path).unwrap();
-    let expected: Metadata = serde_json::from_str(&meta_contents).unwrap();
+    let expected: ExpectedMetadata = serde_json::from_str(&meta_contents).unwrap();
 
     assert_eq!(
         article.title, expected.title,

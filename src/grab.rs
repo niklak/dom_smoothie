@@ -340,33 +340,6 @@ fn get_node_matching_string(node: &NodeRef) -> String {
     matched_attrs.join(" ")
 }
 
-fn is_probably_visible(node: &Node) -> bool {
-    if node.has_attr("hidden") {
-        return false;
-    }
-
-    let is_invisible_style = node
-        .attr("style")
-        .map_or(false, |s| RX_STYLE_DISPLAY_NONE.is_match(&s));
-
-    if is_invisible_style {
-        return false;
-    }
-
-    let is_aria_hidden = node
-        .attr("aria-hidden")
-        .map_or(false, |a| a.as_ref() == "true");
-    let has_fallback_image = node
-        .attr("class")
-        .map_or(false, |s| s.contains("fallback-image"));
-
-    if is_aria_hidden && !has_fallback_image {
-        return false;
-    }
-
-    true
-}
-
 fn is_valid_byline(node: &Node, match_string: &str) -> bool {
     let byline_len = node.text().trim().chars().count();
     let byline_len_in_range = byline_len > 0 && byline_len < 100;
