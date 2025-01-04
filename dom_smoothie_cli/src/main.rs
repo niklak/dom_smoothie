@@ -19,7 +19,6 @@ use std::{fs, path::PathBuf};
 use clap::Parser;
 use dom_smoothie::{Article, Config, Readability};
 
-
 #[derive(Parser)]
 #[clap(version, about, long_about = None)]
 #[clap(help_template = "{name} {version}\n\n{about}\n\n{usage}\n\n{all-args}")]
@@ -33,7 +32,7 @@ struct Cli {
     /// Sets an optional base document URL
     #[clap(short, long, value_parser, value_name = "URL")]
     document_url: Option<String>,
-    /// Keeps elements' classes if set true 
+    /// Keeps elements' classes if set true
     #[clap(long, value_parser)]
     keep_classes: bool,
     /// Sets a list of classes that will be preserved and not removed during the post-process.
@@ -44,16 +43,15 @@ struct Cli {
     #[clap(long, value_parser)]
     disable_json_ld: bool,
     /// Sets a maximum number of elements to parse. If it equals 0, then there is no limit.
-    #[clap(long, value_parser, default_value="0")]
+    #[clap(long, value_parser, default_value = "0")]
     max_elements: usize,
     /// Sets a character threshold for content extraction
-    #[clap(long, value_parser, default_value="500")]
+    #[clap(long, value_parser, default_value = "500")]
     char_threshold: usize,
     /// Sets a number of top candidates for content extraction
-    #[clap(long, value_parser, default_value="5")]
-    n_top_candidates: usize
+    #[clap(long, value_parser, default_value = "5")]
+    n_top_candidates: usize,
 }
-
 
 /// This struct represents the metadata from the [`dom_smoothie::Article`]
 #[derive(Default, serde::Deserialize, serde::Serialize)]
@@ -109,8 +107,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         char_threshold: cli.char_threshold,
         ..Default::default()
     };
-
-    println!("config: {:?}", &cfg);
 
     let mut ra = Readability::new(contents, document_url, Some(cfg))?;
     let article = ra.parse()?;
