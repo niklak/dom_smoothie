@@ -2,8 +2,7 @@ name: Build and Release Binaries
 
 on:
   release:
-    types: [published, prereleased]
-
+    types: [published]
 
 permissions:
   contents: write
@@ -14,54 +13,42 @@ jobs:
 
     strategy:
       matrix:
-        # You can add more, for any target you'd like!
         include:
-          - build: linux
-            os: ubuntu-latest
+          - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             src_file: dom_smoothie_cli
-            dst_file: dom_smoothie_cli-${{ github.ref_name }}-x86_64-unknown-linux-gnu
-            
+            dst_file: dom_smoothie_cli-x86_64-unknown-linux-gnu-${{ github.ref_name }}
 
-          - build: macos
-            os: macos-latest
+          - os: macos-latest
             target: x86_64-apple-darwin
             src_file: dom_smoothie_cli
-            dst_file: dom_smoothie_cli-${{ github.ref_name }}-x86_64-apple-darwin
-        
-          - build: windows-gnu
-            os: windows-latest
+            dst_file: dom_smoothie_cli-x86_64-apple-darwin-${{ github.ref_name }}
+
+          - os: windows-latest
             target: x86_64-pc-windows-gnu
             src_file: dom_smoothie_cli.exe
-            dst_file: dom_smoothie_cli-${{ github.ref_name }}-x86_64-pc-windows-gnu.exe
+            dst_file: dom_smoothie_cli-x86_64-pc-windows-gnu-${{ github.ref_name }}
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Rust
-        # Or @nightly if you want
         uses: dtolnay/rust-toolchain@stable
-        # Arguments to pass in
         with:
-          # Make Rust compile to our target (defined in the matrix)
           targets: ${{ matrix.target }}
-
 
       - name: Build Binary
         run: cargo build --release --target ${{ matrix.target }}
         working-directory: dom_smoothie_cli
-    
-      - name: Prepare Binary
-        run: |
-            mkdir -p binaries
-            cp target/${{ matrix.target }}/release/${{ matrix.src_file }} binaries/${{ matrix.dst_file }}
 
-    
+      - name: Prepare Archive
+        run: |
+          zip -j ${{ matrix.dst_file }}.zip dom_smoothie_cli/target/${{ matrix.target }}/release/${{ matrix.src_file }}
+
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            binaries/${{ matrix.dst_file }}
+            ${{ matrix.dst_file }}.zip
