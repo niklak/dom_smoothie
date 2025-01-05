@@ -4,9 +4,12 @@ use dom_query::{Document, Node, NodeData, NodeRef, Selection};
 use tendril::StrTendril;
 use url::Url;
 
+use crate::glob::*;
 use crate::helpers::*;
+use crate::is_probably_readable;
 use crate::Config;
-use crate::{glob::*, ReadabilityError};
+use crate::ReadabilityError;
+
 /// This struct represents the content of the article
 #[derive(Debug, Clone)]
 pub struct Article {
@@ -877,6 +880,26 @@ impl Readability {
             }
         }
         Ok(())
+    }
+
+    /// Estimates whether the document is readable in a *quick-and-dirty* way.
+    ///
+    /// Must be called before `Readability::parse` because it cleans the document and changes its structure.
+    ///
+    /// # Arguments
+    ///
+    /// * `min_score` - The minimum score required for the document to be considered readable. Defaults to 20.0.
+    /// * `min_content_length` - The minimum content length required for the document to be considered readable. Defaults to 140.
+    ///
+    /// # Returns
+    ///
+    /// True if the document is readable, false otherwise.
+    pub fn is_probably_readable(
+        &self,
+        min_score: Option<f32>,
+        min_content_length: Option<usize>,
+    ) -> bool {
+        is_probably_readable(&self.doc, min_score, min_content_length)
     }
 }
 

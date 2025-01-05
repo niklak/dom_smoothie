@@ -14,9 +14,12 @@ fn test_metadata_last_fail() {
 
 #[test]
 fn table_test_metadata() {
-    let paths = fs::read_dir("./test-pages/ok").unwrap();
-    for p in paths {
-        let pp = p.unwrap().path();
-        test_metadata(pp, Some("http://fakehost/test/"));
+    let source_dirs = ["./test-pages/readability", "./test-pages/ok"];
+    for d in source_dirs {
+        let paths = fs::read_dir(d).unwrap();
+        for p in paths {
+            let pp = p.unwrap().path();
+            test_metadata(pp, Some("http://fakehost/test/"));
+        }
     }
 }
