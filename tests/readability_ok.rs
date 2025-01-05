@@ -30,7 +30,6 @@ fn test_004() {
 
 #[test]
 fn test_005() {
-    //TODO: important can't pass
     test_readability(
         "test-pages/ok/005-unescape-html-entities/",
         Some("http://fakehost/test/"),

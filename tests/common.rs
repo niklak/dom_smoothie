@@ -2,7 +2,7 @@
 use std::{fs, path::Path};
 
 use dom_query::{Document, Matcher};
-use dom_smoothie::Readability;
+use dom_smoothie::{is_probably_readable, Readability};
 
 use once_cell::sync::Lazy;
 pub(crate) static R_MATCHER: Lazy<Matcher> =
@@ -106,4 +106,7 @@ where
     );
     assert_eq!(article.lang, expected.lang, "lang does not match expected");
     assert_eq!(article.dir, expected.dir, "dirs does not match expected");
+
+    let readable = is_probably_readable(&r.doc, None, None);
+    assert_eq!(readable, expected.readerable);
 }
