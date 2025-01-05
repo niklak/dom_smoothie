@@ -2,7 +2,7 @@
 use std::{fs, path::Path};
 
 use dom_query::{Document, Matcher};
-use dom_smoothie::{is_probably_readable, Readability};
+use dom_smoothie::Readability;
 
 use once_cell::sync::Lazy;
 pub(crate) static R_MATCHER: Lazy<Matcher> =
@@ -78,11 +78,19 @@ where
         ..Default::default()
     };
     let mut r = Readability::new(source_contents, host, Some(cfg)).unwrap();
+
+    let readable = r.is_probably_readable(None, None);
+
     let article = r.parse().unwrap();
 
     let expected_metadata_path = base_path.join("expected-metadata.json");
     let meta_contents = fs::read_to_string(expected_metadata_path).unwrap();
     let expected: ExpectedMetadata = serde_json::from_str(&meta_contents).unwrap();
+
+    assert_eq!(
+        readable, expected.readerable,
+        "readerable does not match expected"
+    );
 
     assert_eq!(
         article.title, expected.title,
@@ -106,7 +114,4 @@ where
     );
     assert_eq!(article.lang, expected.lang, "lang does not match expected");
     assert_eq!(article.dir, expected.dir, "dirs does not match expected");
-
-    let readable = is_probably_readable(&r.doc, None, None);
-    assert_eq!(readable, expected.readerable);
 }

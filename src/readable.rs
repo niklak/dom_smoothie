@@ -11,6 +11,18 @@ static MIN_CONTENT_LENGTH: usize = 140;
 
 static MATCHER_LI_P: Lazy<Matcher> = Lazy::new(|| Matcher::new("li p").unwrap());
 
+/// Estimates whether the document is readable in a *quick-and-dirty* way.
+///
+///
+/// # Arguments
+///
+/// * `doc` - The reference to the [`dom_query::Document`] to check.
+/// * `min_score` - The minimum score required for the document to be considered readable. Defaults to 20.0.
+/// * `min_content_length` - The minimum content length required for the document to be considered readable. Defaults to 140.
+///
+/// # Returns
+///
+/// True if the document is readable, false otherwise.
 pub fn is_probably_readable(
     doc: &Document,
     min_score: Option<f32>,
