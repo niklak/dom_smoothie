@@ -91,7 +91,7 @@ where
     }
 }
 
-pub fn get_text_density(node: &Node, selector: &str) -> f32 {
+pub(crate) fn get_text_density(node: &Node, selector: &str) -> f32 {
     let text_length = normalize_spaces(&node.text()).chars().count() as f32;
     if text_length == 0.0 {
         return 0.0;
@@ -101,11 +101,11 @@ pub fn get_text_density(node: &Node, selector: &str) -> f32 {
     children_length / text_length
 }
 
-pub fn normalize_spaces(text: &str) -> String {
+pub(crate) fn normalize_spaces(text: &str) -> String {
     text.split_whitespace().collect::<Vec<&str>>().join(" ")
 }
 
-pub fn link_density(node: &Node) -> f32 {
+pub(crate) fn link_density(node: &Node) -> f32 {
     let text_length: f32 = normalize_spaces(&node.text()).chars().count() as f32;
     if text_length == 0.0 {
         return 0.0;
