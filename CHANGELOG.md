@@ -9,6 +9,10 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 - Implemented `is_probably_readable` function. 
 A quick-and-dirty way of figuring out if the contents of a given document are suitable for processing with `Readability`.
 - Implemented `Readability::is_probably_readable`. This method calls the above function but uses its internal document (`dom_query::Document`).
+- Implemented `Readability::with_document` method, which allows to create a new `Readability` instance with external `dom_query::Document`.
+
+### Changed
+- Changed visibility of `get_text_density`, `normalize_spaces`, and `link_density` to `pub(crate)` since they are used internally only.
 
 ### Fixed
 - `Article.text_content` accidentally contained text content of the original document. Now it contains only the text content of the article after processing.
