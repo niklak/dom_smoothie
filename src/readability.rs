@@ -151,6 +151,29 @@ impl Readability {
         document_url: Option<&str>,
         cfg: Option<Config>,
     ) -> Result<Self, ReadabilityError> {
+        Self::with_document(Document::from(html), document_url, cfg)
+    }
+
+    /// Create a new `Readability` instance with a `dom_query::Document`
+    ///
+    /// # Arguments
+    ///
+    /// - `document` -- a `dom_query::Document` instance
+    /// - `document_url` -- a base URL of the page
+    /// - `cfg` -- an optional `Config` instance
+    ///
+    /// # Returns
+    ///
+    /// A new [`Readability`] instance
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ReadabilityError::BadDocumentURL`] if `document_url` is not a valid URL
+    pub fn with_document(
+        document: dom_query::Document,
+        document_url: Option<&str>,
+        cfg: Option<Config>,
+    ) -> Result<Self, ReadabilityError> {
         let doc_url = if let Some(u) = document_url {
             Some(Url::parse(u)?)
         } else {
@@ -158,7 +181,7 @@ impl Readability {
         };
 
         Ok(Self {
-            doc: Document::from(html),
+            doc: document,
             doc_url,
             config: cfg.unwrap_or_default(),
         })
