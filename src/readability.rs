@@ -434,6 +434,7 @@ impl Readability {
     ///
     /// This is the primary method of the crate. It performs the following steps:
     ///
+    /// - Verify the document (element nodes length)
     /// - Extracts the metadata
     /// - Cleans the document
     /// - Extracts the main content of the document
