@@ -434,6 +434,7 @@ impl Readability {
     ///
     /// This is the primary method of the crate. It performs the following steps:
     ///
+    /// - Verify the document (element nodes length)
     /// - Extracts the metadata
     /// - Cleans the document
     /// - Extracts the main content of the document
@@ -472,6 +473,7 @@ impl Readability {
         // the article's content.
 
         if metadata.excerpt.is_none() {
+            // TODO: Although this matches readability.js, the procedure is far from perfect and requires improvement.
             metadata.excerpt = extract_excerpt(&doc)
         }
 
