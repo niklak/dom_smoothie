@@ -599,28 +599,23 @@ impl Readability {
             }
 
             // Description
-            let excerpt_val = gjson::get(&content, "description");
-            if matches!(excerpt_val.kind(), gjson::Kind::String) {
-                ld_meta.excerpt = Some(excerpt_val.str().trim().to_string());
-            }
+            ld_meta.excerpt = get_json_ld_string_value(&content, "description");
 
             // Publisher
-            let publisher_val = gjson::get(&content, "publisher.name");
-            if matches!(publisher_val.kind(), gjson::Kind::String) {
-                ld_meta.site_name = Some(publisher_val.str().trim().to_string());
-            }
+            ld_meta.site_name = get_json_ld_string_value(&content, "publisher.name");
 
             // DatePublished
-            let publisher_date_val = gjson::get(&content, "datePublished");
-            if matches!(publisher_date_val.kind(), gjson::Kind::String) {
-                ld_meta.published_time = Some(publisher_date_val.str().trim().to_string());
-            }
+            ld_meta.published_time = get_json_ld_string_value(&content, "datePublished");
+
+            // DateModified
+            ld_meta.modified_time = get_json_ld_string_value(&content, "dateModified");
 
             // Url
-            let url_val = gjson::get(&content, "url");
-            if matches!(url_val.kind(), gjson::Kind::String) {
-                ld_meta.url = Some(url_val.str().trim().to_string());
-            }
+            ld_meta.url = get_json_ld_string_value(&content, "url");
+
+            // Image
+            ld_meta.image = get_json_ld_string_value(&content, "image");
+
             if !ld_meta.is_empty() {
                 return Some(ld_meta);
             }
@@ -731,12 +726,15 @@ impl Readability {
         values: &HashMap<String, StrTendril>,
     ) {
         // thumbnail
-        metadata.image = get_map_any_value(values, META_IMAGE_KEYS).map(|x| x.to_string());
+        if metadata.image.is_none() {
+            metadata.image = get_map_any_value(values, META_IMAGE_KEYS).map(|x| x.to_string());
+        }
 
         // modified time
-        metadata.modified_time =
-            get_map_any_value(values, META_MOD_TIME_KEYS).map(|x| x.to_string());
-
+        if metadata.modified_time.is_none() {
+            metadata.modified_time =
+                get_map_any_value(values, META_MOD_TIME_KEYS).map(|x| x.to_string());
+        }
         //TODO: favicon
     }
 
@@ -997,6 +995,15 @@ fn normalize_meta_key(raw_key: &str) -> String {
         .collect::<Vec<_>>()
         .join("")
         .replace('.', ":")
+}
+
+fn get_json_ld_string_value(content: &str, path: &str) -> Option<String> {
+    let val = gjson::get(content, path);
+    if matches!(val.kind(), gjson::Kind::String) {
+        Some(val.str().trim().to_string())
+    } else {
+        None
+    }
 }
 
 fn to_absolute_url(raw_url: &str, base_uri: &Url) -> String {
