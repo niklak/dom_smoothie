@@ -14,7 +14,10 @@
 
 ## Examples
 
-### Basic Example
+
+<details>
+    <summary><b>Readability::parse -- a basic example</b></summary>
+
 
 ```rust
 use std::error::Error;
@@ -38,6 +41,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 ```
+</details>
 
 
 ## License
