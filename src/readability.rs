@@ -711,7 +711,6 @@ impl Readability {
             metadata.published_time =
                 get_map_any_value(&values, META_PUB_TIME_KEYS).map(|x| x.to_string());
         }
-        
 
         self.assign_extra_article_metadata(&mut metadata, &values);
 
@@ -734,7 +733,7 @@ impl Readability {
         // modified time
         if metadata.modified_time.is_none() {
             metadata.modified_time =
-            get_map_any_value(values, META_MOD_TIME_KEYS).map(|x| x.to_string());
+                get_map_any_value(values, META_MOD_TIME_KEYS).map(|x| x.to_string());
         }
         //TODO: favicon
     }
@@ -999,10 +998,10 @@ fn normalize_meta_key(raw_key: &str) -> String {
 }
 
 fn get_json_ld_string_value(content: &str, path: &str) -> Option<String> {
-    let val = gjson::get(&content, path);
+    let val = gjson::get(content, path);
     if matches!(val.kind(), gjson::Kind::String) {
-       Some(val.str().trim().to_string())
-    }else {
+        Some(val.str().trim().to_string())
+    } else {
         None
     }
 }
