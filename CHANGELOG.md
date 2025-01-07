@@ -13,6 +13,8 @@ A quick-and-dirty way of figuring out if the contents of a given document are su
 
 ### Changed
 - Changed visibility of `get_text_density`, `normalize_spaces`, and `link_density` to `pub(crate)` since they are used internally only.
+- Refactor `Readability::parse_json_ld`.
+- `Readability::parse_json_ld` also tries to extract `dateModified` and `image` from `ld+json` script. 
 
 ### Fixed
 - `Article.text_content` accidentally contained text content of the original document. Now it contains only the text content of the article after processing.
