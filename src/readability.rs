@@ -473,7 +473,7 @@ impl Readability {
         // the article's content.
 
         if metadata.excerpt.is_none() {
-            // TODO: Although this matches readability.js, the procedure is far from perfect and requires improvement. 
+            // TODO: Although this matches readability.js, the procedure is far from perfect and requires improvement.
             metadata.excerpt = extract_excerpt(&doc)
         }
 

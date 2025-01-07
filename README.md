@@ -70,7 +70,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 
 <details>
-    <summary><b>Parsing metadata</b></summary>
+    <summary><b>Parsing only metadata</b></summary>
 
 
 ```rust
@@ -105,6 +105,38 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Some fields of Metadata may be missing because they can be assigned during the Readability::parse process.
     // This applies to `excerpt`, `byline`, and `dir`.
+    Ok(())
+}
+```
+</details>
+
+<details>
+    <summary><b>Parsing only article`s title</b></summary>
+
+
+```rust
+use std::error::Error;
+
+use dom_query::Document;
+use dom_smoothie::Readability;
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let html = include_str!("../test-pages/rustwiki_2024.html");
+
+    let doc: Document = dom_query::Document::from(html);
+
+    // You can parse only the metadata without parsing the article content.
+    let readability: Readability = Readability::with_document(doc, None, None)?;
+    
+    // Parse only the title without extracting the full content.
+    let title: tendril::Tendril<tendril::fmt::UTF8> = readability.get_article_title();
+    assert_eq!(title, " Rust (programming language) - Wikipedia".into());
+    
+    // However, this title may differ from `metadata.title`,
+    // as `metadata.title` first attempts to extract the title from the metadata
+    // and falls back to `Readability::get_article_title` if unavailable.
+    println!("Title: {}", title);
+
     Ok(())
 }
 ```
