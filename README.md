@@ -59,11 +59,56 @@ fn main() -> Result<(), Box<dyn Error>> {
     // To check out the html content of the article please have a look at `./test-pages/rustwiki_2024_result.txt`
     //println!("Text Content: {}", article.text_content);
 
+    // Right now, `text_content` provides almost the same result as readability.js, which is far from perfect. 
+    // It may squash words together if element nodes don't have a whitespace before closing, 
+    // and currently, I have no definitive opinion on this matter.
+
     Ok(())
 }
 ```
 </details>
 
+
+<details>
+    <summary><b>Parsing metadata</b></summary>
+
+
+```rust
+use std::error::Error;
+
+use dom_smoothie::{Metadata, Config, Readability};
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let html = include_str!("../test-pages/rustwiki_2024.html");
+
+    let cfg = Config {
+        // parsing `ld+json` may be skipped
+        disable_json_ld: false,
+        ..Default::default()
+    };
+
+    // You can parse only metadata without parsing the article content
+    let readability = Readability::new(html, None, Some(cfg))?;
+
+    // <script type="application/ld+json"> may contain some useful information, but usually it is not enough.
+    let ld_meta: Option<Metadata> = readability.parse_json_ld();
+
+    if let Some(ref meta) = ld_meta {
+        println!("LD META: {:#?}", meta);
+    }
+
+    println!("\n=============\n");
+    // Under the hood, `Readability::parse` passes the metadata obtained from `Readability::parse_json_ld` 
+    // as the basis to `Readability::get_article_metadata`. But this is not necessary.
+    let meta = readability.get_article_metadata(ld_meta);
+    println!("META: {:#?}", &meta);
+
+    // Some fields of Metadata may be missing because they can be assigned during the Readability::parse process.
+    // This applies to `excerpt`, `byline`, and `dir`.
+    Ok(())
+}
+```
+</details>
 
 ## License
 
