@@ -4,6 +4,8 @@ on:
   release:
     types: [published]
 
+  workflow_dispatch:
+
 permissions:
   contents: write
 
@@ -42,6 +44,10 @@ jobs:
       - name: Build Binary
         run: cargo build --release --target ${{ matrix.target }}
         working-directory: dom_smoothie_cli
+      
+      - name: Install zip (Windows)
+        if: matrix.os == 'windows-latest'
+        run: choco install zip -y
 
       - name: Prepare Archive
         run: |
