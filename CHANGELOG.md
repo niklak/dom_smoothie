@@ -2,7 +2,7 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
-## [Unreleased]
+## [0.3.0] - 2025-01-08
 
 ### Added
 - Implemented a CLI tool (`dom_smoothie_cli`) for demonstration purposes.
