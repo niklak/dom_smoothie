@@ -192,6 +192,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 ```
 </details>
 
+## Changelog
+[Changelog](./CHANGELOG.md)
+
+
 ## License
 
 Licensed under MIT ([LICENSE](LICENSE) or http://opensource.org/licenses/MIT).
