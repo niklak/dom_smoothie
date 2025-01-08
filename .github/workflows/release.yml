@@ -45,7 +45,7 @@ jobs:
 
       - name: Prepare Archive
         run: |
-          zip -j ${{ matrix.dst_file }}.zip dom_smoothie_cli/target/${{ matrix.target }}/release/${{ matrix.src_file }}
+          zip -j ${{ matrix.dst_file }}.zip target/${{ matrix.target }}/release/${{ matrix.src_file }}
 
       - name: Release
         uses: softprops/action-gh-release@v1
