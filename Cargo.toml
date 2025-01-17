@@ -13,7 +13,8 @@ rust-version = "1.65"
 exclude = [".*", "test-pages"]
 
 [dependencies]
-dom_query = {version = "0.11.0"}
+#dom_query = {version = "0.11.0"}
+dom_query = {path = "../dom_query"}
 tendril = {version = "0.4.3"}
 once_cell = { version = "1" }
 
@@ -25,6 +26,7 @@ flagset = "0.4.6"
 url = "2.5.4"
 unicode-segmentation = "1.10.1"
 thiserror = "2.0"
+phf = { version = "0.11", features = ["macros"] }
 
 [dev-dependencies]
 serde_json = {version = "1.0"}

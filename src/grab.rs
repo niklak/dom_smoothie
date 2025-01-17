@@ -337,21 +337,24 @@ fn get_node_matching_string(node: &NodeRef) -> String {
         matched_attrs.push(id.to_string());
     }
 
-    matched_attrs.join(" ")
+    matched_attrs.join(" ").to_lowercase()
 }
 
 fn is_valid_byline(node: &Node, match_string: &str) -> bool {
     let byline_len = node.text().trim().chars().count();
     let byline_len_in_range = byline_len > 0 && byline_len < 100;
 
-    byline_len_in_range && (MATCHER_BYLINE.match_element(node) || RX_BYLINE.is_match(match_string))
+    byline_len_in_range
+        && (MATCHER_BYLINE.match_element(node)
+            || BYLINE_PATTERNS.iter().any(|p| match_string.contains(p)))
 }
 
 fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
-    if !RX_UNLIKELY_CANDIDATES.is_match(match_string) {
+    if !UNLIKELY_CANDIDATES.iter().any(|p| match_string.contains(p)) {
         return false;
     }
-    if RX_MAYBE_CANDIDATES.is_match(match_string) {
+
+    if MAYBE_CANDIDATES.iter().any(|p| match_string.contains(p)) {
         return false;
     }
 

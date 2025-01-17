@@ -2,6 +2,12 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
+## [Unreleased]
+
+## Changed
+- Reduced the number of regex checks since they can be replaced with `contains` checks.
+
+
 ## [0.3.0] - 2025-01-08
 
 ### Added

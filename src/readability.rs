@@ -539,7 +539,10 @@ impl Readability {
             } else {
                 article_type = type_val.str().to_string();
             }
-            if !RX_JSONLD_ARTICLE_TYPES.is_match(&article_type) {
+            if !JSONLD_ARTICLE_TYPES
+                .iter()
+                .any(|p| article_type.contains(p))
+            {
                 continue;
             }
 

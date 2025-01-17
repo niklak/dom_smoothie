@@ -46,8 +46,8 @@ pub fn is_probably_readable(
         let match_string =
             format_tendril!("{} {}", node.attr_or("class", ""), node.attr_or("id", ""));
 
-        if RX_UNLIKELY_CANDIDATES.is_match(&match_string)
-            && !RX_MAYBE_CANDIDATES.is_match(&match_string)
+        if UNLIKELY_CANDIDATES.iter().any(|p| match_string.contains(p))
+            && !MAYBE_CANDIDATES.iter().any(|p| match_string.contains(p))
         {
             return false;
         }
