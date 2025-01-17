@@ -75,34 +75,19 @@ impl Metadata {
 
     fn unescape_html_entities(&mut self) {
         self.title = html_escape::decode_html_entities(&self.title).to_string();
-        self.byline = self
-            .byline
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.excerpt = self
-            .excerpt
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.site_name = self
-            .site_name
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.published_time = self
-            .published_time
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.modified_time = self
-            .modified_time
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.image = self
-            .image
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.favicon = self
-            .favicon
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
+        self.byline =
+            self.byline.as_ref().map(|s| html_escape::decode_html_entities(&s).to_string());
+        self.excerpt =
+            self.excerpt.as_ref().map(|s| html_escape::decode_html_entities(&s).to_string());
+        self.site_name =
+            self.site_name.as_ref().map(|s| html_escape::decode_html_entities(&s).to_string());
+        self.published_time =
+            self.published_time.as_ref().map(|s| html_escape::decode_html_entities(&s).to_string());
+        self.modified_time =
+            self.modified_time.as_ref().map(|s| html_escape::decode_html_entities(&s).to_string());
+        self.image = self.image.as_ref().map(|s| html_escape::decode_html_entities(&s).to_string());
+        self.favicon =
+            self.favicon.as_ref().map(|s| html_escape::decode_html_entities(&s).to_string());
     }
 }
 
@@ -118,11 +103,7 @@ pub struct Readability {
 
 impl<T: Into<StrTendril>> From<T> for Readability {
     fn from(html: T) -> Self {
-        Self {
-            doc: Document::from(html),
-            doc_url: None,
-            config: Config::default(),
-        }
+        Self { doc: Document::from(html), doc_url: None, config: Config::default() }
     }
 }
 
@@ -174,17 +155,9 @@ impl Readability {
         document_url: Option<&str>,
         cfg: Option<Config>,
     ) -> Result<Self, ReadabilityError> {
-        let doc_url = if let Some(u) = document_url {
-            Some(Url::parse(u)?)
-        } else {
-            None
-        };
+        let doc_url = if let Some(u) = document_url { Some(Url::parse(u)?) } else { None };
 
-        Ok(Self {
-            doc: document,
-            doc_url,
-            config: cfg.unwrap_or_default(),
-        })
+        Ok(Self { doc: document, doc_url, config: cfg.unwrap_or_default() })
     }
 }
 
@@ -229,12 +202,7 @@ impl Readability {
     /// The method will also try to clean up the title by removing any
     /// unnecessary characters from it.
     pub fn get_article_title(&self) -> StrTendril {
-        let orig_title = self
-            .doc
-            .select_single_matcher(&MATCHER_TITLE)
-            .text()
-            .trim()
-            .to_string();
+        let orig_title = self.doc.select_single_matcher(&MATCHER_TITLE).text().trim().to_string();
         //let orig_title = normalize_spaces(&orig_title);
         let mut cur_title = orig_title.to_string();
         let char_count = orig_title.chars().count();
@@ -255,15 +223,13 @@ impl Readability {
             });
 
             if !matched {
-                if let Some(tmp_title) = orig_title
-                    .rfind(":")
-                    .map(|idx| orig_title[idx + 1..].trim().to_string())
+                if let Some(tmp_title) =
+                    orig_title.rfind(":").map(|idx| orig_title[idx + 1..].trim().to_string())
                 {
                     cur_title = tmp_title;
                     if cur_title.split_whitespace().count() < 3 {
-                        if let Some(tmp_title) = orig_title
-                            .find(":")
-                            .map(|idx| orig_title[idx + 1..].trim().to_string())
+                        if let Some(tmp_title) =
+                            orig_title.find(":").map(|idx| orig_title[idx + 1..].trim().to_string())
                         {
                             cur_title = tmp_title
                         }
@@ -289,10 +255,7 @@ impl Readability {
         // title or we decreased the number of words by more than 1 word, use
         // the original title.
         let cur_title_wc = cur_title.split_whitespace().count();
-        let orig_wc = RX_TITLE_ANY_SEP
-            .replace_all(&orig_title, "")
-            .split_whitespace()
-            .count();
+        let orig_wc = RX_TITLE_ANY_SEP.replace_all(&orig_title, "").split_whitespace().count();
         if cur_title_wc <= 4 && (!has_hierarchy_sep || cur_title_wc != orig_wc - 1) {
             cur_title = orig_title;
         }
@@ -452,11 +415,7 @@ impl Readability {
     pub fn parse(&mut self) -> Result<Article, ReadabilityError> {
         self.verify_doc()?;
 
-        let ld_meta = if self.config.disable_json_ld {
-            None
-        } else {
-            self.parse_json_ld()
-        };
+        let ld_meta = if self.config.disable_json_ld { None } else { self.parse_json_ld() };
         let mut metadata = self.get_article_metadata(ld_meta);
 
         self.prepare();
@@ -549,11 +508,8 @@ impl Readability {
             let name_is_string = matches!(name_val.kind(), gjson::Kind::String);
             let headline_is_string = matches!(headline_val.kind(), gjson::Kind::String);
 
-            let name = if name_is_string {
-                name_val.str().trim().to_string()
-            } else {
-                String::new()
-            };
+            let name =
+                if name_is_string { name_val.str().trim().to_string() } else { String::new() };
 
             let headline = if headline_is_string {
                 headline_val.str().trim().to_string()
@@ -775,12 +731,8 @@ impl Readability {
             doc.select(".page *[class]").remove_attr("class");
             return;
         }
-        let classes_to_preserve: Vec<&str> = self
-            .config
-            .classes_to_preserve
-            .iter()
-            .map(|s| s.as_str())
-            .collect();
+        let classes_to_preserve: Vec<&str> =
+            self.config.classes_to_preserve.iter().map(|s| s.as_str()).collect();
 
         let class_sel = classes_to_preserve
             .iter()
@@ -889,12 +841,8 @@ impl Readability {
 
     fn verify_doc(&self) -> Result<(), ReadabilityError> {
         if self.config.max_elements_to_parse > 0 {
-            let total_elements = self
-                .doc
-                .root()
-                .descendants_it()
-                .filter(|n| n.is_element())
-                .count();
+            let total_elements =
+                self.doc.root().descendants_it().filter(|n| n.is_element()).count();
             if total_elements > self.config.max_elements_to_parse {
                 return Err(ReadabilityError::TooManyElements(
                     total_elements,
@@ -927,9 +875,7 @@ impl Readability {
 }
 
 fn get_map_any_value(map: &HashMap<String, StrTendril>, keys: &[&str]) -> Option<StrTendril> {
-    keys.iter()
-        .find_map(|&key| map.get(key))
-        .map(|s| s.to_owned())
+    keys.iter().find_map(|&key| map.get(key)).map(|s| s.to_owned())
 }
 
 fn remove_comments(n: &Node) {
@@ -965,9 +911,8 @@ fn next_significant_node(node: Option<NodeRef>) -> Option<NodeRef> {
 }
 
 fn simplify_nested_elements(root_sel: &Selection) {
-    let only_sel = root_sel
-        .select("div, section")
-        .select(":is(div, section) > :is(div, section):only-child");
+    let only_sel =
+        root_sel.select("div, section").select(":is(div, section) > :is(div, section):only-child");
 
     for node in only_sel.nodes().iter().rev() {
         let Some(parent) = node.parent() else {
@@ -991,12 +936,7 @@ fn extract_excerpt(doc: &Document) -> Option<String> {
 }
 
 fn normalize_meta_key(raw_key: &str) -> String {
-    raw_key
-        .to_lowercase()
-        .split_whitespace()
-        .collect::<Vec<_>>()
-        .join("")
-        .replace('.', ":")
+    raw_key.to_lowercase().split_whitespace().collect::<Vec<_>>().join("").replace('.', ":")
 }
 
 fn get_json_ld_string_value(content: &str, path: &str) -> Option<String> {
@@ -1091,10 +1031,7 @@ mod tests {
     #[test]
     fn test_disable_sparse_json_ld() {
         let contents = include_str!("../test-pages/rustwiki_2024.html");
-        let cfg = Config {
-            disable_json_ld: false,
-            ..Default::default()
-        };
+        let cfg = Config { disable_json_ld: false, ..Default::default() };
         let mut readability = Readability::new(contents, None, Some(cfg)).unwrap();
         // `Article::url` is always taken from JSON-LD.
         // Therefore, if `config.disable_json_ld` is set to true, `Article::url` will be `None`.
@@ -1103,10 +1040,7 @@ mod tests {
             Some("https://en.wikipedia.org/wiki/Rust_(programming_language)".to_string());
         assert_eq!(res.url, expected_url);
 
-        let cfg = Config {
-            disable_json_ld: true,
-            ..Default::default()
-        };
+        let cfg = Config { disable_json_ld: true, ..Default::default() };
         let mut readability = Readability::new(contents, None, Some(cfg)).unwrap();
         let res = readability.parse().unwrap();
         let expected_url = None;
@@ -1120,17 +1054,11 @@ mod tests {
         let tests = [(10, true), (0, false), (10000, false)];
 
         for (max_elements_to_parse, want_err) in tests {
-            let cfg = Config {
-                max_elements_to_parse,
-                ..Default::default()
-            };
+            let cfg = Config { max_elements_to_parse, ..Default::default() };
             let mut readability = Readability::new(contents, None, Some(cfg)).unwrap();
             let res = readability.parse();
             if want_err {
-                assert!(matches!(
-                    res.err().unwrap(),
-                    ReadabilityError::TooManyElements(_, _)
-                ));
+                assert!(matches!(res.err().unwrap(), ReadabilityError::TooManyElements(_, _)));
             } else {
                 assert!(res.is_ok());
             }

@@ -14,10 +14,7 @@ fn test_002() {
 
 #[test]
 fn test_003() {
-    test_readability(
-        "test-pages/ok/003-metadata-preferred/",
-        Some("http://fakehost/test/"),
-    );
+    test_readability("test-pages/ok/003-metadata-preferred/", Some("http://fakehost/test/"));
 }
 
 #[test]
@@ -30,10 +27,7 @@ fn test_004() {
 
 #[test]
 fn test_005() {
-    test_readability(
-        "test-pages/ok/005-unescape-html-entities/",
-        Some("http://fakehost/test/"),
-    );
+    test_readability("test-pages/ok/005-unescape-html-entities/", Some("http://fakehost/test/"));
 }
 
 #[test]
@@ -48,10 +42,7 @@ fn test_aktualne() {
 
 #[test]
 fn test_archive_of_our_own() {
-    test_readability(
-        "test-pages/ok/archive-of-our-own/",
-        Some("http://fakehost/test/"),
-    );
+    test_readability("test-pages/ok/archive-of-our-own/", Some("http://fakehost/test/"));
 }
 
 #[test]
@@ -94,26 +85,17 @@ fn test_ehow_1() {
 
 #[test]
 fn test_js_link_replacement() {
-    test_readability(
-        "test-pages/ok/js-link-replacement/",
-        Some("http://fakehost/test/"),
-    );
+    test_readability("test-pages/ok/js-link-replacement/", Some("http://fakehost/test/"));
 }
 
 #[test]
 fn test_keep_tabular_data() {
-    test_readability(
-        "test-pages/ok/keep-tabular-data/",
-        Some("http://fakehost/test/"),
-    );
+    test_readability("test-pages/ok/keep-tabular-data/", Some("http://fakehost/test/"));
 }
 
 #[test]
 fn test_medicalnewstoday() {
-    test_readability(
-        "test-pages/ok/medicalnewstoday/",
-        Some("http://fakehost/test/"),
-    );
+    test_readability("test-pages/ok/medicalnewstoday/", Some("http://fakehost/test/"));
 }
 
 #[test]
@@ -133,10 +115,7 @@ fn test_replace_brs() {
 
 #[test]
 fn test_social_buttons() {
-    test_readability(
-        "test-pages/ok/social-buttons/",
-        Some("http://fakehost/test/"),
-    );
+    test_readability("test-pages/ok/social-buttons/", Some("http://fakehost/test/"));
 }
 
 #[test]
@@ -186,10 +165,7 @@ fn test_toc_missing() {
 
 #[test]
 fn test_table_style_attributes() {
-    test_readability(
-        "test-pages/ok/table-style-attributes/",
-        Some("http://fakehost/test/"),
-    )
+    test_readability("test-pages/ok/table-style-attributes/", Some("http://fakehost/test/"))
 }
 
 #[test]
@@ -204,10 +180,7 @@ fn test_citylab_1() {
 
 #[test]
 fn test_lemonde_1() {
-    test_readability(
-        "test-pages/readability/lemonde-1/",
-        Some("http://fakehost/test/"),
-    );
+    test_readability("test-pages/readability/lemonde-1/", Some("http://fakehost/test/"));
 }
 
 #[test]

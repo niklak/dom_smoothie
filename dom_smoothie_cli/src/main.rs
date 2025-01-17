@@ -115,24 +115,21 @@ fn main() -> Result<(), Box<dyn Error>> {
         unreachable!();
     };
 
-    let result_html_path: PathBuf = output_path
-        .clone()
-        .join(format!("{}_result.html", input_fn.to_string_lossy()));
+    let result_html_path: PathBuf =
+        output_path.clone().join(format!("{}_result.html", input_fn.to_string_lossy()));
 
     fs::write(result_html_path, article.content.as_bytes())?;
 
-    let result_text_path: PathBuf = output_path
-        .clone()
-        .join(format!("{}_result.txt", input_fn.to_string_lossy()));
+    let result_text_path: PathBuf =
+        output_path.clone().join(format!("{}_result.txt", input_fn.to_string_lossy()));
 
     fs::write(result_text_path, article.text_content.as_bytes())?;
 
     let metadata = Metadata::from(&article);
     let metadata_content = serde_json::to_string_pretty(&metadata)?;
 
-    let meta_path: PathBuf = output_path
-        .clone()
-        .join(format!("{}_metadata.json", input_fn.to_string_lossy()));
+    let meta_path: PathBuf =
+        output_path.clone().join(format!("{}_metadata.json", input_fn.to_string_lossy()));
 
     fs::write(meta_path, metadata_content)?;
 

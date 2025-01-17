@@ -32,9 +32,7 @@ impl Readability {
             let descendants = body_node.descendants();
 
             for node in descendants.iter().filter(|n| n.is_element()) {
-                let Some(node_name) = node.node_name() else {
-                    unreachable!()
-                };
+                let Some(node_name) = node.node_name() else { unreachable!() };
 
                 if TAGS_WITH_CONTENT.contains(&node_name.as_ref()) {
                     // TODO: this is a controversial moment, it may leave an empty block,
@@ -114,10 +112,8 @@ impl Readability {
 
         let mut top_candidate = top_candidates.first().cloned();
 
-        let tc_name = top_candidate
-            .as_ref()
-            .and_then(|n| n.node_name())
-            .unwrap_or_else(StrTendril::new);
+        let tc_name =
+            top_candidate.as_ref().and_then(|n| n.node_name()).unwrap_or_else(StrTendril::new);
 
         let page_sel = doc.select("body");
         let page_node = page_sel.nodes().first().unwrap();
@@ -256,8 +252,7 @@ impl Readability {
                 let div = doc.tree.new_element("div");
                 div.set_attr("id", "readability-page-1");
                 div.set_attr("class", "page");
-                doc.tree
-                    .reparent_children_of(&article_content.id, Some(div.id));
+                doc.tree.reparent_children_of(&article_content.id, Some(div.id));
                 article_content.replace_with(&div);
                 article_content = div;
             }
@@ -337,29 +332,28 @@ fn get_node_matching_string(node: &NodeRef) -> String {
         matched_attrs.push(id.to_string());
     }
 
-    matched_attrs.join(" ")
+    matched_attrs.join(" ").to_lowercase()
 }
 
 fn is_valid_byline(node: &Node, match_string: &str) -> bool {
     let byline_len = node.text().trim().chars().count();
     let byline_len_in_range = byline_len > 0 && byline_len < 100;
 
-    byline_len_in_range && (MATCHER_BYLINE.match_element(node) || RX_BYLINE.is_match(match_string))
+    byline_len_in_range
+        && (MATCHER_BYLINE.match_element(node)
+            || BYLINE_PATTERNS.iter().any(|p| match_string.contains(p)))
 }
 
 fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
-    if !RX_UNLIKELY_CANDIDATES.is_match(match_string) {
-        return false;
-    }
-    if RX_MAYBE_CANDIDATES.is_match(match_string) {
+    if !UNLIKELY_CANDIDATES.iter().any(|p| match_string.contains(p)) {
         return false;
     }
 
-    if node
-        .node_name()
-        .filter(|name| matches!(name.as_ref(), "a" | "body"))
-        .is_some()
-    {
+    if MAYBE_CANDIDATES.iter().any(|p| match_string.contains(p)) {
+        return false;
+    }
+
+    if node.node_name().filter(|name| matches!(name.as_ref(), "a" | "body")).is_some() {
         return false;
     }
 
@@ -504,9 +498,7 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
         sibling_score_threshold = 10.0;
     }
     // Keep potential top candidate's parent node to try to get text direction of it later.
-    let Some(parent_of_top_candidate) = tc.parent() else {
-        unreachable!()
-    };
+    let Some(parent_of_top_candidate) = tc.parent() else { unreachable!() };
 
     let siblings: Vec<Node> = parent_of_top_candidate.element_children();
 
@@ -688,10 +680,7 @@ mod tests {
         </html>"#;
 
         let doc = Document::from(contents);
-        let mut metadata = Metadata {
-            byline: Some("Cat".to_string()),
-            ..Default::default()
-        };
+        let mut metadata = Metadata { byline: Some("Cat".to_string()), ..Default::default() };
         // consuming byline during grabbing the article
         filter_document(&doc.root(), &mut metadata, true);
         assert!(doc.select("a").exists())

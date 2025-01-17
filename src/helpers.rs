@@ -21,11 +21,8 @@ pub(crate) fn text_similarity(text_a: &str, text_b: &str) -> f64 {
     let unique_tokens_a: HashSet<&str> = a.unicode_words().collect();
 
     let tokens_b: Vec<&str> = b.unicode_words().collect();
-    let unique_tokens_b: Vec<&str> = tokens_b
-        .iter()
-        .filter(|&&s| !unique_tokens_a.contains(s))
-        .cloned()
-        .collect();
+    let unique_tokens_b: Vec<&str> =
+        tokens_b.iter().filter(|&&s| !unique_tokens_a.contains(s)).cloned().collect();
 
     let merged_b = tokens_b.join(" ");
     let merged_unique_b = unique_tokens_b.join(" ");
@@ -77,12 +74,10 @@ where
     F: Fn(&Node) -> bool,
 {
     let max_depth = max_depth.map(|max_depth| if max_depth == 0 { 3 } else { max_depth });
-    let mut matched_ancestors = node
-        .ancestors_it(max_depth)
-        .filter(|a| match a.node_name() {
-            Some(name) => name.as_ref() == tag,
-            None => false,
-        });
+    let mut matched_ancestors = node.ancestors_it(max_depth).filter(|a| match a.node_name() {
+        Some(name) => name.as_ref() == tag,
+        None => false,
+    });
 
     if let Some(filter_fn) = filter_fn {
         matched_ancestors.any(|a| filter_fn(&a))
@@ -116,11 +111,7 @@ pub(crate) fn link_density(node: &Node) -> f32 {
 
     for a in a_sel.iter() {
         let href = a.attr_or("href", "");
-        let coeff = if !href.is_empty() && RX_HASH_URL.is_match(href.as_ref()) {
-            0.3
-        } else {
-            1.0
-        };
+        let coeff = if !href.is_empty() && RX_HASH_URL.is_match(href.as_ref()) { 0.3 } else { 1.0 };
         link_length += normalize_spaces(&a.text()).chars().count() as f32 * coeff;
     }
 
@@ -142,9 +133,7 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
         return false;
     }
 
-    !node
-        .children_it(false)
-        .any(|n| n.is_text() && !n.text().trim().is_empty())
+    !node.children_it(false).any(|n| n.is_text() && !n.text().trim().is_empty())
 }
 
 pub(crate) fn is_element_without_content(node: &Node) -> bool {
@@ -179,20 +168,15 @@ pub(crate) fn is_probably_visible(node: &Node) -> bool {
         return false;
     }
 
-    let is_invisible_style = node
-        .attr("style")
-        .map_or(false, |s| RX_STYLE_DISPLAY_NONE.is_match(&s));
+    let is_invisible_style =
+        node.attr("style").map_or(false, |s| RX_STYLE_DISPLAY_NONE.is_match(&s));
 
     if is_invisible_style {
         return false;
     }
 
-    let is_aria_hidden = node
-        .attr("aria-hidden")
-        .map_or(false, |a| a.as_ref() == "true");
-    let has_fallback_image = node
-        .attr("class")
-        .map_or(false, |s| s.contains("fallback-image"));
+    let is_aria_hidden = node.attr("aria-hidden").map_or(false, |a| a.as_ref() == "true");
+    let has_fallback_image = node.attr("class").map_or(false, |s| s.contains("fallback-image"));
 
     if is_aria_hidden && !has_fallback_image {
         return false;

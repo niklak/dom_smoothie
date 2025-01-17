@@ -30,10 +30,8 @@ where
     let expected_path = base_path.join("expected.html");
 
     let source_contents = fs::read_to_string(source_path).unwrap();
-    let cfg = dom_smoothie::Config {
-        classes_to_preserve: vec!["caption".into()],
-        ..Default::default()
-    };
+    let cfg =
+        dom_smoothie::Config { classes_to_preserve: vec!["caption".into()], ..Default::default() };
     let mut r = Readability::new(source_contents, host, Some(cfg)).unwrap();
     let article = r.parse().unwrap();
 
@@ -73,10 +71,8 @@ where
     let source_path = base_path.join("source.html");
 
     let source_contents = fs::read_to_string(source_path).unwrap();
-    let cfg = dom_smoothie::Config {
-        classes_to_preserve: vec!["caption".into()],
-        ..Default::default()
-    };
+    let cfg =
+        dom_smoothie::Config { classes_to_preserve: vec!["caption".into()], ..Default::default() };
     let mut r = Readability::new(source_contents, host, Some(cfg)).unwrap();
 
     let readable = r.is_probably_readable(None, None);
@@ -87,27 +83,12 @@ where
     let meta_contents = fs::read_to_string(expected_metadata_path).unwrap();
     let expected: ExpectedMetadata = serde_json::from_str(&meta_contents).unwrap();
 
-    assert_eq!(
-        readable, expected.readerable,
-        "readerable does not match expected"
-    );
+    assert_eq!(readable, expected.readerable, "readerable does not match expected");
 
-    assert_eq!(
-        article.title, expected.title,
-        "title does not match expected"
-    );
-    assert_eq!(
-        article.byline, expected.byline,
-        "byline does not match expected"
-    );
-    assert_eq!(
-        article.excerpt, expected.excerpt,
-        "excerpt does not match expected"
-    );
-    assert_eq!(
-        article.site_name, expected.site_name,
-        "site_name does not match expected"
-    );
+    assert_eq!(article.title, expected.title, "title does not match expected");
+    assert_eq!(article.byline, expected.byline, "byline does not match expected");
+    assert_eq!(article.excerpt, expected.excerpt, "excerpt does not match expected");
+    assert_eq!(article.site_name, expected.site_name, "site_name does not match expected");
     assert_eq!(
         article.published_time, expected.published_time,
         "published_time does not match expected"
