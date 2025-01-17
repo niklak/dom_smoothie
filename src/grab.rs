@@ -36,7 +36,7 @@ impl Readability {
                     unreachable!()
                 };
 
-                if TAGS_WITH_CONTENT.contains(&node_name.as_ref()) {
+                if TAGS_WITH_CONTENT.contains(&node_name) {
                     // TODO: this is a controversial moment, it may leave an empty block,
                     // which will have an impact on the result.
                     // When parent of the top candidate have more than one child,
@@ -53,7 +53,7 @@ impl Readability {
                     continue;
                 }
 
-                if DEFAULT_TAGS_TO_SCORE.contains(&node_name.as_ref()) {
+                if DEFAULT_TAGS_TO_SCORE.contains(&node_name) {
                     elements_to_score.push(node.clone());
                 }
             }
@@ -423,7 +423,7 @@ fn div_into_p<'a>(node: &'a Node, doc: &'a Document, elements_to_score: &mut Vec
 fn has_child_block_element(node: &Node) -> bool {
     node.children().iter().any(|n| {
         if let Some(name) = n.node_name() {
-            BLOCK_ELEMS.contains(&name.as_ref()) || has_child_block_element(n)
+            BLOCK_ELEMS.contains(&name) || has_child_block_element(n)
         } else {
             false
         }
@@ -548,7 +548,7 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
 
         //appending sibling
         if append {
-            if !ALTER_TO_DIV_EXCEPTIONS.contains(&sibling_name.as_ref()) {
+            if !ALTER_TO_DIV_EXCEPTIONS.contains(&sibling_name) {
                 // We have a node that isn't a common block level element, like a form or td tag.
                 // Turn it into a div so it doesn't get filtered out later by accident.
                 sibling.rename("div");
