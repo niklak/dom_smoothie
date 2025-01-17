@@ -52,7 +52,7 @@ fn clean_styles(n: &Node) {
 
     n.remove_attrs(PRESENTATIONAL_ATTRIBUTES);
 
-    if DEPRECATED_SIZE_ATTRIBUTE_ELEMS.contains(&node_name.as_ref()) {
+    if DEPRECATED_SIZE_ATTRIBUTE_ELEMS.contains(&node_name) {
         n.remove_attrs(&["width", "height"]);
     }
 

@@ -315,7 +315,7 @@ fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely:
             }
 
             if let Some(role) = node.attr("role") {
-                if UNLIKELY_ROLES.contains(&role.as_ref()) {
+                if UNLIKELY_ROLES.contains(&role) {
                     nodes_to_remove.insert(node.id);
                 }
             }

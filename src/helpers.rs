@@ -44,7 +44,7 @@ pub(crate) fn is_phrasing_content(node: &Node) -> bool {
         return false;
     };
 
-    if PHRASING_ELEMS.contains(&node_name.as_ref()) {
+    if PHRASING_ELEMS.contains(&node_name) {
         return true;
     }
 
