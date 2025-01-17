@@ -8,7 +8,7 @@ use crate::score::*;
 use crate::Config;
 
 fn clean(n: &Node, tag: &str) {
-    let is_embed = EMBED_ELEMENTS.contains(&tag);
+    let is_embed = EMBED_ELEMENTS.contains(tag);
 
     let sel = Selection::from(n.clone()).select(tag);
 
@@ -136,10 +136,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
         let content_length = normalize_spaces(&inner_text).chars().count();
         let link_density = link_density(node);
 
-        let mut textish_tags = vec!["span", "li", "td"];
-        textish_tags.extend(BLOCK_ELEMS);
-
-        let text_density = get_text_density(node, &textish_tags.join(","));
+        let text_density = get_text_density(node, &TEXTISH_TAGS.join(","));
         let is_figure_child = has_ancestor_tag::<NodePredicate>(node, "figure", None, None);
 
         let mut have_to_remove = false;

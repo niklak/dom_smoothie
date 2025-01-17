@@ -71,7 +71,7 @@ pub(crate) static META_EXCERPT_KEYS: &[&str] = &[
     "twitter:description",
 ];
 
-pub(crate) static BLOCK_ELEMS: &[&str] = &[
+pub(crate) static TEXTISH_TAGS: &[&str] = &[
     "blockquote",
     "dl",
     "div",
@@ -81,16 +81,9 @@ pub(crate) static BLOCK_ELEMS: &[&str] = &[
     "pre",
     "table",
     "ul",
-];
-
-pub(crate) static ALTER_TO_DIV_EXCEPTIONS: &[&str] =
-    &["div", "article", "section", "p", "ol", "ul"];
-
-pub(crate) static DEFAULT_TAGS_TO_SCORE: &[&str] =
-    &["section", "h2", "h3", "h4", "h5", "h6", "p", "td", "pre"];
-
-pub(crate) static TAGS_WITH_CONTENT: &[&str] = &[
-    "div", "section", "header", "h1", "h2", "h3", "h4", "h5", "h6",
+    "span",
+    "li",
+    "td",
 ];
 
 pub(crate) static PRESENTATIONAL_ATTRIBUTES: &[&str] = &[
@@ -107,8 +100,6 @@ pub(crate) static PRESENTATIONAL_ATTRIBUTES: &[&str] = &[
     "valign",
     "vspace",
 ];
-
-pub(crate) static EMBED_ELEMENTS: &[&str] = &["object", "embed", "iframe"];
 
 pub(crate) static UNLIKELY_CANDIDATES: &[&str] = &[
     "-ad-",
@@ -172,6 +163,29 @@ pub(crate) static JSONLD_ARTICLE_TYPES: &[&str] = &[
     "TechArticle",
     "APIReference",
 ];
+
+pub(crate) static BLOCK_ELEMS: phf::Set<&'static str> = phf_set!(
+    "blockquote",
+    "dl",
+    "div",
+    "img",
+    "ol",
+    "p",
+    "pre",
+    "table",
+    "ul",
+);
+
+pub(crate) static ALTER_TO_DIV_EXCEPTIONS: phf::Set<&'static str> =
+    phf_set!("div", "article", "section", "p", "ol", "ul");
+
+pub(crate) static DEFAULT_TAGS_TO_SCORE: phf::Set<&'static str> =
+    phf_set!("section", "h2", "h3", "h4", "h5", "h6", "p", "td", "pre");
+
+pub(crate) static TAGS_WITH_CONTENT: phf::Set<&'static str> =
+    phf_set!("div", "section", "header", "h1", "h2", "h3", "h4", "h5", "h6",);
+
+pub(crate) static EMBED_ELEMENTS: phf::Set<&'static str> = phf_set!("object", "embed", "iframe");
 
 pub(crate) static UNLIKELY_ROLES: phf::Set<&'static str> = phf_set!(
     "menu",
