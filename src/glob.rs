@@ -9,42 +9,35 @@ macro_rules! lazy_re {
     };
 }
 
-pub(crate) static MATCHER_TITLE: Lazy<Matcher> = Lazy::new(|| Matcher::new("head title").unwrap());
-pub(crate) static MATCHER_SCRIPT: Lazy<Matcher> =
-    Lazy::new(|| Matcher::new("script, noscript").unwrap());
-pub(crate) static MATCHER_HTML_LANG: Lazy<Matcher> =
-    Lazy::new(|| Matcher::new("html[lang]").unwrap());
-pub(crate) static MATCHER_STYLE: Lazy<Matcher> = Lazy::new(|| Matcher::new("style").unwrap());
-pub(crate) static MATCHER_FONT: Lazy<Matcher> = Lazy::new(|| Matcher::new("font").unwrap());
-pub(crate) static MATCHER_BR: Lazy<Matcher> = Lazy::new(|| Matcher::new("br").unwrap());
-pub(crate) static MATCHER_IMG: Lazy<Matcher> = Lazy::new(|| Matcher::new("img").unwrap());
-pub(crate) static MATCHER_META: Lazy<Matcher> = Lazy::new(|| Matcher::new("meta").unwrap());
-pub(crate) static MATCHER_JS_LINK: Lazy<Matcher> =
-    Lazy::new(|| Matcher::new(r#"a[href^="javascript:"]"#).unwrap());
+macro_rules! lazy_matcher {
+    ($pattern:expr) => {
+        Lazy::new(|| Matcher::new($pattern).unwrap())
+    };
+}
+
+pub(crate) static MATCHER_TITLE: Lazy<Matcher> = lazy_matcher!("head title");
+pub(crate) static MATCHER_SCRIPT: Lazy<Matcher> = lazy_matcher!("script, noscript");
+pub(crate) static MATCHER_HTML_LANG: Lazy<Matcher> = lazy_matcher!("html[lang]");
+pub(crate) static MATCHER_STYLE: Lazy<Matcher> = lazy_matcher!("style");
+pub(crate) static MATCHER_FONT: Lazy<Matcher> = lazy_matcher!("font");
+pub(crate) static MATCHER_BR: Lazy<Matcher> = lazy_matcher!("br");
+pub(crate) static MATCHER_IMG: Lazy<Matcher> = lazy_matcher!("img");
+pub(crate) static MATCHER_META: Lazy<Matcher> = lazy_matcher!("meta");
+pub(crate) static MATCHER_JS_LINK: Lazy<Matcher> = lazy_matcher!(r#"a[href^="javascript:"]"#);
 pub(crate) static MATCHER_JSONLD: Lazy<Matcher> =
-    Lazy::new(|| Matcher::new(r#"script[type="application/ld+json"]"#).unwrap());
-pub(crate) static MATCHER_HEADING: Lazy<Matcher> = Lazy::new(|| Matcher::new(r#"h1,h2"#).unwrap());
+    lazy_matcher!(r#"script[type="application/ld+json"]"#);
+pub(crate) static MATCHER_HEADING: Lazy<Matcher> = lazy_matcher!(r#"h1,h2"#);
 pub(crate) static MATCHER_DIALOGS: Lazy<Matcher> =
-    Lazy::new(|| Matcher::new(r#"*[aria-modal="true"][role="dialog"]"#).unwrap());
+    lazy_matcher!(r#"*[aria-modal="true"][role="dialog"]"#);
 pub(crate) static MATCHER_BYLINE: Lazy<Matcher> =
-    Lazy::new(|| Matcher::new(r#"[rel="author"],[itemprop*="author"]"#).unwrap());
-
-pub(crate) static MATCHER_A: Lazy<Matcher> = Lazy::new(|| Matcher::new("a").unwrap());
-pub(crate) static MATCHER_BR_HR: Lazy<Matcher> = Lazy::new(|| Matcher::new("br,hr").unwrap());
+    lazy_matcher!(r#"[rel="author"],[itemprop*="author"]"#);
+pub(crate) static MATCHER_A: Lazy<Matcher> = lazy_matcher!("a");
+pub(crate) static MATCHER_BR_HR: Lazy<Matcher> = lazy_matcher!("br,hr");
 pub(crate) static MATCHER_SOURCES: Lazy<Matcher> =
-    Lazy::new(|| Matcher::new("img,picture,figure,video,audio,sources").unwrap());
-pub(crate) static MATCHER_BASE: Lazy<Matcher> = Lazy::new(|| Matcher::new("base[href]").unwrap());
-pub(crate) static MATCHER_P: Lazy<Matcher> = Lazy::new(|| Matcher::new("p").unwrap());
-pub(crate) static MATCHER_EMBEDS: Lazy<Matcher> =
-    Lazy::new(|| Matcher::new("object,embed,iframe").unwrap());
-
-pub(crate) static PHRASING_ELEMS: &[&str] = &[
-    // "canvas", "iframe", "svg", "video",
-    "abbr", "audio", "b", "bdo", "br", "button", "cite", "code", "data", "datalist", "dfn", "em",
-    "embed", "i", "img", "input", "kbd", "label", "mark", "math", "meter", "noscript", "object",
-    "output", "progress", "q", "ruby", "samp", "script", "select", "small", "span", "strong",
-    "sub", "sup", "textarea", "time", "var", "wbr",
-];
+    lazy_matcher!("img,picture,figure,video,audio,sources");
+pub(crate) static MATCHER_BASE: Lazy<Matcher> = lazy_matcher!("base[href]");
+pub(crate) static MATCHER_P: Lazy<Matcher> = lazy_matcher!("p");
+pub(crate) static MATCHER_EMBEDS: Lazy<Matcher> = lazy_matcher!("object,embed,iframe");
 
 pub(crate) static META_TITLE_KEYS: &[&str] = &[
     "dc:title",
@@ -56,7 +49,6 @@ pub(crate) static META_TITLE_KEYS: &[&str] = &[
     "twitter:title",
     "parsely-title",
 ];
-
 pub(crate) static META_IMAGE_KEYS: &[&str] = &["og:image", "image", "twitter:image"];
 pub(crate) static META_MOD_TIME_KEYS: &[&str] = &["article:modified_time", "dcterms.modifie"];
 pub(crate) static META_PUB_TIME_KEYS: &[&str] = &[
@@ -79,18 +71,17 @@ pub(crate) static META_EXCERPT_KEYS: &[&str] = &[
     "twitter:description",
 ];
 
-pub(crate) static UNLIKELY_ROLES: &[&str] = &[
-    "menu",
-    "menubar",
-    "complementary",
-    "navigation",
-    "alert",
-    "alertdialog",
-    "dialog",
+pub(crate) static BLOCK_ELEMS: &[&str] = &[
+    "blockquote",
+    "dl",
+    "div",
+    "img",
+    "ol",
+    "p",
+    "pre",
+    "table",
+    "ul",
 ];
-
-pub(crate) static BLOCK_ELEMS: &[&str] =
-    &["blockquote", "dl", "div", "img", "ol", "p", "pre", "table", "ul"];
 
 pub(crate) static ALTER_TO_DIV_EXCEPTIONS: &[&str] =
     &["div", "article", "section", "p", "ol", "ul"];
@@ -98,8 +89,9 @@ pub(crate) static ALTER_TO_DIV_EXCEPTIONS: &[&str] =
 pub(crate) static DEFAULT_TAGS_TO_SCORE: &[&str] =
     &["section", "h2", "h3", "h4", "h5", "h6", "p", "td", "pre"];
 
-pub(crate) static TAGS_WITH_CONTENT: &[&str] =
-    &["div", "section", "header", "h1", "h2", "h3", "h4", "h5", "h6"];
+pub(crate) static TAGS_WITH_CONTENT: &[&str] = &[
+    "div", "section", "header", "h1", "h2", "h3", "h4", "h5", "h6",
+];
 
 pub(crate) static PRESENTATIONAL_ATTRIBUTES: &[&str] = &[
     "align",
@@ -152,11 +144,52 @@ pub(crate) static UNLIKELY_CANDIDATES: &[&str] = &[
     "yom-remote",
 ];
 
-pub(crate) static MAYBE_CANDIDATES: &[&str] =
-    &["and", "article", "body", "column", "content", "main", "shadow"];
+pub(crate) static MAYBE_CANDIDATES: &[&str] = &[
+    "and", "article", "body", "column", "content", "main", "shadow",
+];
 
 pub(crate) static BYLINE_PATTERNS: &[&str] =
     &["byline", "author", "dateline", "writtenby", "p-author"];
+
+pub(crate) static JSONLD_ARTICLE_TYPES: &[&str] = &[
+    "Article",
+    "AdvertiserContentArticle",
+    "NewsArticle",
+    "AnalysisNewsArticle",
+    "AskPublicNewsArticle",
+    "BackgroundNewsArticle",
+    "OpinionNewsArticle",
+    "ReportageNewsArticle",
+    "ReviewNewsArticle",
+    "Report",
+    "SatiricalArticle",
+    "ScholarlyArticle",
+    "MedicalScholarlyArticle",
+    "SocialMediaPosting",
+    "BlogPosting",
+    "LiveBlogPosting",
+    "DiscussionForumPosting",
+    "TechArticle",
+    "APIReference",
+];
+
+pub(crate) static UNLIKELY_ROLES: phf::Set<&'static str> = phf_set!(
+    "menu",
+    "menubar",
+    "complementary",
+    "navigation",
+    "alert",
+    "alertdialog",
+    "dialog",
+);
+
+pub(crate) static PHRASING_ELEMS: phf::Set<&'static str> = phf_set!(
+    // "canvas", "iframe", "svg", "video",
+    "abbr", "audio", "b", "bdo", "br", "button", "cite", "code", "data", "datalist", "dfn", "em",
+    "embed", "i", "img", "input", "kbd", "label", "mark", "math", "meter", "noscript", "object",
+    "output", "progress", "q", "ruby", "samp", "script", "select", "small", "span", "strong",
+    "sub", "sup", "textarea", "time", "var", "wbr",
+);
 
 pub(crate) static DEPRECATED_SIZE_ATTRIBUTE_ELEMS: phf::Set<&'static str> =
     phf_set!("table", "th", "td", "hr", "pre");
@@ -179,9 +212,6 @@ pub(crate) static RX_META_NAME: Lazy<Regex> = lazy_re!(
 );
 pub(crate) static RX_META_PROPERTY: Lazy<Regex> = lazy_re!(
     r#"(?i)\s*(article|dc|dcterm|og|twitter)\s*:\s*(author|creator|description|published_time|title|site_name)\s*"#
-);
-pub(crate) static RX_JSONLD_ARTICLE_TYPES: Lazy<Regex> = lazy_re!(
-    r#"(?i)^Article|AdvertiserContentArticle|NewsArticle|AnalysisNewsArticle|AskPublicNewsArticle|BackgroundNewsArticle|OpinionNewsArticle|ReportageNewsArticle|ReviewNewsArticle|Report|SatiricalArticle|ScholarlyArticle|MedicalScholarlyArticle|SocialMediaPosting|BlogPosting|LiveBlogPosting|DiscussionForumPosting|TechArticle|APIReference$"#
 );
 
 pub(crate) static RX_HASH_URL: Lazy<Regex> = lazy_re!(r#"^#.+"#);

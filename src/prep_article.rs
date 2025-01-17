@@ -23,7 +23,9 @@ fn clean(n: &Node, tag: &str) {
                 }
             }
 
-            if node.node_name().map_or(false, |name| name.as_ref() == "embed")
+            if node
+                .node_name()
+                .map_or(false, |name| name.as_ref() == "embed")
                 && RX_VIDEO_ATTRS.is_match(&node.inner_html())
             {
                 should_remove = false;
@@ -63,8 +65,10 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
     let sel = Selection::from(node.clone());
     let mut is_list = matches!(tag, "ul" | "ol");
     if !is_list {
-        let list_length =
-            sel.select("ul, ol").iter().fold(0, |acc, s| acc + s.text().trim().chars().count());
+        let list_length = sel
+            .select("ul, ol")
+            .iter()
+            .fold(0, |acc, s| acc + s.text().trim().chars().count());
         is_list = (list_length as f32 / sel.text().trim().chars().count() as f32) > 0.9;
     }
 
@@ -113,7 +117,9 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
                     return false;
                 }
             }
-            if embed.node_name().map_or(false, |name| name.as_ref() == "embed")
+            if embed
+                .node_name()
+                .map_or(false, |name| name.as_ref() == "embed")
                 && RX_VIDEO_ATTRS.is_match(&embed.inner_html())
             {
                 return false;
@@ -289,7 +295,11 @@ fn mark_data_tables(n: &Node) {
 }
 
 fn fix_lazy_images(n: &Node) {
-    for node in Selection::from(n.clone()).select("img,picture,figure").nodes().iter() {
+    for node in Selection::from(n.clone())
+        .select("img,picture,figure")
+        .nodes()
+        .iter()
+    {
         let src = node.attr_or("src", "");
         // In some sites (e.g. Kotaku), they put 1px square image as base64 data uri in the src attribute.
         // So, here we check if the data uri is too short, just might as well remove it.
@@ -368,7 +378,11 @@ fn fix_lazy_images(n: &Node) {
 }
 
 fn clean_headers(n: &Node, flags: &FlagSet<GrabFlags>) {
-    for h_node in Selection::from(n.clone()).select_matcher(&MATCHER_HEADING).nodes().iter() {
+    for h_node in Selection::from(n.clone())
+        .select_matcher(&MATCHER_HEADING)
+        .nodes()
+        .iter()
+    {
         if get_class_weight(h_node, flags.contains(GrabFlags::WeightClasses)) < 0.0 {
             h_node.remove_from_parent();
         }
@@ -444,7 +458,10 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
 
     for br_node in article_sel.select("br").nodes().iter() {
         if let Some(next_node) = br_node.next_element_sibling() {
-            if next_node.node_name().map_or(false, |name| name.as_ref() == "p") {
+            if next_node
+                .node_name()
+                .map_or(false, |name| name.as_ref() == "p")
+            {
                 br_node.remove_from_parent();
             }
         }
