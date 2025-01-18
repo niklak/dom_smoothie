@@ -1140,4 +1140,20 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn test_base_uri() {
+        let contents = r#"<!DOCTYPE>
+        <html>
+            <head>
+                <base href="https://example.com/">
+                <title>Test</title>
+            </head>
+            <body>
+            </body>
+        </html>"#;
+        let readability = Readability::from(contents);
+        let base_url = readability.parse_base_url();
+        assert_eq!(base_url.unwrap().as_str(), "https://example.com/");
+    }
 }
