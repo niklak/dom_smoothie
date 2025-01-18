@@ -461,11 +461,13 @@ impl Readability {
 
         self.prepare();
 
-        let base_url = self.parse_base_url();
         let Some(doc) = self.grab_article(&mut metadata) else {
             return Err(ReadabilityError::GrabFailed);
         };
 
+        // Getting a base uri from the Readability.document, 
+        // which wasn't changed after the grabbing the article
+        let base_url = self.parse_base_url();
         self.post_process_content(&doc, base_url);
 
         // If we haven't found an excerpt in the article's metadata, use the article's
@@ -473,7 +475,8 @@ impl Readability {
         // the article's content.
 
         if metadata.excerpt.is_none() {
-            // TODO: Although this matches readability.js, the procedure is far from perfect and requires improvement.
+            // TODO: Although this matches readability.js, 
+            // the procedure is far from perfect and requires improvement.
             metadata.excerpt = extract_excerpt(&doc)
         }
 
@@ -877,16 +880,14 @@ impl Readability {
     }
 
     fn parse_base_url(&self) -> Option<url::Url> {
-        let sel = self.doc.select_single_matcher(&MATCHER_BASE);
-        if sel.is_empty() {
-            self.doc_url.clone()
-        } else {
-            let href = sel.attr("href")?;
-            if let Some(doc_url) = self.doc_url.clone() {
-                doc_url.join(&href).ok()
-            } else {
-                url::Url::parse(&href).ok()
-            }
+        let Some(base_uri) = self.doc.base_uri() else {
+            return self.doc_url.clone();
+        };
+
+        if let Some(doc_url) = self.doc_url.clone() {
+            doc_url.join(&base_uri).ok()
+        }else {
+            url::Url::parse(&base_uri).ok()
         }
     }
 
@@ -1138,5 +1139,21 @@ mod tests {
                 assert!(res.is_ok());
             }
         }
+    }
+
+    #[test]
+    fn test_base_uri() {
+        let contents = r#"<!DOCTYPE>
+        <html>
+            <head>
+                <base href="https://example.com/">
+                <title>Test</title>
+            </head>
+            <body>
+            </body>
+        </html>"#;
+        let readability = Readability::from(contents);
+        let base_url = readability.parse_base_url();
+        assert_eq!(base_url.unwrap().as_str(), "https://example.com/");
     }
 }

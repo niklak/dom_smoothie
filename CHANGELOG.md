@@ -6,6 +6,8 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ## Changed
 - Reduced the number of regex checks since they can be replaced with `contains` checks.
+- Updated the dependencies.
+- Internal code change: use `dom_query::Document::base_uri` to extract the base uri instead of `dom_query::Matcher`. 
 
 
 ## [0.3.0] - 2025-01-08
