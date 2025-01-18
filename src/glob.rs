@@ -35,7 +35,6 @@ pub(crate) static MATCHER_A: Lazy<Matcher> = lazy_matcher!("a");
 pub(crate) static MATCHER_BR_HR: Lazy<Matcher> = lazy_matcher!("br,hr");
 pub(crate) static MATCHER_SOURCES: Lazy<Matcher> =
     lazy_matcher!("img,picture,figure,video,audio,sources");
-pub(crate) static MATCHER_BASE: Lazy<Matcher> = lazy_matcher!("base[href]");
 pub(crate) static MATCHER_P: Lazy<Matcher> = lazy_matcher!("p");
 pub(crate) static MATCHER_EMBEDS: Lazy<Matcher> = lazy_matcher!("object,embed,iframe");
 
