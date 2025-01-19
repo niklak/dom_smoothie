@@ -4,6 +4,9 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ## [Unreleased]
 
+## Added
+- Implemented a `serde` optional crate feature, enabling `serde::Serialize` and `serde::Deserialize` traits for `Article`, `Metadata`, and `Config` structures. 
+
 ## Changed
 - Reduced the number of regex checks since they can be replaced with `contains` checks.
 - Updated the dependencies.

@@ -8,6 +8,9 @@ mod readability;
 mod readable;
 mod score;
 
+#[cfg(feature = "serde")]
+mod serde_helpers;
+
 pub use config::Config;
 pub use readability::Article;
 pub use readability::Metadata;

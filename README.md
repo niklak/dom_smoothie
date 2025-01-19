@@ -137,7 +137,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     // Parse only the title without extracting the full content.
     let title: tendril::Tendril<tendril::fmt::UTF8> = readability.get_article_title();
-    assert_eq!(title, " Rust (programming language) - Wikipedia".into());
+    assert_eq!(title, "Rust (programming language) - Wikipedia".into());
     
     // However, this title may differ from `metadata.title`,
     // as `metadata.title` first attempts to extract the title from the metadata
