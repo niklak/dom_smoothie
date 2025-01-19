@@ -12,6 +12,6 @@ pub fn deserialize_str_tendril<'de, D>(deserializer: D) -> Result<StrTendril, D:
 where
     D: Deserializer<'de>,
 {
-    let s: &str = serde::Deserialize::deserialize(deserializer)?;
+    let s: String = serde::Deserialize::deserialize(deserializer)?;
     Ok(StrTendril::from(s))
 }
