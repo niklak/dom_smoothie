@@ -12,13 +12,28 @@ use crate::ReadabilityError;
 
 /// This struct represents the content of the article
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Article {
     /// The title
     pub title: String,
     /// The author
     pub byline: Option<String>,
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            serialize_with = "crate::serde_helpers::serialize_str_tendril",
+            deserialize_with = "crate::serde_helpers::deserialize_str_tendril"
+        )
+    )]
     /// The relevant HTML content
     pub content: StrTendril,
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            serialize_with = "crate::serde_helpers::serialize_str_tendril",
+            deserialize_with = "crate::serde_helpers::deserialize_str_tendril"
+        )
+    )]
     /// The relevant text content
     pub text_content: StrTendril,
     /// The text length
@@ -44,8 +59,9 @@ pub struct Article {
 }
 
 /// This struct represents the metadata extracted from the document
-#[derive(Debug, Default, Clone, serde::Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Default, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 pub struct Metadata {
     pub title: String,
     pub byline: Option<String>,
@@ -1080,6 +1096,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "serde")]
     fn test_parse_json_ld() {
         let contents = include_str!("../test-pages/ok/aclu/source.html");
         let ra = Readability::from(contents);

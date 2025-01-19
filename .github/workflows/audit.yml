@@ -18,7 +18,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Run clippy
-      run: cargo clippy --verbose --all-targets -- -D warnings
+      run: cargo clippy --verbose --all-targets --all-features -- -D warnings
     - name: Install cargo audit
       uses: taiki-e/install-action@cargo-audit
     - name: Run audit

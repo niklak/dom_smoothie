@@ -3,6 +3,7 @@ pub(crate) static DEFAULT_CHAR_THRESHOLD: usize = 500;
 
 /// Configuration options for [`crate::Readability`]
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Config {
     /// Set to `true` to keep all classes in the document
     pub keep_classes: bool,
