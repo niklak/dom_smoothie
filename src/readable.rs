@@ -5,8 +5,6 @@ use tendril::format_tendril;
 use crate::glob::*;
 use crate::helpers::is_probably_visible;
 
-
-
 /// Estimates whether the document is readable in a *quick-and-dirty* way.
 ///
 ///
