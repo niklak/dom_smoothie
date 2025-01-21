@@ -1,3 +1,5 @@
+use crate::glob::{MIN_CONTENT_LENGTH, MIN_SCORE};
+
 pub(crate) static DEFAULT_N_TOP_CANDIDATES: usize = 5;
 pub(crate) static DEFAULT_CHAR_THRESHOLD: usize = 500;
 
@@ -17,6 +19,12 @@ pub struct Config {
     pub n_top_candidates: usize,
     /// Character threshold for content extraction
     pub char_threshold: usize,
+    /// The minimum score required for the document to be considered readable. Defaults to 20.0.
+    /// Used only for [`crate::Readability::is_probably_readable`].
+    pub readable_min_score: f32,
+    /// The minimum content length required for the document to be considered readable. Defaults to 140.
+    /// Used only for [`crate::Readability::is_probably_readable`].
+    pub readable_min_content_length: usize,
 }
 
 impl Default for Config {
@@ -28,6 +36,8 @@ impl Default for Config {
             disable_json_ld: false,
             n_top_candidates: DEFAULT_N_TOP_CANDIDATES,
             char_threshold: DEFAULT_CHAR_THRESHOLD,
+            readable_min_score: MIN_SCORE,
+            readable_min_content_length: MIN_CONTENT_LENGTH,
         }
     }
 }
