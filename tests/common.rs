@@ -79,7 +79,7 @@ where
     };
     let mut r = Readability::new(source_contents, host, Some(cfg)).unwrap();
 
-    let readable = r.is_probably_readable(None, None);
+    let readable = r.is_probably_readable();
 
     let article = r.parse().unwrap();
 

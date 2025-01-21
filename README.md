@@ -157,20 +157,25 @@ fn main() -> Result<(), Box<dyn Error>> {
 ```rust
 use std::error::Error;
 
-use dom_smoothie::{Article, Readability};
+use dom_smoothie::{Article, Readability, Config};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let html = include_str!("../test-pages/rustwiki_2024.html");
+    // you can specify optional parameters for `Readability::is_probably_readable`.
+    let cfg = Config{
+        readable_min_score: 20.0,
+        readable_min_content_length: 140,
+        ..Default::default()
+    };
 
-    let mut readability = Readability::new(html, None, None)?;
+    let mut readability = Readability::new(html, None,  Some(cfg))?;
 
     // There is a way to perform a quick check to determine 
     // if the document is readable before cleaning and parsing it.
-    // After calling `Readability::parse`, it may show different results,
+    // After calling `Readability::parse`, it may show different results, 
     // but calling it after parsing would be nonsensical.
 
-    // You can specify content's min_score and min_content_length.
-    if readability.is_probably_readable(Some(20.0), Some(140)) {
+if readability.is_probably_readable() {
         let article: Article = readability.parse()?;
         println!("{:<15} {}", "Title:", article.title);
         println!("{:<15} {:?}", "Byline:", article.byline);
