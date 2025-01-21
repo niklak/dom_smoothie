@@ -538,39 +538,36 @@ impl Readability {
 
             let content = content.trim().replace(r#""@"#, r#""^"#);
 
-            /*if gjson::valid(&content) {
-                continue;
-            }*/
-
             let mut parsed = gjson::parse(&content);
-            let raw_content: String;
+            let clipped_content: String;
 
             if parsed.kind() == gjson::Kind::Array {
                 for it in parsed.array().iter() {
                     let typ = it.get("^type");
-                    if typ.kind() == gjson::Kind::String {
-                        if JSONLD_ARTICLE_TYPES
-                            .iter()
-                            .any(|p| typ.str().contains(p))
-                        {
-                            raw_content = it.to_string();
-                            parsed = gjson::parse(&raw_content);
-                            break;
-                        }
+                    if typ.kind() == gjson::Kind::String
+                        && JSONLD_ARTICLE_TYPES.iter().any(|p| typ.str().contains(p))
+                    {
+                        clipped_content = it.to_string();
+                        parsed = gjson::parse(&clipped_content);
+                        break;
                     }
                 }
             }
 
             let mut context_matched = false;
-            
+
             let context_val = parsed.get("^context");
-            if context_val.kind() == gjson::Kind::String && RX_SCHEMA_ORG.is_match(context_val.str()) {
+            if context_val.kind() == gjson::Kind::String
+                && RX_SCHEMA_ORG.is_match(context_val.str())
+            {
                 // validating @context
                 context_matched = true;
             }
 
             let context_vocab = parsed.get("^context.^vocab");
-            if context_vocab.kind() == gjson::Kind::String && RX_SCHEMA_ORG.is_match(context_vocab.str()) {
+            if context_vocab.kind() == gjson::Kind::String
+                && RX_SCHEMA_ORG.is_match(context_vocab.str())
+            {
                 // validating @context
                 context_matched = true;
             }
@@ -578,19 +575,18 @@ impl Readability {
             if !context_matched {
                 continue;
             }
-            
+
             // validating @type
             let mut article_type = String::new();
 
             let type_val = parsed.get("^type");
-
+            //There are no examples with @graph array, so it is not clear how to check it
+            //TODO: implement same @graph logic as mozilla, when there will be examples.
             if !type_val.exists() {
                 let type_val = parsed.get("^graph.#.^type");
                 if matches!(type_val.kind(), gjson::Kind::String) {
                     article_type = type_val.str().to_string();
                 }
-
-
             } else {
                 article_type = type_val.str().to_string();
             }
@@ -654,11 +650,8 @@ impl Readability {
                 _ => None,
             };
 
-            if let Some(byline) = byline {
-                if !byline.is_empty() {
-                    ld_meta.byline = Some(byline);
-                }
-                
+            if let Some(byline) = byline.filter(|s| !s.is_empty()) {
+                ld_meta.byline = Some(byline);
             }
 
             // Description
@@ -752,6 +745,14 @@ impl Readability {
         if metadata.byline.is_none() {
             if let Some(val) = get_map_any_value(&values, META_BYLINE_KEYS) {
                 metadata.byline = Some(val.to_string());
+            }
+            // if metadata is still none
+            if metadata.byline.is_none() {
+                if let Some(v) = values.get("article:author") {
+                    if url::Url::parse(v).is_err() {
+                        metadata.byline = Some(v.to_string());
+                    }
+                }
             }
         }
 
@@ -1061,10 +1062,12 @@ fn normalize_meta_key(raw_key: &str) -> String {
 fn get_json_ld_string_value(value: &gjson::Value, path: &str) -> Option<String> {
     let val = value.get(path);
     if matches!(val.kind(), gjson::Kind::String) {
-        Some(val.str().trim().to_string())
-    } else {
-        None
+        let val = val.str().trim().to_string();
+        if !val.is_empty() {
+            return Some(val);
+        }
     }
+    None
 }
 
 fn to_absolute_url(raw_url: &str, base_uri: &Url) -> String {
@@ -1076,7 +1079,6 @@ fn to_absolute_url(raw_url: &str, base_uri: &Url) -> String {
 
     base_uri.join(&u).map_or(u, |uri| uri.to_string())
 }
-
 
 #[cfg(test)]
 mod tests {
