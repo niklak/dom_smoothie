@@ -192,6 +192,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 ```
 </details>
 
+## Crate Features
+
+- `serde`: Enables the `serde::Serialize` and `serde::Deserialize` traits for the `Article`, `Metadata`, and `Config` structures.
+
 ## Changelog
 [Changelog](./CHANGELOG.md)
 
