@@ -15,6 +15,12 @@ macro_rules! lazy_matcher {
     };
 }
 
+pub(crate) static MINIMUM_TOP_CANDIDATES: usize = 3;
+pub(crate) static SCORE_ATTR: &str = "data-readability-score";
+pub(crate) static MIN_SCORE: f32 = 20.0;
+pub(crate) static MIN_CONTENT_LENGTH: usize = 140;
+
+pub(crate) static MATCHER_LI_P: Lazy<Matcher> = lazy_matcher!("li p");
 pub(crate) static MATCHER_TITLE: Lazy<Matcher> = lazy_matcher!("head title");
 pub(crate) static MATCHER_SCRIPT: Lazy<Matcher> = lazy_matcher!("script, noscript");
 pub(crate) static MATCHER_HTML_LANG: Lazy<Matcher> = lazy_matcher!("html[lang]");
@@ -253,6 +259,3 @@ pub(crate) static RX_LOADING_WORDS: Lazy<Regex> =
     lazy_re!(r#"(?i)^((loading|正在加载|Загрузка|chargement|cargando)(…|\.\.\.)?)$"#);
 pub(crate) static RX_SHARE_ELEMENTS: Lazy<Regex> =
     lazy_re!(r#"(?i)(\b|_)(share|sharedaddy)(\b|_)"#);
-
-pub(crate) static MINIMUM_TOP_CANDIDATES: usize = 3;
-pub(crate) static SCORE_ATTR: &str = "data-readability-score";

@@ -1,4 +1,4 @@
-use serde::{Serializer, Deserializer};
+use serde::{Deserializer, Serializer};
 use tendril::StrTendril;
 
 pub fn serialize_str_tendril<S>(value: &StrTendril, serializer: S) -> Result<S::Ok, S::Error>

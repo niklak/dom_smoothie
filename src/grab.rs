@@ -2,6 +2,7 @@ use std::cmp::Reverse;
 use std::collections::HashSet;
 use std::vec;
 
+use dom_query::Selection;
 use dom_query::{Document, Node, NodeRef};
 use flagset::FlagSet;
 use tendril::StrTendril;
@@ -303,7 +304,17 @@ fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely:
 
         let match_string = get_node_matching_string(&node);
         if metadata.byline.is_none() && is_valid_byline(&node, &match_string) {
-            metadata.byline = Some(text.trim().to_string());
+            let byline = if let Some(item_prop_name) = Selection::from(node.clone())
+                .select("[itemprop=name]")
+                .nodes()
+                .first()
+            {
+                item_prop_name.text().trim().to_string()
+            } else {
+                text.trim().to_string()
+            };
+
+            metadata.byline = Some(byline);
             nodes_to_remove.insert(node.id);
             continue;
         }

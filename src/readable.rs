@@ -1,15 +1,9 @@
-use once_cell::sync::Lazy;
+use dom_query::Document;
 
-use dom_query::{Document, Matcher};
 use tendril::format_tendril;
 
 use crate::glob::*;
 use crate::helpers::is_probably_visible;
-
-static MIN_SCORE: f32 = 20.0;
-static MIN_CONTENT_LENGTH: usize = 140;
-
-static MATCHER_LI_P: Lazy<Matcher> = Lazy::new(|| Matcher::new("li p").unwrap());
 
 /// Estimates whether the document is readable in a *quick-and-dirty* way.
 ///
