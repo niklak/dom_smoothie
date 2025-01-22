@@ -60,18 +60,16 @@ impl Readability {
 
             let article_node = self.handle_candidates(&mut elements_to_score, &doc, &flags);
 
-
             if let Some(ref article_node) = article_node {
                 metadata.dir = get_dir_attr(article_node);
                 let article_doc = Document::from(article_node.html());
                 let text_length = normalize_spaces(&article_node.text()).chars().count();
                 if text_length < self.config.char_threshold {
-
                     if let Some((_, best_text_length)) = best_attempt {
                         if text_length > best_text_length {
                             best_attempt = Some((article_doc, text_length));
                         }
-                    }else {
+                    } else {
                         best_attempt = Some((article_doc, text_length));
                     }
 
@@ -86,8 +84,7 @@ impl Readability {
                         let (best_doc, _) = best_attempt?;
                         return Some(best_doc);
                     }
-
-                }else {
+                } else {
                     return Some(article_doc);
                 }
             }
@@ -286,11 +283,9 @@ fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely:
             continue;
         }
 
-        let text = node.text();
-
         if should_remove_title_header
             && MATCHER_HEADING.match_element(&node)
-            && text_similarity(&metadata.title, &text) > 0.75
+            && text_similarity(&metadata.title, &node.text()) > 0.75
         {
             should_remove_title_header = false;
             nodes_to_remove.insert(node.id);
@@ -306,7 +301,7 @@ fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely:
             {
                 item_prop_name.text().trim().to_string()
             } else {
-                text.trim().to_string()
+                node.text().trim().to_string()
             };
 
             metadata.byline = Some(byline);
@@ -334,16 +329,16 @@ fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely:
 }
 
 fn get_node_matching_string(node: &NodeRef) -> String {
-    let mut matched_attrs: Vec<String> = vec![];
+    let mut matched_buf = StrTendril::new();
     if let Some(class) = node.attr("class") {
-        matched_attrs.push(class.to_string());
+        matched_buf.push_tendril(&class);
+        matched_buf.push_char(' ');
     }
 
     if let Some(id) = node.attr("id") {
-        matched_attrs.push(id.to_string());
+        matched_buf.push_tendril(&id);
     }
-
-    matched_attrs.join(" ").to_lowercase()
+    matched_buf.to_lowercase()
 }
 
 fn is_valid_byline(node: &Node, match_string: &str) -> bool {
@@ -356,19 +351,20 @@ fn is_valid_byline(node: &Node, match_string: &str) -> bool {
 }
 
 fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
+    // Assuming that `<body>` node can't can't reach this function
+    if node
+        .node_name()
+        .filter(|name| name.as_ref() == "a")
+        .is_some()
+    {
+        return false;
+    }
+
     if !UNLIKELY_CANDIDATES.iter().any(|p| match_string.contains(p)) {
         return false;
     }
 
     if MAYBE_CANDIDATES.iter().any(|p| match_string.contains(p)) {
-        return false;
-    }
-
-    if node
-        .node_name()
-        .filter(|name| matches!(name.as_ref(), "a" | "body"))
-        .is_some()
-    {
         return false;
     }
 
