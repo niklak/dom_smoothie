@@ -1,4 +1,3 @@
-use std::cmp::Reverse;
 use std::collections::HashSet;
 use std::vec;
 
@@ -21,7 +20,7 @@ impl Readability {
         let mut flags =
             GrabFlags::CleanConditionally | GrabFlags::StripUnlikelys | GrabFlags::WeightClasses;
 
-        let mut attempts = vec![];
+        let mut best_attempt: Option<(Document, usize)> = None;
         loop {
             let mut elements_to_score: Vec<NodeRef<'_>> = vec![];
             let doc = self.doc.clone();
@@ -60,18 +59,22 @@ impl Readability {
             }
 
             let article_node = self.handle_candidates(&mut elements_to_score, &doc, &flags);
-            let mut parse_successful = true;
 
-            let mut article_doc: Option<Document> = None;
 
             if let Some(ref article_node) = article_node {
                 metadata.dir = get_dir_attr(article_node);
-                article_doc = Some(Document::from(article_node.html()));
+                let article_doc = Document::from(article_node.html());
                 let text_length = normalize_spaces(&article_node.text()).chars().count();
                 if text_length < self.config.char_threshold {
-                    parse_successful = false;
 
-                    attempts.push((article_doc.clone(), text_length));
+                    if let Some((_, best_text_length)) = best_attempt {
+                        if text_length > best_text_length {
+                            best_attempt = Some((article_doc, text_length));
+                        }
+                    }else {
+                        best_attempt = Some((article_doc, text_length));
+                    }
+
                     if flags.contains(GrabFlags::StripUnlikelys) {
                         flags -= GrabFlags::StripUnlikelys;
                     } else if flags.contains(GrabFlags::WeightClasses) {
@@ -80,21 +83,13 @@ impl Readability {
                         flags -= GrabFlags::CleanConditionally;
                     } else {
                         // No luck after removing flags, just return the longest text we found during the different loops
-                        attempts.sort_by_key(|i| Reverse(i.1));
-
-                        if attempts[0].1 == 0 {
-                            return None;
-                        }
-                        article_doc = attempts[0].0.clone();
-                        parse_successful = true;
+                        let (best_doc, _) = best_attempt?;
+                        return Some(best_doc);
                     }
-                }
-            } else {
-                parse_successful = false;
-            }
 
-            if parse_successful {
-                return article_doc;
+                }else {
+                    return Some(article_doc);
+                }
             }
             // Now that we've gone through the full algorithm, check to see if
             // we got any meaningful content. If we didn't, we may need to re-run
