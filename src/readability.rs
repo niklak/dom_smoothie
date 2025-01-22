@@ -481,9 +481,6 @@ impl Readability {
             return Err(ReadabilityError::GrabFailed);
         };
 
-        // TODO: this must be resolved without re-serializing document.
-        let doc = Document::from(doc.select("#readability-page-1").html());
-
         // Getting a base uri from the Readability.document,
         // which wasn't changed after the grabbing the article
         let base_url = self.parse_base_url();
@@ -1023,6 +1020,15 @@ fn next_significant_node(node: Option<NodeRef>) -> Option<NodeRef> {
 }
 
 fn simplify_nested_elements(root_sel: &Selection) {
+        for td_node in root_sel.select("*:not(tr) > td").nodes().iter() {
+        if let Some(parent) = td_node.parent() {
+            if let Some(first_child) = td_node.first_child() {
+                parent.append_children(&first_child);
+            }
+        }
+        td_node.remove_from_parent();
+    }
+
     let only_sel = root_sel
         .select("div, section")
         .select(":is(div, section) > :is(div, section):only-child");
