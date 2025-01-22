@@ -816,7 +816,7 @@ impl Readability {
 
     fn post_process_content(&self, doc: &Document, base_url: Option<url::Url>) {
         // Readability cannot open relative uris so we convert them to absolute uris.
-        let root_sel = doc.select(".page");
+        let root_sel = doc.select_single("#readability-page-1");
 
         self.fix_js_links(&root_sel);
 
@@ -828,13 +828,13 @@ impl Readability {
         score_sel.remove_attrs(&["data-readability-score", "data-readability-table"]);
 
         if !self.config.keep_classes {
-            self.clean_classes(doc);
+            self.clean_classes(&root_sel);
         }
     }
 
-    fn clean_classes(&self, doc: &Document) {
+    fn clean_classes(&self, sel: &Selection) {
         if self.config.classes_to_preserve.is_empty() {
-            doc.select(".page *[class]").remove_attr("class");
+            sel.select("*[class]").remove_attr("class");
             return;
         }
         let classes_to_preserve: Vec<&str> = self
@@ -850,10 +850,10 @@ impl Readability {
             .collect::<Vec<String>>()
             .join(",");
 
-        let other_class_sel = doc.select(&format!(".page *[class]:not({})", class_sel));
+        let other_class_sel = sel.select(&format!(".page *[class]:not({})", class_sel));
         other_class_sel.remove_attr("class");
 
-        let class_sel = doc.select(&format!(".page {}", class_sel));
+        let class_sel = sel.select(&format!(".page {}", class_sel));
 
         for node in class_sel.nodes().iter() {
             let Some(class_string) = node.attr("class") else {
@@ -1037,7 +1037,7 @@ fn simplify_nested_elements(root_sel: &Selection) {
 }
 
 fn extract_excerpt(doc: &Document) -> Option<String> {
-    let p_sel = doc.select_single_matcher(&MATCHER_P);
+    let p_sel = doc.select_single("#readability-page-1").select_single_matcher(&MATCHER_P);
     if p_sel.is_empty() {
         None
     } else {

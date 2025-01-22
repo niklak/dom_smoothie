@@ -62,15 +62,14 @@ impl Readability {
 
             if let Some(ref article_node) = article_node {
                 metadata.dir = get_dir_attr(article_node);
-                let article_doc = Document::from(article_node.html());
                 let text_length = normalize_spaces(&article_node.text()).chars().count();
                 if text_length < self.config.char_threshold {
                     if let Some((_, best_text_length)) = best_attempt {
                         if text_length > best_text_length {
-                            best_attempt = Some((article_doc, text_length));
+                            best_attempt = Some((doc, text_length));
                         }
                     } else {
-                        best_attempt = Some((article_doc, text_length));
+                        best_attempt = Some((doc, text_length));
                     }
 
                     if flags.contains(GrabFlags::StripUnlikelys) {
@@ -85,7 +84,7 @@ impl Readability {
                         return Some(best_doc);
                     }
                 } else {
-                    return Some(article_doc);
+                    return Some(doc);
                 }
             }
             // Now that we've gone through the full algorithm, check to see if
