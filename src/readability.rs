@@ -818,17 +818,17 @@ impl Readability {
     fn post_process_content(&self, root_sel: &Selection, base_url: Option<url::Url>) {
         // Readability cannot open relative uris so we convert them to absolute uris.
         
-        self.fix_js_links(&root_sel);
+        self.fix_js_links(root_sel);
 
-        self.fix_relative_uris(&root_sel, base_url);
+        self.fix_relative_uris(root_sel, base_url);
 
-        simplify_nested_elements(&root_sel);
+        simplify_nested_elements(root_sel);
 
         let score_sel = root_sel.parent().select("*[data-readability-score], *[data-readability-table]");
         score_sel.remove_attrs(&["data-readability-score", "data-readability-table"]);
 
         if !self.config.keep_classes {
-            self.clean_classes(&root_sel);
+            self.clean_classes(root_sel);
         }
     }
 
