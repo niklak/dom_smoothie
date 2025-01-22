@@ -481,6 +481,9 @@ impl Readability {
             return Err(ReadabilityError::GrabFailed);
         };
 
+        // TODO: this must be resolved without re-serializing document.
+        let doc = Document::from(doc.select("#readability-page-1").html());
+
         // Getting a base uri from the Readability.document,
         // which wasn't changed after the grabbing the article
         let base_url = self.parse_base_url();
