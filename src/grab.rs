@@ -62,7 +62,7 @@ impl Readability {
 
             if let Some(ref article_node) = article_node {
                 metadata.dir = get_dir_attr(article_node);
-                let text_length = normalize_spaces(&article_node.text()).chars().count();
+                let text_length = normalized_char_count(&article_node.text());
                 if text_length < self.config.char_threshold {
                     if let Some((_, best_text_length)) = best_attempt {
                         if text_length > best_text_length {

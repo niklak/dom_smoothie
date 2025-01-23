@@ -298,7 +298,7 @@ impl Readability {
                 cur_title = self.doc.select_single("h1").text().to_string();
             }
         }
-        cur_title = normalize_spaces(&cur_title).to_string();
+        cur_title = normalize_spaces(&cur_title);
 
         // If we now have 4 words or fewer as our title, and either no
         // 'hierarchical' separators (\, /, > or ») were found in the original
@@ -1141,7 +1141,7 @@ mod tests {
     #[test]
     fn test_normalize_spaces() {
         let text = "  The    quick\t        brown\r\n  fox ";
-        let normalized = normalize_spaces(text).to_string();
+        let normalized = normalize_spaces(text);
         assert_eq!(normalized, "The quick brown fox");
     }
 

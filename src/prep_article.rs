@@ -133,7 +133,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
             return true;
         }
 
-        let content_length = normalize_spaces(&inner_text).chars().count();
+        let content_length = normalized_char_count(&inner_text);
         let link_density = link_density(node);
 
         let text_density = get_text_density(node, &TEXTISH_TAGS.join(","));

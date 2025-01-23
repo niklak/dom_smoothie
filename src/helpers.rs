@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 
-use tendril::StrTendril;
 use unicode_segmentation::UnicodeSegmentation;
 
 use dom_query::{Node, Selection};
@@ -93,32 +92,48 @@ where
 }
 
 pub(crate) fn get_text_density(node: &Node, selector: &str) -> f32 {
-    let text_length = normalize_spaces(&node.text()).chars().count() as f32;
+    let text_length = normalized_char_count(&node.text()) as f32;
     if text_length == 0.0 {
         return 0.0;
     }
     let sel = Selection::from(node.clone()).select(selector);
-    let children_length = normalize_spaces(&sel.text()).chars().count() as f32;
+    let children_length = normalized_char_count(&sel.text()) as f32;
     children_length / text_length
 }
 
-pub(crate) fn normalize_spaces(text: &str) -> StrTendril {
-    let mut result = StrTendril::with_capacity(text.len() as u32);
+pub(crate) fn normalize_spaces(text: &str) -> String {
+    let mut result = String::with_capacity(text.len());
     let mut iter = text.split_whitespace();
 
     if let Some(first) = iter.next() {
-        result.push_slice(first);
+        result.push_str(first);
         for word in iter {
-            result.push_char(' ');
-            result.push_slice(word);
+            result.push(' ');
+            result.push_str(word);
         }
     }
 
     result
 }
 
+pub(crate) fn normalized_char_count(text: &str) -> usize {
+    let mut char_count = 0;
+    let mut iter = text.split_whitespace();
+
+    if let Some(first) = iter.next() {
+        char_count += first.chars().count();
+        for word in iter {
+            // whitespace between words
+            char_count += 1;
+            char_count += word.chars().count();
+        }
+    }
+
+    char_count
+}
+
 pub(crate) fn link_density(node: &Node) -> f32 {
-    let text_length: f32 = normalize_spaces(&node.text()).chars().count() as f32;
+    let text_length: f32 = normalized_char_count(&node.text()) as f32;
     if text_length == 0.0 {
         return 0.0;
     }
@@ -131,7 +146,7 @@ pub(crate) fn link_density(node: &Node) -> f32 {
         } else {
             1.0
         };
-        link_length += normalize_spaces(&a.text()).chars().count() as f32 * coeff;
+        link_length += normalized_char_count(&a.text()) as f32 * coeff;
     }
 
     link_length / text_length
