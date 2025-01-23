@@ -112,7 +112,6 @@ pub(crate) fn normalize_spaces(text: &str) -> String {
             result.push_str(word);
         }
     }
-
     result
 }
 
@@ -128,7 +127,6 @@ pub(crate) fn normalized_char_count(text: &str) -> usize {
             char_count += word.chars().count();
         }
     }
-
     char_count
 }
 

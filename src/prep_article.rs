@@ -1,5 +1,6 @@
 use dom_query::{Node, Selection};
 use flagset::FlagSet;
+use tendril::format_tendril;
 
 use crate::glob::*;
 use crate::grab_flags::GrabFlags;
@@ -10,9 +11,7 @@ use crate::Config;
 fn clean(n: &Node, tag: &str) {
     let is_embed = EMBED_ELEMENTS.contains(tag);
 
-    let sel = Selection::from(n.clone()).select(tag);
-
-    for node in sel.nodes().iter() {
+    for node in n.find(&[tag]) {
         // Allow youtube and vimeo videos through as people usually want to see those.
         let mut should_remove = true;
         if is_embed {
@@ -101,10 +100,10 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
         // If there are not very many commas, and the number of
         // non-paragraph elements is more than paragraphs or other
         // ominous signs, remove the element.
-        let p: f32 = sel.select("p").nodes().len() as f32;
-        let img = sel.select("img").nodes().len() as f32;
-        let li = sel.select("li").nodes().len() as f32 - 100.0;
-        let input = sel.select("input").nodes().len() as f32;
+        let p: f32 = node.find(&["p"]).len() as f32;
+        let img = node.find(&["img"]).len() as f32;
+        let li = node.find(&["li"]).len() as f32 - 100.0;
+        let input = node.find(&["input"]).len() as f32;
         let heading_density = get_text_density(node, "h1,h2,h3,h4,h5,h6");
 
         let mut embed_count = 0;
@@ -181,7 +180,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
                     return have_to_remove;
                 }
             }
-            let li_count = sel.select("li").nodes().len();
+            let li_count = node.find(&["li"]).len();
             if img == li_count as f32 {
                 return false;
             }
@@ -415,7 +414,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
     for child in article_node.descendants() {
         let class = child.attr_or("class", "");
         let id = child.attr_or("id", "");
-        let class_and_id = format!("{} {}", class, id);
+        let class_and_id = format_tendril!("{} {}", class, id);
         if RX_SHARE_ELEMENTS.is_match(&class_and_id) && child.text().len() < share_element_threshold
         {
             child.remove_from_parent();
@@ -453,7 +452,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
         }
     }
 
-    for br_node in article_sel.select("br").nodes().iter() {
+    for br_node in article_node.find(&["br"]).iter() {
         if let Some(next_node) = br_node.next_element_sibling() {
             if next_node
                 .node_name()
