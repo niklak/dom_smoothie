@@ -171,12 +171,14 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
 }
 
 pub(crate) fn is_element_without_content(node: &Node) -> bool {
-    let is_element = node.is_element();
-    let no_text = node.text().trim().is_empty();
+    // since this function calls only for elements check `node.is_element()` is redundant
+    if !node.text().trim().is_empty() {
+        return false;
+    }
     let children = node.element_children();
 
     let line_breaks = node.find(&["br"]).len() + node.find(&["hr"]).len();
-    is_element && no_text && (children.is_empty() || children.len() == line_breaks)
+    children.is_empty() || children.len() == line_breaks
 }
 
 pub(crate) fn get_dir_attr(node: &Node) -> Option<String> {
