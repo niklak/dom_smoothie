@@ -25,6 +25,7 @@ impl Readability {
             let mut elements_to_score: Vec<NodeRef<'_>> = vec![];
             let doc = self.doc.clone();
             let selection = doc.select_single("body");
+            // html5ever always puts body element, even if it wasn't in the document's contents
             let body_node = selection.nodes().first().unwrap();
             let strip_unlikely = flags.contains(GrabFlags::StripUnlikelys);
             filter_document(body_node, metadata, strip_unlikely);

@@ -132,48 +132,51 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
             return true;
         }
 
-        let content_length = normalized_char_count(&inner_text);
-        let link_density = link_density(node);
+        let should_remove = || {
+            let is_figure_child = has_ancestor_tag::<NodePredicate>(node, "figure", None, None);
 
-        let text_density = get_text_density(node, &TEXTISH_TAGS.join(","));
-        let is_figure_child = has_ancestor_tag::<NodePredicate>(node, "figure", None, None);
+            if !is_figure_child && img > 1.0 && p / img < 0.5 {
+                return true;
+            }
+            if !is_list && li > p {
+                return true;
+            }
+            if input > (p / 3.0).floor() {
+                return true;
+            }
 
-        let mut have_to_remove = false;
+            let content_length = normalized_char_count(&inner_text);
+            let link_density = link_density(node);
 
-        if !is_figure_child && img > 1.0 && p / img < 0.5 {
-            have_to_remove = true;
-        }
-        if !is_list && li > p {
-            have_to_remove = true;
-        }
-        if input > (p / 3.0).floor() {
-            have_to_remove = true;
-        }
+            if !is_list
+                && !is_figure_child
+                && heading_density < 0.9
+                && content_length < 25
+                && (img == 0.0 || img > 2.0)
+                && link_density > 0.0
+            {
+                return true;
+            }
+            if !is_list && weight < 25.0 && link_density > 0.2 {
+                return true;
+            }
+    
+            if weight >= 25.0 && link_density > 0.5 {
+                return true;
+            }
+    
+            if (embed_count == 1 && content_length < 75) || embed_count > 1 {
+                return true;
+            }
 
-        if !is_list
-            && !is_figure_child
-            && heading_density < 0.9
-            && content_length < 25
-            && (img == 0.0 || img > 2.0)
-            && link_density > 0.0
-        {
-            have_to_remove = true;
-        }
-        if !is_list && weight < 25.0 && link_density > 0.2 {
-            have_to_remove = true;
-        }
-
-        if weight >= 25.0 && link_density > 0.5 {
-            have_to_remove = true;
-        }
-
-        if (embed_count == 1 && content_length < 75) || embed_count > 1 {
-            have_to_remove = true;
-        }
-        if img == 0.0 && text_density == 0.0 {
-            have_to_remove = true;
-        }
-
+            let text_density = get_text_density(node, &TEXTISH_TAGS.join(","));
+            if img == 0.0 && text_density == 0.0 {
+                return true;
+            }
+            false
+        };
+        let have_to_remove = should_remove();
+        
         if is_list && have_to_remove {
             for child in node.children_it(false) {
                 if child.element_children().len() > 1 {
