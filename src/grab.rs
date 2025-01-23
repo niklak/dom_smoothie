@@ -352,11 +352,7 @@ fn is_valid_byline(node: &Node, match_string: &str) -> bool {
 
 fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
     // Assuming that `<body>` node can't can't reach this function
-    if node
-        .node_name()
-        .filter(|name| name.as_ref() == "a")
-        .is_some()
-    {
+    if matches!(node.node_name().as_deref(), Some("a")){
         return false;
     }
 

@@ -846,16 +846,16 @@ impl Readability {
             .map(|s| s.as_str())
             .collect();
 
-        let class_sel = classes_to_preserve
+        let class_selector = classes_to_preserve
             .iter()
             .map(|s| format!(".{}", s))
             .collect::<Vec<String>>()
             .join(",");
 
-        let other_class_sel = sel.select(&format!(".page *[class]:not({})", class_sel));
+        let other_class_sel = sel.select(&format!(".page *[class]:not({})", class_selector));
         other_class_sel.remove_attr("class");
 
-        let class_sel = sel.select(&format!(".page {}", class_sel));
+        let class_sel = sel.select(&format!(".page {}", class_selector));
 
         for node in class_sel.nodes().iter() {
             let Some(class_string) = node.attr("class") else {
