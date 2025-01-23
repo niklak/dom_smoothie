@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use tendril::StrTendril;
 use unicode_segmentation::UnicodeSegmentation;
 
 use dom_query::{Node, Selection};
@@ -101,8 +102,19 @@ pub(crate) fn get_text_density(node: &Node, selector: &str) -> f32 {
     children_length / text_length
 }
 
-pub(crate) fn normalize_spaces(text: &str) -> String {
-    text.split_whitespace().collect::<Vec<&str>>().join(" ")
+pub(crate) fn normalize_spaces(text: &str) -> StrTendril {
+    let mut result = StrTendril::with_capacity(text.len() as u32);
+    let mut iter = text.split_whitespace();
+
+    if let Some(first) = iter.next() {
+        result.push_slice(first);
+        for word in iter {
+            result.push_char(' ');
+            result.push_slice(word);
+        }
+    }
+
+    result
 }
 
 pub(crate) fn link_density(node: &Node) -> f32 {
@@ -112,9 +124,7 @@ pub(crate) fn link_density(node: &Node) -> f32 {
     }
     let mut link_length = 0f32;
 
-    let a_sel = Selection::from(node.clone()).select_matcher(&MATCHER_A);
-
-    for a in a_sel.iter() {
+    for a in node.find(&["a"]) {
         let href = a.attr_or("href", "");
         let coeff = if !href.is_empty() && RX_HASH_URL.is_match(href.as_ref()) {
             0.3
@@ -150,10 +160,10 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
 pub(crate) fn is_element_without_content(node: &Node) -> bool {
     let is_element = node.is_element();
     let no_text = node.text().trim().is_empty();
-    let no_element_children = node.element_children().is_empty();
+    let children = node.element_children();
 
-    let sel = Selection::from(node.clone()).select_matcher(&MATCHER_BR_HR);
-    is_element && no_text && (no_element_children || node.element_children().len() == sel.length())
+    let line_breaks = node.find(&["br"]).len() + node.find(&["hr"]).len();
+    is_element && no_text && (children.is_empty() || children.len() == line_breaks)
 }
 
 pub(crate) fn get_dir_attr(node: &Node) -> Option<String> {

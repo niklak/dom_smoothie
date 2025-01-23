@@ -298,7 +298,7 @@ impl Readability {
                 cur_title = self.doc.select_single("h1").text().to_string();
             }
         }
-        cur_title = normalize_spaces(&cur_title);
+        cur_title = normalize_spaces(&cur_title).to_string();
 
         // If we now have 4 words or fewer as our title, and either no
         // 'hierarchical' separators (\, /, > or ») were found in the original
@@ -817,14 +817,16 @@ impl Readability {
 
     fn post_process_content(&self, root_sel: &Selection, base_url: Option<url::Url>) {
         // Readability cannot open relative uris so we convert them to absolute uris.
-        
+
         self.fix_js_links(root_sel);
 
         self.fix_relative_uris(root_sel, base_url);
 
         simplify_nested_elements(root_sel);
 
-        let score_sel = root_sel.parent().select("*[data-readability-score], *[data-readability-table]");
+        let score_sel = root_sel
+            .parent()
+            .select("*[data-readability-score], *[data-readability-table]");
         score_sel.remove_attrs(&["data-readability-score", "data-readability-table"]);
 
         if !self.config.keep_classes {
@@ -1020,7 +1022,7 @@ fn next_significant_node(node: Option<NodeRef>) -> Option<NodeRef> {
 }
 
 fn simplify_nested_elements(root_sel: &Selection) {
-        for td_node in root_sel.select("*:not(tr) > td").nodes().iter() {
+    for td_node in root_sel.select("*:not(tr) > td").nodes().iter() {
         if let Some(parent) = td_node.parent() {
             if let Some(first_child) = td_node.first_child() {
                 parent.append_children(&first_child);
@@ -1046,7 +1048,9 @@ fn simplify_nested_elements(root_sel: &Selection) {
 }
 
 fn extract_excerpt(doc: &Document) -> Option<String> {
-    let p_sel = doc.select_single("#readability-page-1").select_single_matcher(&MATCHER_P);
+    let p_sel = doc
+        .select_single("#readability-page-1")
+        .select_single_matcher(&MATCHER_P);
     if p_sel.is_empty() {
         None
     } else {
@@ -1137,7 +1141,7 @@ mod tests {
     #[test]
     fn test_normalize_spaces() {
         let text = "  The    quick\t        brown\r\n  fox ";
-        let normalized = normalize_spaces(text);
+        let normalized = normalize_spaces(text).to_string();
         assert_eq!(normalized, "The quick brown fox");
     }
 

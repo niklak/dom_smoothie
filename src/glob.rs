@@ -37,8 +37,6 @@ pub(crate) static MATCHER_DIALOGS: Lazy<Matcher> =
     lazy_matcher!(r#"*[aria-modal="true"][role="dialog"]"#);
 pub(crate) static MATCHER_BYLINE: Lazy<Matcher> =
     lazy_matcher!(r#"[rel="author"],[itemprop*="author"]"#);
-pub(crate) static MATCHER_A: Lazy<Matcher> = lazy_matcher!("a");
-pub(crate) static MATCHER_BR_HR: Lazy<Matcher> = lazy_matcher!("br,hr");
 pub(crate) static MATCHER_SOURCES: Lazy<Matcher> =
     lazy_matcher!("img,picture,figure,video,audio,sources");
 pub(crate) static MATCHER_P: Lazy<Matcher> = lazy_matcher!("p");
