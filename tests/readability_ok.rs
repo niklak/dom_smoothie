@@ -238,3 +238,9 @@ fn test_wikipedia_2() {
     // this seems ok
     test_readability("test-pages/ok/wikipedia-2/", Some("http://fakehost/test/"));
 }
+
+#[test]
+fn arstechnica() {
+    // this seems ok
+    test_readability("test-pages/ok/arstechnica/", Some("http://fakehost/test/"));
+}

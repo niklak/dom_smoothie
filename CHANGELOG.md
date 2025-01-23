@@ -2,6 +2,12 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+ - Changed the `Readability::grab_article` method implementation to retain only the best attempt among failed attempts, instead of keeping all of them until the exit.
+ - Internal code optimizations aimed to reduce execution time.
+
 ## [0.4.0] - 2025-01-08
 
 ### Added

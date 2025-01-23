@@ -33,6 +33,7 @@ serde = {version = "1.0", features = ["derive"]}
 [features]
 serde = ["dep:serde"]
 
+
 [workspace]
 members = [
     "dom_smoothie_cli"

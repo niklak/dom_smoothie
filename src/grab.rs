@@ -1,4 +1,3 @@
-use std::cmp::Reverse;
 use std::collections::HashSet;
 use std::vec;
 
@@ -21,11 +20,12 @@ impl Readability {
         let mut flags =
             GrabFlags::CleanConditionally | GrabFlags::StripUnlikelys | GrabFlags::WeightClasses;
 
-        let mut attempts = vec![];
+        let mut best_attempt: Option<(Document, usize)> = None;
         loop {
             let mut elements_to_score: Vec<NodeRef<'_>> = vec![];
             let doc = self.doc.clone();
             let selection = doc.select_single("body");
+            // html5ever always puts body element, even if it wasn't in the document's contents
             let body_node = selection.nodes().first().unwrap();
             let strip_unlikely = flags.contains(GrabFlags::StripUnlikelys);
             filter_document(body_node, metadata, strip_unlikely);
@@ -60,18 +60,19 @@ impl Readability {
             }
 
             let article_node = self.handle_candidates(&mut elements_to_score, &doc, &flags);
-            let mut parse_successful = true;
-
-            let mut article_doc: Option<Document> = None;
 
             if let Some(ref article_node) = article_node {
                 metadata.dir = get_dir_attr(article_node);
-                article_doc = Some(Document::from(article_node.html()));
-                let text_length = normalize_spaces(&article_node.text()).chars().count();
+                let text_length = normalized_char_count(&article_node.text());
                 if text_length < self.config.char_threshold {
-                    parse_successful = false;
+                    if let Some((_, best_text_length)) = best_attempt {
+                        if text_length > best_text_length {
+                            best_attempt = Some((doc, text_length));
+                        }
+                    } else {
+                        best_attempt = Some((doc, text_length));
+                    }
 
-                    attempts.push((article_doc.clone(), text_length));
                     if flags.contains(GrabFlags::StripUnlikelys) {
                         flags -= GrabFlags::StripUnlikelys;
                     } else if flags.contains(GrabFlags::WeightClasses) {
@@ -80,21 +81,12 @@ impl Readability {
                         flags -= GrabFlags::CleanConditionally;
                     } else {
                         // No luck after removing flags, just return the longest text we found during the different loops
-                        attempts.sort_by_key(|i| Reverse(i.1));
-
-                        if attempts[0].1 == 0 {
-                            return None;
-                        }
-                        article_doc = attempts[0].0.clone();
-                        parse_successful = true;
+                        let (best_doc, _) = best_attempt?;
+                        return Some(best_doc);
                     }
+                } else {
+                    return Some(doc);
                 }
-            } else {
-                parse_successful = false;
-            }
-
-            if parse_successful {
-                return article_doc;
             }
             // Now that we've gone through the full algorithm, check to see if
             // we got any meaningful content. If we didn't, we may need to re-run
@@ -291,11 +283,9 @@ fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely:
             continue;
         }
 
-        let text = node.text();
-
         if should_remove_title_header
             && MATCHER_HEADING.match_element(&node)
-            && text_similarity(&metadata.title, &text) > 0.75
+            && text_similarity(&metadata.title, &node.text()) > 0.75
         {
             should_remove_title_header = false;
             nodes_to_remove.insert(node.id);
@@ -311,7 +301,7 @@ fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely:
             {
                 item_prop_name.text().trim().to_string()
             } else {
-                text.trim().to_string()
+                node.text().trim().to_string()
             };
 
             metadata.byline = Some(byline);
@@ -339,16 +329,16 @@ fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely:
 }
 
 fn get_node_matching_string(node: &NodeRef) -> String {
-    let mut matched_attrs: Vec<String> = vec![];
+    let mut matched_buf = StrTendril::new();
     if let Some(class) = node.attr("class") {
-        matched_attrs.push(class.to_string());
+        matched_buf.push_tendril(&class);
+        matched_buf.push_char(' ');
     }
 
     if let Some(id) = node.attr("id") {
-        matched_attrs.push(id.to_string());
+        matched_buf.push_tendril(&id);
     }
-
-    matched_attrs.join(" ").to_lowercase()
+    matched_buf.to_lowercase()
 }
 
 fn is_valid_byline(node: &Node, match_string: &str) -> bool {
@@ -361,19 +351,16 @@ fn is_valid_byline(node: &Node, match_string: &str) -> bool {
 }
 
 fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
+    // Assuming that `<body>` node can't can't reach this function
+    if matches!(node.node_name().as_deref(), Some("a")){
+        return false;
+    }
+
     if !UNLIKELY_CANDIDATES.iter().any(|p| match_string.contains(p)) {
         return false;
     }
 
     if MAYBE_CANDIDATES.iter().any(|p| match_string.contains(p)) {
-        return false;
-    }
-
-    if node
-        .node_name()
-        .filter(|name| matches!(name.as_ref(), "a" | "body"))
-        .is_some()
-    {
         return false;
     }
 

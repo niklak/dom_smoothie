@@ -484,7 +484,8 @@ impl Readability {
         // Getting a base uri from the Readability.document,
         // which wasn't changed after the grabbing the article
         let base_url = self.parse_base_url();
-        self.post_process_content(&doc, base_url);
+        let root_sel = doc.select_single("#readability-page-1");
+        self.post_process_content(&root_sel, base_url);
 
         // If we haven't found an excerpt in the article's metadata, use the article's
         // first paragraph as the excerpt. This is used for displaying a preview of
@@ -504,7 +505,7 @@ impl Readability {
             byline: metadata.byline,
             dir: metadata.dir,
             lang: metadata.lang,
-            content: doc.select("#readability-page-1").html(),
+            content: root_sel.html(),
             text_content,
             length: text_length,
             excerpt: metadata.excerpt,
@@ -814,27 +815,28 @@ impl Readability {
         }
     }
 
-    fn post_process_content(&self, doc: &Document, base_url: Option<url::Url>) {
+    fn post_process_content(&self, root_sel: &Selection, base_url: Option<url::Url>) {
         // Readability cannot open relative uris so we convert them to absolute uris.
-        let root_sel = doc.select(".page");
 
-        self.fix_js_links(&root_sel);
+        self.fix_js_links(root_sel);
 
-        self.fix_relative_uris(&root_sel, base_url);
+        self.fix_relative_uris(root_sel, base_url);
 
-        simplify_nested_elements(&root_sel);
+        simplify_nested_elements(root_sel);
 
-        let score_sel = doc.select("*[data-readability-score], *[data-readability-table]");
+        let score_sel = root_sel
+            .parent()
+            .select("*[data-readability-score], *[data-readability-table]");
         score_sel.remove_attrs(&["data-readability-score", "data-readability-table"]);
 
         if !self.config.keep_classes {
-            self.clean_classes(doc);
+            self.clean_classes(root_sel);
         }
     }
 
-    fn clean_classes(&self, doc: &Document) {
+    fn clean_classes(&self, sel: &Selection) {
         if self.config.classes_to_preserve.is_empty() {
-            doc.select(".page *[class]").remove_attr("class");
+            sel.select("*[class]").remove_attr("class");
             return;
         }
         let classes_to_preserve: Vec<&str> = self
@@ -844,16 +846,16 @@ impl Readability {
             .map(|s| s.as_str())
             .collect();
 
-        let class_sel = classes_to_preserve
+        let class_selector = classes_to_preserve
             .iter()
             .map(|s| format!(".{}", s))
             .collect::<Vec<String>>()
             .join(",");
 
-        let other_class_sel = doc.select(&format!(".page *[class]:not({})", class_sel));
+        let other_class_sel = sel.select(&format!(".page *[class]:not({})", class_selector));
         other_class_sel.remove_attr("class");
 
-        let class_sel = doc.select(&format!(".page {}", class_sel));
+        let class_sel = sel.select(&format!(".page {}", class_selector));
 
         for node in class_sel.nodes().iter() {
             let Some(class_string) = node.attr("class") else {
@@ -1020,6 +1022,15 @@ fn next_significant_node(node: Option<NodeRef>) -> Option<NodeRef> {
 }
 
 fn simplify_nested_elements(root_sel: &Selection) {
+    for td_node in root_sel.select("*:not(tr) > td").nodes().iter() {
+        if let Some(parent) = td_node.parent() {
+            if let Some(first_child) = td_node.first_child() {
+                parent.append_children(&first_child);
+            }
+        }
+        td_node.remove_from_parent();
+    }
+
     let only_sel = root_sel
         .select("div, section")
         .select(":is(div, section) > :is(div, section):only-child");
@@ -1037,7 +1048,9 @@ fn simplify_nested_elements(root_sel: &Selection) {
 }
 
 fn extract_excerpt(doc: &Document) -> Option<String> {
-    let p_sel = doc.select_single_matcher(&MATCHER_P);
+    let p_sel = doc
+        .select_single("#readability-page-1")
+        .select_single_matcher(&MATCHER_P);
     if p_sel.is_empty() {
         None
     } else {

@@ -1,5 +1,6 @@
 use dom_query::{Node, Selection};
 use flagset::FlagSet;
+use tendril::format_tendril;
 
 use crate::glob::*;
 use crate::grab_flags::GrabFlags;
@@ -10,9 +11,7 @@ use crate::Config;
 fn clean(n: &Node, tag: &str) {
     let is_embed = EMBED_ELEMENTS.contains(tag);
 
-    let sel = Selection::from(n.clone()).select(tag);
-
-    for node in sel.nodes().iter() {
+    for node in n.find(&[tag]) {
         // Allow youtube and vimeo videos through as people usually want to see those.
         let mut should_remove = true;
         if is_embed {
@@ -101,10 +100,10 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
         // If there are not very many commas, and the number of
         // non-paragraph elements is more than paragraphs or other
         // ominous signs, remove the element.
-        let p: f32 = sel.select("p").nodes().len() as f32;
-        let img = sel.select("img").nodes().len() as f32;
-        let li = sel.select("li").nodes().len() as f32 - 100.0;
-        let input = sel.select("input").nodes().len() as f32;
+        let p: f32 = node.find(&["p"]).len() as f32;
+        let img = node.find(&["img"]).len() as f32;
+        let li = node.find(&["li"]).len() as f32 - 100.0;
+        let input = node.find(&["input"]).len() as f32;
         let heading_density = get_text_density(node, "h1,h2,h3,h4,h5,h6");
 
         let mut embed_count = 0;
@@ -133,55 +132,58 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
             return true;
         }
 
-        let content_length = normalize_spaces(&inner_text).chars().count();
-        let link_density = link_density(node);
+        let should_remove = || {
+            let is_figure_child = has_ancestor_tag::<NodePredicate>(node, "figure", None, None);
 
-        let text_density = get_text_density(node, &TEXTISH_TAGS.join(","));
-        let is_figure_child = has_ancestor_tag::<NodePredicate>(node, "figure", None, None);
+            if !is_figure_child && img > 1.0 && p / img < 0.5 {
+                return true;
+            }
+            if !is_list && li > p {
+                return true;
+            }
+            if input > (p / 3.0).floor() {
+                return true;
+            }
 
-        let mut have_to_remove = false;
+            let content_length = normalized_char_count(&inner_text);
+            let link_density = link_density(node);
 
-        if !is_figure_child && img > 1.0 && p / img < 0.5 {
-            have_to_remove = true;
-        }
-        if !is_list && li > p {
-            have_to_remove = true;
-        }
-        if input > (p / 3.0).floor() {
-            have_to_remove = true;
-        }
+            if !is_list
+                && !is_figure_child
+                && heading_density < 0.9
+                && content_length < 25
+                && (img == 0.0 || img > 2.0)
+                && link_density > 0.0
+            {
+                return true;
+            }
+            if !is_list && weight < 25.0 && link_density > 0.2 {
+                return true;
+            }
+    
+            if weight >= 25.0 && link_density > 0.5 {
+                return true;
+            }
+    
+            if (embed_count == 1 && content_length < 75) || embed_count > 1 {
+                return true;
+            }
 
-        if !is_list
-            && !is_figure_child
-            && heading_density < 0.9
-            && content_length < 25
-            && (img == 0.0 || img > 2.0)
-            && link_density > 0.0
-        {
-            have_to_remove = true;
-        }
-        if !is_list && weight < 25.0 && link_density > 0.2 {
-            have_to_remove = true;
-        }
-
-        if weight >= 25.0 && link_density > 0.5 {
-            have_to_remove = true;
-        }
-
-        if (embed_count == 1 && content_length < 75) || embed_count > 1 {
-            have_to_remove = true;
-        }
-        if img == 0.0 && text_density == 0.0 {
-            have_to_remove = true;
-        }
-
+            let text_density = get_text_density(node, &TEXTISH_TAGS.join(","));
+            if img == 0.0 && text_density == 0.0 {
+                return true;
+            }
+            false
+        };
+        let have_to_remove = should_remove();
+        
         if is_list && have_to_remove {
             for child in node.children_it(false) {
                 if child.element_children().len() > 1 {
                     return have_to_remove;
                 }
             }
-            let li_count = sel.select("li").nodes().len();
+            let li_count = node.find(&["li"]).len();
             if img == li_count as f32 {
                 return false;
             }
@@ -415,7 +417,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
     for child in article_node.descendants() {
         let class = child.attr_or("class", "");
         let id = child.attr_or("id", "");
-        let class_and_id = format!("{} {}", class, id);
+        let class_and_id = format_tendril!("{} {}", class, id);
         if RX_SHARE_ELEMENTS.is_match(&class_and_id) && child.text().len() < share_element_threshold
         {
             child.remove_from_parent();
@@ -453,7 +455,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
         }
     }
 
-    for br_node in article_sel.select("br").nodes().iter() {
+    for br_node in article_node.find(&["br"]).iter() {
         if let Some(next_node) = br_node.next_element_sibling() {
             if next_node
                 .node_name()

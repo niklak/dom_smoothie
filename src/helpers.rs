@@ -92,36 +92,59 @@ where
 }
 
 pub(crate) fn get_text_density(node: &Node, selector: &str) -> f32 {
-    let text_length = normalize_spaces(&node.text()).chars().count() as f32;
+    let text_length = normalized_char_count(&node.text()) as f32;
     if text_length == 0.0 {
         return 0.0;
     }
     let sel = Selection::from(node.clone()).select(selector);
-    let children_length = normalize_spaces(&sel.text()).chars().count() as f32;
+    let children_length = normalized_char_count(&sel.text()) as f32;
     children_length / text_length
 }
 
 pub(crate) fn normalize_spaces(text: &str) -> String {
-    text.split_whitespace().collect::<Vec<&str>>().join(" ")
+    let mut result = String::with_capacity(text.len());
+    let mut iter = text.split_whitespace();
+
+    if let Some(first) = iter.next() {
+        result.push_str(first);
+        for word in iter {
+            result.push(' ');
+            result.push_str(word);
+        }
+    }
+    result
+}
+
+pub(crate) fn normalized_char_count(text: &str) -> usize {
+    let mut char_count = 0;
+    let mut iter = text.split_whitespace();
+
+    if let Some(first) = iter.next() {
+        char_count += first.chars().count();
+        for word in iter {
+            // whitespace between words
+            char_count += 1;
+            char_count += word.chars().count();
+        }
+    }
+    char_count
 }
 
 pub(crate) fn link_density(node: &Node) -> f32 {
-    let text_length: f32 = normalize_spaces(&node.text()).chars().count() as f32;
+    let text_length: f32 = normalized_char_count(&node.text()) as f32;
     if text_length == 0.0 {
         return 0.0;
     }
     let mut link_length = 0f32;
 
-    let a_sel = Selection::from(node.clone()).select_matcher(&MATCHER_A);
-
-    for a in a_sel.iter() {
+    for a in node.find(&["a"]) {
         let href = a.attr_or("href", "");
         let coeff = if !href.is_empty() && RX_HASH_URL.is_match(href.as_ref()) {
             0.3
         } else {
             1.0
         };
-        link_length += normalize_spaces(&a.text()).chars().count() as f32 * coeff;
+        link_length += normalized_char_count(&a.text()) as f32 * coeff;
     }
 
     link_length / text_length
@@ -148,12 +171,14 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
 }
 
 pub(crate) fn is_element_without_content(node: &Node) -> bool {
-    let is_element = node.is_element();
-    let no_text = node.text().trim().is_empty();
-    let no_element_children = node.element_children().is_empty();
+    // since this function calls only for elements check `node.is_element()` is redundant
+    if !node.text().trim().is_empty() {
+        return false;
+    }
+    let children = node.element_children();
 
-    let sel = Selection::from(node.clone()).select_matcher(&MATCHER_BR_HR);
-    is_element && no_text && (no_element_children || node.element_children().len() == sel.length())
+    let line_breaks = node.find(&["br"]).len() + node.find(&["hr"]).len();
+    children.is_empty() || children.len() == line_breaks
 }
 
 pub(crate) fn get_dir_attr(node: &Node) -> Option<String> {
