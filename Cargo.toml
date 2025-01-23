@@ -29,9 +29,10 @@ phf = { version = "0.11", features = ["macros"] }
 [dev-dependencies]
 serde_json = {version = "1.0"}
 serde = {version = "1.0", features = ["derive"]}
-dhat = {version = "*"}
+
 [features]
 serde = ["dep:serde"]
+
 
 [workspace]
 members = [
