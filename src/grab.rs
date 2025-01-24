@@ -126,53 +126,10 @@ impl Readability {
             page_node.append_child(&tc);
             init_node_score(&tc, flags.contains(GrabFlags::WeightClasses));
             top_candidate = Some(tc);
-        } else if let Some(ref tc) = top_candidate {
+        } else if top_candidate.is_some() {
             // Find a better top candidate node if it contains (at least three) nodes which belong to `topCandidates` array
             // and whose scores are quite closed with current `topCandidate` node.
-
-            let tc_score = get_node_score(tc);
-
-            let mut alternative_candidate_ancestors = vec![];
-            for alt in top_candidates.iter().skip(1) {
-                if get_node_score(alt) / tc_score >= 0.75 {
-                    alternative_candidate_ancestors.push(alt.ancestors(Some(0)));
-                }
-            }
-            // MIN_COMMON_ANCESTORS (in mozilla/readability.js -- MINIMUM_TOPCANDIDATES)
-            // represents the number of top candidates' ancestors that may be common.
-            // The idea is good, but this magic number doesn't always work very well.
-            // For example, imagine we have only two candidates, and both are significant.
-            // So, we end up with one top candidate and another candidate.
-            // However, the second candidate will be excluded in the end because we require
-            // at least three (!) lists of ancestors,
-            // which is impossible to derive from just one candidate.
-            // To adjust the top candidate to share a common ancestor with other candidates,
-            // we would need at least three other candidates.
-            // Currently, I consider this approach to be flawed...
-
-            if alternative_candidate_ancestors.len() > MIN_COMMON_ANCESTORS {
-                let mut parent_of_top_candidate = tc.parent();
-                while let Some(ref tc_parent) = parent_of_top_candidate {
-                    if node_name_is(tc_parent, "body") {
-                        break;
-                    }
-
-                    let mut lists_containing_this_ancestor = 0;
-
-                    for alt_ancestor in &alternative_candidate_ancestors {
-                        if alt_ancestor.iter().any(|n| n.id == tc_parent.id) {
-                            lists_containing_this_ancestor += 1;
-                        }
-                    }
-
-                    if lists_containing_this_ancestor >= MIN_COMMON_ANCESTORS {
-                        top_candidate = parent_of_top_candidate;
-                        break;
-                    }
-
-                    parent_of_top_candidate = tc_parent.parent();
-                }
-            }
+            top_candidate = find_common_candidate(top_candidate, &top_candidates);
 
             if let Some(ref tc) = top_candidate {
                 if !has_node_score(tc) {
@@ -565,6 +522,61 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
         }
         tc_parent.append_child(article_content);
     }
+}
+
+/// Find a better top candidate across other candidates
+fn find_common_candidate<'a>(
+    mut top_candidate: Option<NodeRef<'a>>,
+    top_candidates: &Vec<NodeRef<'a>>,
+) -> Option<NodeRef<'a>> {
+
+    let Some(ref tc) = top_candidate  else{
+        return top_candidate;
+    };
+    let tc_score = get_node_score(tc);
+
+    let mut alternative_candidate_ancestors = vec![];
+    for alt in top_candidates.iter().skip(1) {
+        if get_node_score(alt) / tc_score >= 0.75 {
+            alternative_candidate_ancestors.push(alt.ancestors(Some(0)));
+        }
+    }
+    // MIN_COMMON_ANCESTORS (in mozilla/readability.js -- MINIMUM_TOPCANDIDATES)
+    // represents the number of top candidates' ancestors that may be common.
+    // The idea is good, but this magic number doesn't always work very well.
+    // For example, imagine we have only two candidates, and both are significant.
+    // So, we end up with one top candidate and another candidate.
+    // However, the second candidate will be excluded in the end because we require
+    // at least three (!) lists of ancestors,
+    // which is impossible to derive from just one candidate.
+    // To adjust the top candidate to share a common ancestor with other candidates,
+    // we would need at least three other candidates.
+    // Currently, I consider this approach to be flawed...
+
+    if alternative_candidate_ancestors.len() > MIN_COMMON_ANCESTORS {
+        let mut parent_of_top_candidate = tc.parent();
+        while let Some(ref tc_parent) = parent_of_top_candidate {
+            if node_name_is(tc_parent, "body") {
+                break;
+            }
+
+            let mut lists_containing_this_ancestor = 0;
+
+            for alt_ancestor in &alternative_candidate_ancestors {
+                if alt_ancestor.iter().any(|n| n.id == tc_parent.id) {
+                    lists_containing_this_ancestor += 1;
+                }
+            }
+
+            if lists_containing_this_ancestor >= MIN_COMMON_ANCESTORS {
+                top_candidate = parent_of_top_candidate;
+                break;
+            }
+
+            parent_of_top_candidate = tc_parent.parent();
+        }
+    }
+    top_candidate
 }
 
 #[cfg(test)]
