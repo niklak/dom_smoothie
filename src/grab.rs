@@ -189,17 +189,17 @@ impl Readability {
                 let mut last_score = get_node_score(tc);
                 let score_threshold = last_score / 3.0;
                 let mut parent_of_top_candidate = tc.parent();
-                while let Some(ref parent_of_tc) = parent_of_top_candidate {
-                    if node_name_is(parent_of_tc, "body") {
+                while let Some(ref tc_parent) = parent_of_top_candidate {
+                    if node_name_is(tc_parent, "body") {
                         break;
                     }
 
-                    if !has_node_score(parent_of_tc) {
-                        parent_of_top_candidate = parent_of_tc.parent();
+                    if !has_node_score(tc_parent) {
+                        parent_of_top_candidate = tc_parent.parent();
                         continue;
                     }
 
-                    let parent_score = get_node_score(parent_of_tc);
+                    let parent_score = get_node_score(tc_parent);
                     if parent_score < score_threshold {
                         break;
                     }
@@ -208,7 +208,7 @@ impl Readability {
                         break;
                     }
                     last_score = parent_score;
-                    parent_of_top_candidate = parent_of_tc.parent();
+                    parent_of_top_candidate = tc_parent.parent();
                 }
             }
 
@@ -217,16 +217,16 @@ impl Readability {
             if let Some(ref tc) = top_candidate {
                 let mut parent_of_top_candidate = tc.parent();
 
-                while let Some(ref parent_of_tc) = parent_of_top_candidate {
-                    if node_name_is(parent_of_tc, "body") {
+                while let Some(ref tc_parent) = parent_of_top_candidate {
+                    if node_name_is(tc_parent, "body") {
                         break;
                     }
 
-                    if parent_of_tc.element_children().len() != 1 {
+                    if tc_parent.element_children().len() != 1 {
                         break;
                     }
                     top_candidate = parent_of_top_candidate.clone();
-                    parent_of_top_candidate = parent_of_tc.parent();
+                    parent_of_top_candidate = tc_parent.parent();
                 }
             }
         }
@@ -515,11 +515,11 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
         sibling_score_threshold = 10.0;
     }
     // Keep potential top candidate's parent node to try to get text direction of it later.
-    let Some(parent_of_top_candidate) = tc.parent() else {
+    let Some(tc_parent) = tc.parent() else {
         unreachable!()
     };
 
-    let siblings: Vec<Node> = parent_of_top_candidate.element_children();
+    let siblings: Vec<Node> = tc_parent.element_children();
 
     for sibling in siblings.iter() {
         let sibling_name = sibling.node_name().unwrap();
@@ -564,7 +564,7 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
 
             article_content.append_child(&sibling.id);
         }
-        parent_of_top_candidate.append_child(article_content);
+        tc_parent.append_child(article_content);
     }
 }
 
