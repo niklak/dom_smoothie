@@ -1,11 +1,12 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::vec;
 
-use dom_query::Selection;
 use dom_query::{Document, Node, NodeRef};
+use dom_query::{NodeId, Selection};
 use flagset::FlagSet;
 use tendril::StrTendril;
 
+use crate::config::CandidateSelectMode;
 use crate::glob::*;
 use crate::grab_flags::GrabFlags;
 use crate::score::*;
@@ -102,6 +103,7 @@ impl Readability {
         doc: &'a Document,
         flags: &FlagSet<GrabFlags>,
     ) -> Option<NodeRef<'a>> {
+        let weigh_class = flags.contains(GrabFlags::WeightClasses);
         let mut top_candidates = score_elements(elements_to_score, flags);
 
         top_candidates.truncate(self.config.n_top_candidates);
@@ -129,44 +131,16 @@ impl Readability {
         } else if top_candidate.is_some() {
             // Find a better top candidate node if it contains (at least three) nodes which belong to `topCandidates` array
             // and whose scores are quite closed with current `topCandidate` node.
-            top_candidate = find_common_candidate(top_candidate, &top_candidates);
-
-            if let Some(ref tc) = top_candidate {
-                if !has_node_score(tc) {
-                    init_node_score(tc, flags.contains(GrabFlags::WeightClasses));
-                }
-                // Because of our bonus system, parents of candidates might have scores
-                // themselves. They get half of the node. There won't be nodes with higher
-                // scores than our topCandidate, but if we see the score going *up* in the first
-                // few steps up the tree, that's a decent sign that there might be more content
-                // lurking in other places that we want to unify in. The sibling stuff
-                // below does some of that - but only if we've looked high enough up the DOM
-                // tree.
-                let mut last_score = get_node_score(tc);
-                let score_threshold = last_score / 3.0;
-                let mut parent_of_top_candidate = tc.parent();
-                while let Some(ref tc_parent) = parent_of_top_candidate {
-                    if node_name_is(tc_parent, "body") {
-                        break;
-                    }
-
-                    if !has_node_score(tc_parent) {
-                        parent_of_top_candidate = tc_parent.parent();
-                        continue;
-                    }
-
-                    let parent_score = get_node_score(tc_parent);
-                    if parent_score < score_threshold {
-                        break;
-                    }
-                    if parent_score > last_score {
-                        top_candidate = parent_of_top_candidate;
-                        break;
-                    }
-                    last_score = parent_score;
-                    parent_of_top_candidate = tc_parent.parent();
-                }
+            if matches!(
+                self.config.candidate_select_mode,
+                CandidateSelectMode::DomSmoothie
+            ) {
+                top_candidate = find_common_candidate_alt(top_candidate, &top_candidates);
+            } else {
+                top_candidate = find_common_candidate(top_candidate, &top_candidates, weigh_class);
             }
+
+            //top_candidate = find_common_candidate_alt(top_candidate, &top_candidates);
 
             // If the top candidate is the only child, use parent instead. This will help sibling
             // joining logic when adjacent content is actually located in parent's sibling node.
@@ -188,7 +162,7 @@ impl Readability {
         }
         if let Some(ref tc) = top_candidate {
             if !has_node_score(tc) {
-                init_node_score(tc, flags.contains(GrabFlags::WeightClasses));
+                init_node_score(tc, weigh_class);
             }
 
             // Now that we have the top candidate, look through its siblings for content
@@ -318,7 +292,7 @@ fn is_valid_byline(node: &Node, match_string: &str) -> bool {
 
 fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
     // Assuming that `<body>` node can't can't reach this function
-    if matches!(node.node_name().as_deref(), Some("a")) {
+    if node.node_name().as_deref() == Some("a") {
         return false;
     }
 
@@ -524,13 +498,13 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
     }
 }
 
-/// Find a better top candidate across other candidates
+/// Find a better top candidate across other candidates in a way that `mozilla/readability` does.
 fn find_common_candidate<'a>(
     mut top_candidate: Option<NodeRef<'a>>,
     top_candidates: &Vec<NodeRef<'a>>,
+    weigh_class: bool,
 ) -> Option<NodeRef<'a>> {
-
-    let Some(ref tc) = top_candidate  else{
+    let Some(ref tc) = top_candidate else {
         return top_candidate;
     };
     let tc_score = get_node_score(tc);
@@ -576,7 +550,95 @@ fn find_common_candidate<'a>(
             parent_of_top_candidate = tc_parent.parent();
         }
     }
+
+    if let Some(ref tc) = top_candidate {
+        if !has_node_score(tc) {
+            init_node_score(tc, weigh_class);
+        }
+        // Because of our bonus system, parents of candidates might have scores
+        // themselves. They get half of the node. There won't be nodes with higher
+        // scores than our topCandidate, but if we see the score going *up* in the first
+        // few steps up the tree, that's a decent sign that there might be more content
+        // lurking in other places that we want to unify in. The sibling stuff
+        // below does some of that - but only if we've looked high enough up the DOM
+        // tree.
+        let mut last_score = get_node_score(tc);
+        let score_threshold = last_score / 3.0;
+        let mut parent_of_top_candidate = tc.parent();
+        while let Some(ref tc_parent) = parent_of_top_candidate {
+            if node_name_is(tc_parent, "body") {
+                break;
+            }
+
+            if !has_node_score(tc_parent) {
+                parent_of_top_candidate = tc_parent.parent();
+                continue;
+            }
+
+            let parent_score = get_node_score(tc_parent);
+            if parent_score < score_threshold {
+                break;
+            }
+            if parent_score > last_score {
+                top_candidate = parent_of_top_candidate;
+                break;
+            }
+            last_score = parent_score;
+            parent_of_top_candidate = tc_parent.parent();
+        }
+    }
     top_candidate
+}
+
+/// Find a better top candidate across other candidates (alternative approach).
+fn find_common_candidate_alt<'a>(
+    mut top_candidate: Option<NodeRef<'a>>,
+    top_candidates: &Vec<NodeRef<'a>>,
+) -> Option<NodeRef<'a>> {
+    let Some(ref tc) = top_candidate else {
+        return top_candidate;
+    };
+
+    if top_candidates.len() < 2 {
+        return top_candidate;
+    }
+
+    let tc_ancestors = get_node_ancestors(&tc);
+    let tc_score = get_node_score(tc);
+
+    let mut ancestor_match_counter: HashMap<NodeId, usize> = HashMap::new();
+
+    for alt in top_candidates.iter().skip(1) {
+        if get_node_score(alt) / tc_score >= 0.75 {
+            let alt_ancestors = get_node_ancestors(&alt);
+            let intersect = tc_ancestors.intersection(&alt_ancestors);
+            for item in intersect {
+                *ancestor_match_counter.entry(*item).or_insert(0) += 1;
+            }
+        }
+    }
+
+    if let Some(best_candidate_id) = ancestor_match_counter
+        .into_iter()
+        .max_by(|x, y| y.1.cmp(&x.1).then(y.0.cmp(&x.0)))
+        .map(|n| n.0)
+    {
+        top_candidate = Some(NodeRef::new(best_candidate_id, &tc.tree));
+    }
+    top_candidate
+}
+
+fn get_node_ancestors(node: &NodeRef) -> HashSet<NodeId> {
+    // only elements, no html or body, and have a score
+    node.ancestors(Some(0))
+        .iter()
+        .filter(|n| {
+            n.is_element()
+                && !matches!(n.node_name().as_deref(), Some("html") | Some("body"))
+                && has_node_score(n)
+        })
+        .map(|n| n.id)
+        .collect::<HashSet<_>>()
 }
 
 #[cfg(test)]

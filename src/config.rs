@@ -3,6 +3,14 @@ use crate::glob::{MIN_CONTENT_LENGTH, MIN_SCORE};
 pub(crate) static DEFAULT_N_TOP_CANDIDATES: usize = 5;
 pub(crate) static DEFAULT_CHAR_THRESHOLD: usize = 500;
 
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Default, Clone, Copy)]
+pub enum CandidateSelectMode {
+    #[default]
+    Readability,
+    DomSmoothie,
+}
+
 /// Configuration options for [`crate::Readability`]
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -25,6 +33,10 @@ pub struct Config {
     /// The minimum content length required for the document to be considered readable. Defaults to 140.
     /// Used only for [`crate::Readability::is_probably_readable`].
     pub readable_min_content_length: usize,
+    /// Determines whether the top candidate is adjusted
+    /// based on [Readability.js](https://github.com/mozilla/readability)
+    /// or uses the crate's exclusive implementation.
+    pub candidate_select_mode: CandidateSelectMode,
 }
 
 impl Default for Config {
@@ -38,6 +50,7 @@ impl Default for Config {
             char_threshold: DEFAULT_CHAR_THRESHOLD,
             readable_min_score: MIN_SCORE,
             readable_min_content_length: MIN_CONTENT_LENGTH,
+            candidate_select_mode: CandidateSelectMode::Readability,
         }
     }
 }
