@@ -103,7 +103,7 @@ impl Readability {
         flags: &FlagSet<GrabFlags>,
     ) -> Option<NodeRef<'a>> {
         let mut top_candidates = score_elements(elements_to_score, flags);
-        
+
         top_candidates.truncate(self.config.n_top_candidates);
 
         let mut top_candidate = top_candidates.first().cloned();
@@ -138,16 +138,16 @@ impl Readability {
                     alternative_candidate_ancestors.push(alt.ancestors(Some(0)));
                 }
             }
-            // MIN_COMMON_ANCESTORS (in mozilla/readability.js -- MINIMUM_TOPCANDIDATES)  
-            // represents the number of top candidates' ancestors that may be common.  
-            // The idea is good, but this magic number doesn't always work very well.  
-            // For example, imagine we have only two candidates, and both are significant.  
-            // So, we end up with one top candidate and another candidate.  
-            // However, the second candidate will be excluded in the end because we require 
-            // at least three (!) lists of ancestors, 
-            // which is impossible to derive from just one candidate. 
-            // To adjust the top candidate to share a common ancestor with other candidates,  
-            // we would need at least three other candidates.  
+            // MIN_COMMON_ANCESTORS (in mozilla/readability.js -- MINIMUM_TOPCANDIDATES)
+            // represents the number of top candidates' ancestors that may be common.
+            // The idea is good, but this magic number doesn't always work very well.
+            // For example, imagine we have only two candidates, and both are significant.
+            // So, we end up with one top candidate and another candidate.
+            // However, the second candidate will be excluded in the end because we require
+            // at least three (!) lists of ancestors,
+            // which is impossible to derive from just one candidate.
+            // To adjust the top candidate to share a common ancestor with other candidates,
+            // we would need at least three other candidates.
             // Currently, I consider this approach to be flawed...
 
             if alternative_candidate_ancestors.len() > MIN_COMMON_ANCESTORS {
@@ -160,7 +160,6 @@ impl Readability {
                     let mut lists_containing_this_ancestor = 0;
 
                     for alt_ancestor in &alternative_candidate_ancestors {
-
                         if alt_ancestor.iter().any(|n| n.id == tc_parent.id) {
                             lists_containing_this_ancestor += 1;
                         }
@@ -362,7 +361,7 @@ fn is_valid_byline(node: &Node, match_string: &str) -> bool {
 
 fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
     // Assuming that `<body>` node can't can't reach this function
-    if matches!(node.node_name().as_deref(), Some("a")){
+    if matches!(node.node_name().as_deref(), Some("a")) {
         return false;
     }
 

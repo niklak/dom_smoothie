@@ -21,10 +21,11 @@ struct ExpectedMetadata {
     readerable: bool,
 }
 
-pub(crate) fn test_readability<P>(test_path: P, host: Option<&str>)
+pub(crate) fn test_readability<P>(test_path: P)
 where
     P: AsRef<Path>,
 {
+    let doc_url = Some("http://fakehost/test/");
     let base_path = test_path.as_ref();
     let source_path = base_path.join("source.html");
     let expected_path = base_path.join("expected.html");
@@ -34,7 +35,7 @@ where
         classes_to_preserve: vec!["caption".into()],
         ..Default::default()
     };
-    let mut r = Readability::new(source_contents, host, Some(cfg)).unwrap();
+    let mut r = Readability::new(source_contents, doc_url, Some(cfg)).unwrap();
     let article = r.parse().unwrap();
 
     let contents = article.content;

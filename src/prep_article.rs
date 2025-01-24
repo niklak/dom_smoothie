@@ -160,11 +160,11 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
             if !is_list && weight < 25.0 && link_density > 0.2 {
                 return true;
             }
-    
+
             if weight >= 25.0 && link_density > 0.5 {
                 return true;
             }
-    
+
             if (embed_count == 1 && content_length < 75) || embed_count > 1 {
                 return true;
             }
@@ -176,7 +176,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
             false
         };
         let have_to_remove = should_remove();
-        
+
         if is_list && have_to_remove {
             for child in node.children_it(false) {
                 if child.element_children().len() > 1 {
