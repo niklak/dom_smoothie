@@ -201,6 +201,11 @@ if readability.is_probably_readable() {
 
 - `serde`: Enables the `serde::Serialize` and `serde::Deserialize` traits for the `Article`, `Metadata`, and `Config` structures.
 
+
+## See Also
+
+- [readability-rs](https://crates.io/crates/readability-rs): a fork of the currently unmaintained [readability](https://crates.io/crates/readability) crate.
+
 ## Changelog
 [Changelog](./CHANGELOG.md)
 
