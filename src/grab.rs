@@ -603,14 +603,15 @@ fn find_common_candidate_alt<'a>(
         return top_candidate;
     }
 
-    let tc_ancestors = get_node_ancestors(&tc);
+    let tc_ancestors = get_node_ancestors(tc);
     let tc_score = get_node_score(tc);
 
     let mut ancestor_match_counter: HashMap<NodeId, usize> = HashMap::new();
 
     for alt in top_candidates.iter().skip(1) {
         if get_node_score(alt) / tc_score >= 0.75 {
-            let alt_ancestors = get_node_ancestors(&alt);
+            // TODO: what if other candidate is an ancestor of top candidate?
+            let alt_ancestors = get_node_ancestors(alt);
             let intersect = tc_ancestors.intersection(&alt_ancestors);
             for item in intersect {
                 *ancestor_match_counter.entry(*item).or_insert(0) += 1;
@@ -623,7 +624,7 @@ fn find_common_candidate_alt<'a>(
         .max_by(|x, y| y.1.cmp(&x.1).then(y.0.cmp(&x.0)))
         .map(|n| n.0)
     {
-        top_candidate = Some(NodeRef::new(best_candidate_id, &tc.tree));
+        top_candidate = Some(NodeRef::new(best_candidate_id, tc.tree));
     }
     top_candidate
 }

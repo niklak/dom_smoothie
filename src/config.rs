@@ -11,6 +11,14 @@ pub enum CandidateSelectMode {
     DomSmoothie,
 }
 
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Default, Clone, Copy)]
+pub enum TextMode {
+    #[default]
+    Raw,
+    Formatted,
+}
+
 /// Configuration options for [`crate::Readability`]
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -37,6 +45,8 @@ pub struct Config {
     /// based on [Readability.js](https://github.com/mozilla/readability)
     /// or uses the crate's exclusive implementation.
     pub candidate_select_mode: CandidateSelectMode,
+    /// Allows to set the text mode, whether it should be raw (as-is) or formatted
+    pub text_mode: TextMode,
 }
 
 impl Default for Config {
@@ -51,6 +61,7 @@ impl Default for Config {
             readable_min_score: MIN_SCORE,
             readable_min_content_length: MIN_CONTENT_LENGTH,
             candidate_select_mode: CandidateSelectMode::Readability,
+            text_mode: TextMode::Raw,
         }
     }
 }

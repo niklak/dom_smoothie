@@ -7,11 +7,12 @@ mod prep_article;
 mod readability;
 mod readable;
 mod score;
+mod text_helpers;
 
 #[cfg(feature = "serde")]
 mod serde_helpers;
 
-pub use config::{Config, CandidateSelectMode};
+pub use config::{CandidateSelectMode, Config, TextMode};
 pub use readability::Article;
 pub use readability::Metadata;
 pub use readability::Readability;

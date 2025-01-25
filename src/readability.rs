@@ -4,9 +4,11 @@ use dom_query::{Document, Node, NodeData, NodeRef, Selection};
 use tendril::StrTendril;
 use url::Url;
 
+use crate::config::TextMode;
 use crate::glob::*;
 use crate::helpers::*;
 use crate::is_probably_readable;
+use crate::text_helpers::formatted_text;
 use crate::Config;
 use crate::ReadabilityError;
 
@@ -497,7 +499,15 @@ impl Readability {
             metadata.excerpt = extract_excerpt(&doc)
         }
 
-        let text_content = doc.text();
+        let Some(root_node) = root_sel.nodes().first() else {
+            // After `grab_article` successfully returns a document
+            // there is no way that `#readability-page-1 does not exists
+            unreachable!();
+        };
+        let text_content = match self.config.text_mode {
+            TextMode::Raw => root_node.text(),
+            TextMode::Formatted => formatted_text(root_node),
+        };
         let text_length = text_content.chars().count();
 
         Ok(Article {
