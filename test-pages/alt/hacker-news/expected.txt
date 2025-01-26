@@ -1,0 +1,91 @@
+1.Steam Brick: No screen, no controller, just a power button and a USB port (crastinator-pro.github.io)
+568 points by sbarre14 hours ago | hide | 167 comments
+
+2.DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via RL (arxiv.org)
+823 points by gradus_ad17 hours ago | hide | 694 comments
+
+3.YC Graveyard: 821 inactive Y Combinator startups (iamwillwang.com)
+139 points by memalign5 hours ago | hide | 76 comments
+
+4.When AI Promises Speed but Delivers Debugging Hell (nsavage.substack.com)
+5 points by nsavage50 minutes ago | hide | discuss
+
+5.OpenRA – Classic strategy games rebuilt for the modern era (openra.net)
+433 points by tosh17 hours ago | hide | 72 comments
+
+6.The South Vietnamese pilot who landed a Cessna on a carrier to save his family (2019) (historynet.com)
+227 points by stmw11 hours ago | hide | 89 comments
+
+7.Emerging Reasoning with Reinforcement Learning (hkust-nlp.notion.site)
+164 points by pella9 hours ago | hide | 130 comments
+
+8.The Simplicity of Prolog (bitsandtheorems.com)
+73 points by thunderbong9 hours ago | hide | 19 comments
+
+9.An invalid 68030 instruction accidentally allowed the Mac Classic II to boot (downtowndougbrown.com)
+232 points by todsacerdoti15 hours ago | hide | 42 comments
+
+10.Every HTML Element (iamwillwang.com)
+326 points by wxw17 hours ago | hide | 100 comments
+
+11.I ask this chess puzzle to every new LLM (gist.github.com)
+17 points by thepoet4 hours ago | hide | 19 comments
+
+12.SQLook – A free online SQLite database manager with a Windows 2000 interface (sqlook.com)
+124 points by gringow12 hours ago | hide | 36 comments
+
+13.Apache Iceberg (apache.org)
+105 points by jacobmarble12 hours ago | hide | 34 comments
+
+14.Explainer: What's R1 and Everything Else? (timkellogg.me)
+62 points by Philpax8 hours ago | hide | 9 comments
+
+15.The Graphics Codex (graphicscodex.com)
+25 points by board6 hours ago | hide | 3 comments
+
+16.The Hunt for Error -22 (tweedegolf.nl)
+10 points by mpalme3 hours ago | hide | 4 comments
+
+17.SigNoz (YC W21) Is hiring back end engineers to build open-source Datadog (linkedin.com)
+5 hours ago | hide
+
+18.Bacteria in Polymers Form Cables That Grow into Living Gels (caltech.edu)
+38 points by gmays8 hours ago | hide | 2 comments
+
+19.Searching for DeepSeek's glitch tokens (outsidetext.substack.com)
+148 points by arithmoquine16 hours ago | hide | 39 comments
+
+20.An experiment of adding recommendation engine to your app using pgvector search (silk.us)
+44 points by tanelpoder11 hours ago | hide | 3 comments
+
+21.Wikenigma – an Encyclopedia of Unknowns (wikenigma.org.uk)
+134 points by jgamman15 hours ago | hide | 35 comments
+
+22.You probably don't need query builders (mattrighetti.com)
+111 points by mattrighetti17 hours ago | hide | 102 comments
+
+23.Open Heart Protocol (openheart.fyi)
+199 points by thunderbong21 hours ago | hide | 84 comments
+
+24.Using AI to develop a fuller model of the human brain (ucsf.edu)
+72 points by geox15 hours ago | hide | 27 comments
+
+25.Mastering Atari Games with Natural Intelligence (verses.ai)
+19 points by alex_c7 hours ago | hide | 7 comments
+
+26.How far can you get in 40 minutes from each subway station in NYC? (subwaysheds.com)
+277 points by jxmorris121 day ago | hide | 168 comments
+
+27.Ask HN: How to automate collecting HAR file while user is browsing
+11 points by royalghost4 hours ago | hide | 9 comments
+
+28.A FPGA friendly 32 bit RISC-V CPU implementation (github.com/spinalhdl)
+105 points by _benj20 hours ago | hide | 48 comments
+
+29.Using Linear Programming to find optimal builds in League of Legend (versary.town)
+20 points by birdculture6 hours ago | hide | 7 comments
+
+30.Immutability Changes Everything (2016) [pdf] (cidrdb.org)
+88 points by fire_lake15 hours ago | hide | 29 comments
+
+More

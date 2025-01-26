@@ -66,14 +66,15 @@ pub fn format_text(root_node: &NodeRef) -> StrTendril {
                         | local_name!("h6")
                         | local_name!("ul")
                         | local_name!("ol")
-
+                        | local_name!("table")
                 ) {
                     text.push_slice("\n\n");
                 } else if matches!(
                     name.local,
                     local_name!("br")
                     | local_name!("hr")
-                    | local_name!("li")) {
+                    | local_name!("li")
+                    | local_name!("tr")) {
                         text.push_char('\n');
                     }
             }

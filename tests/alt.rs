@@ -6,7 +6,7 @@ use common::test_alt_formatted_text;
 
 #[test]
 fn test_alt_formattedd_last_fail() {
-    test_alt_formatted_text("./test-pages/alt/arstechnica");
+    test_alt_formatted_text("./test-pages/alt/hacker-news");
 }
 
 #[test]
