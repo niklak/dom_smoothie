@@ -6,6 +6,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ### Added
 - Introducing the `Config::candidate_select_mode`: this mode determines whether the top candidate is adjusted in the [Readability.js](https://github.com/mozilla/readability)  order or using the crate's exclusive implementation.
+- Introducing the `Config::text_mode`: this mode determines whether the text is formatted or not. The default is `TextMode::Raw`, which is completely compatible with previous versions of this crate.
 
 ### Changed
  - Changed the `Readability::grab_article` method implementation to retain only the best attempt among failed attempts, instead of keeping all of them until the exit.
