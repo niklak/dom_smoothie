@@ -2,7 +2,7 @@
 use std::{fs, path::Path};
 
 use dom_query::{Document, Matcher};
-use dom_smoothie::Readability;
+use dom_smoothie::{CandidateSelectMode, Config, Readability, TextMode};
 
 use once_cell::sync::Lazy;
 pub(crate) static R_MATCHER: Lazy<Matcher> =
@@ -19,6 +19,29 @@ struct ExpectedMetadata {
     lang: Option<String>,
     dir: Option<String>,
     readerable: bool,
+}
+
+pub(crate) fn test_alt_formatted_text<P>(test_path: P)
+where
+    P: AsRef<Path>,
+{
+    let base_path = test_path.as_ref();
+    let source_path = base_path.join("source.html");
+    let expected_path = base_path.join("expected.txt");
+    // for more options check the documentation
+    let cfg = Config {
+        candidate_select_mode: CandidateSelectMode::DomSmoothie,
+        text_mode: TextMode::Formatted,
+        ..Default::default()
+    };
+
+    let source_contents = fs::read_to_string(source_path).unwrap();
+    let mut readability = Readability::new(source_contents, None, Some(cfg)).unwrap();
+
+    let article = readability.parse().unwrap();
+    let expected_contents = fs::read_to_string(expected_path).unwrap();
+    let article_text = article.text_content.as_ref();
+    assert_eq!(article_text, expected_contents.trim())
 }
 
 pub(crate) fn test_readability<P>(test_path: P)

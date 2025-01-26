@@ -8,7 +8,7 @@ use crate::config::TextMode;
 use crate::glob::*;
 use crate::helpers::*;
 use crate::is_probably_readable;
-use crate::text_helpers::formatted_text;
+use crate::text_helpers::format_text;
 use crate::Config;
 use crate::ReadabilityError;
 
@@ -506,7 +506,7 @@ impl Readability {
         };
         let text_content = match self.config.text_mode {
             TextMode::Raw => root_node.text(),
-            TextMode::Formatted => formatted_text(root_node),
+            TextMode::Formatted => format_text(root_node),
         };
         let text_length = text_content.chars().count();
 

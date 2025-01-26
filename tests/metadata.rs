@@ -19,7 +19,6 @@ fn table_test_metadata() {
         let paths = fs::read_dir(d).unwrap();
         for p in paths {
             let pp = p.unwrap().path();
-            println!("path: {:?}", pp);
             test_metadata(pp, Some("http://fakehost/test/"));
         }
     }

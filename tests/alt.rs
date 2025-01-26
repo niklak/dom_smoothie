@@ -1,19 +1,19 @@
-use dom_smoothie::{Article, CandidateSelectMode, Config, Readability, TextMode};
+mod common;
+
+use std::fs;
+
+use common::test_alt_formatted_text;
 
 #[test]
-fn test_formatted_text() {
-    let html = include_str!("../test-pages/alt/arstechnica/source.html");
+fn test_alt_formattedd_last_fail() {
+    test_alt_formatted_text("./test-pages/alt/arstechnica");
+}
 
-    // for more options check the documentation
-    let cfg = Config {
-        candidate_select_mode: CandidateSelectMode::DomSmoothie,
-        text_mode: TextMode::Formatted,
-        ..Default::default()
-    };
-    let mut readability = Readability::new(html, None, Some(cfg)).unwrap();
-
-    let article: Article = readability.parse().unwrap();
-    let expected_text = include_str!("../test-pages/alt/arstechnica/expected.txt");
-    let article_text = article.text_content.as_ref();
-    assert_eq!(article_text, expected_text.trim())
+#[test]
+fn table_test_alt_formatted_text() {
+    let paths = fs::read_dir("./test-pages/alt").unwrap();
+    for p in paths {
+        let pp = p.unwrap().path();
+        test_alt_formatted_text(pp);
+    }
 }

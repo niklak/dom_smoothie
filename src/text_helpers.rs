@@ -8,7 +8,7 @@ enum SerializeOp {
     Close(QualName),
 }
 
-pub fn formatted_text(root_node: &NodeRef) -> StrTendril {
+pub fn format_text(root_node: &NodeRef) -> StrTendril {
     let id = root_node.id;
     let tree = root_node.tree;
     let mut ops: Vec<_> = tree
@@ -27,12 +27,18 @@ pub fn formatted_text(root_node: &NodeRef) -> StrTendril {
                         if contents.is_empty() {
                             return;
                         }
-                        let follows_newline = text.ends_with("\n") || text.is_empty();
-                        let normalized = normalize_spaces(contents.as_ref(), follows_newline);
+                        let follows_newline = text.ends_with('\n') || text.is_empty();
+                        let normalized = normalize_text(contents.as_ref(), follows_newline);
                         text.push_tendril(&normalized);
                     }
                     NodeData::Element(ref e) => {
                         ops.push(SerializeOp::Close(e.name.clone()));
+                
+                        if matches!(e.name.local, local_name!("pre")) {
+                            text.push_tendril(&node.text());
+                            return;
+                        }
+
                         ops.extend(tree.child_ids_of_it(&id, true).map(SerializeOp::Open));
                     }
                     NodeData::Document | NodeData::Fragment => {
@@ -42,6 +48,9 @@ pub fn formatted_text(root_node: &NodeRef) -> StrTendril {
                 });
             }
             SerializeOp::Close(name) => {
+                if text.ends_with("\n\n") {
+                    continue;
+                }
                 if matches!(
                     name.local,
                     local_name!("article")
@@ -55,13 +64,18 @@ pub fn formatted_text(root_node: &NodeRef) -> StrTendril {
                         | local_name!("h4")
                         | local_name!("h5")
                         | local_name!("h6")
-                        | local_name!("br")
-                        | local_name!("hr")
                         | local_name!("ul")
-                        | local_name!("li")
+                        | local_name!("ol")
+
                 ) {
-                    text.push_slice("\n");
-                }
+                    text.push_slice("\n\n");
+                } else if matches!(
+                    name.local,
+                    local_name!("br")
+                    | local_name!("hr")
+                    | local_name!("li")) {
+                        text.push_char('\n');
+                    }
             }
         }
     }
@@ -71,7 +85,8 @@ pub fn formatted_text(root_node: &NodeRef) -> StrTendril {
     text
 }
 
-pub(crate) fn normalize_spaces(text: &str, follows_newline: bool) -> StrTendril {
+
+fn normalize_text(text: &str, follows_newline: bool) -> StrTendril {
     let push_start_whitespace = !follows_newline && text.starts_with(char::is_whitespace);
     let push_end_whitespace = text.ends_with(char::is_whitespace);
 
