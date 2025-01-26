@@ -33,7 +33,7 @@ pub fn format_text(root_node: &NodeRef) -> StrTendril {
                     }
                     NodeData::Element(ref e) => {
                         ops.push(SerializeOp::Close(e.name.clone()));
-                
+
                         if matches!(e.name.local, local_name!("pre")) {
                             text.push_tendril(&node.text());
                             return;
@@ -71,12 +71,10 @@ pub fn format_text(root_node: &NodeRef) -> StrTendril {
                     text.push_slice("\n\n");
                 } else if matches!(
                     name.local,
-                    local_name!("br")
-                    | local_name!("hr")
-                    | local_name!("li")
-                    | local_name!("tr")) {
-                        text.push_char('\n');
-                    }
+                    local_name!("br") | local_name!("hr") | local_name!("li") | local_name!("tr")
+                ) {
+                    text.push_char('\n');
+                }
             }
         }
     }
@@ -85,7 +83,6 @@ pub fn format_text(root_node: &NodeRef) -> StrTendril {
     }
     text
 }
-
 
 fn normalize_text(text: &str, follows_newline: bool) -> StrTendril {
     let push_start_whitespace = !follows_newline && text.starts_with(char::is_whitespace);
