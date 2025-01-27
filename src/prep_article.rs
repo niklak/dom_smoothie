@@ -91,11 +91,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
         // If there are not very many commas, and the number of
         // non-paragraph elements is more than paragraphs or other
         // ominous signs, remove the element.
-        let p: f32 = node.find(&["p"]).len() as f32;
         let img = node.find(&["img"]).len() as f32;
-        let li = node.find(&["li"]).len() as f32 - 100.0;
-        let input = node.find(&["input"]).len() as f32;
-        let heading_density = get_text_density(node, "h1,h2,h3,h4,h5,h6");
 
         let mut embed_count = 0;
 
@@ -134,19 +130,25 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
 
         let should_remove = || {
             let is_figure_child = has_ancestor_tag::<NodePredicate>(node, "figure", None, None);
+            let p: f32 = node.find(&["p"]).len() as f32;
+            let li = node.find(&["li"]).len() as f32 - 100.0;
 
             if !is_figure_child && img > 1.0 && p / img < 0.5 {
                 return true;
             }
+
             if !is_list && li > p {
                 return true;
             }
+
+            let input = node.find(&["input"]).len() as f32;
             if input > (p / 3.0).floor() {
                 return true;
             }
 
             let content_length = normalized_char_count(&inner_text);
             let link_density = link_density(node);
+            let heading_density = get_text_density(node, "h1,h2,h3,h4,h5,h6");
 
             if !is_list
                 && !is_figure_child
@@ -169,7 +171,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
                 return true;
             }
 
-            let text_density = get_text_density(node, &TEXTISH_TAGS.join(","));
+            let text_density = get_text_density(node, TEXTISH_TAGS);
             if img == 0.0 && text_density == 0.0 {
                 return true;
             }
@@ -399,7 +401,6 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
     fix_lazy_images(article_node);
 
     clean_conditionally(article_node, "form", flags);
-
     clean_conditionally(article_node, "fieldset", flags);
 
     // Clean out junk from the article content

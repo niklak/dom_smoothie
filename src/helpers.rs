@@ -97,6 +97,10 @@ pub(crate) fn get_text_density(node: &Node, selector: &str) -> f32 {
         return 0.0;
     }
     let sel = Selection::from(node.clone()).select(selector);
+    if sel.nodes().is_empty() {
+        return 0.0;
+    }
+
     let children_length = normalized_char_count(&sel.text()) as f32;
     children_length / text_length
 }

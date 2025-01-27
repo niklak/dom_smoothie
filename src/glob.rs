@@ -75,20 +75,7 @@ pub(crate) static META_EXCERPT_KEYS: &[&str] = &[
     "twitter:description",
 ];
 
-pub(crate) static TEXTISH_TAGS: &[&str] = &[
-    "blockquote",
-    "dl",
-    "div",
-    "img",
-    "ol",
-    "p",
-    "pre",
-    "table",
-    "ul",
-    "span",
-    "li",
-    "td",
-];
+pub(crate) static TEXTISH_TAGS: &str = "blockquote,dl,div,img,ol,p,pre,table,ul,span,li,td";
 
 pub(crate) static PRESENTATIONAL_ATTRIBUTES: &[&str] = &[
     "align",
@@ -169,8 +156,9 @@ pub(crate) static JSONLD_ARTICLE_TYPES: &[&str] = &[
 ];
 
 pub(crate) static COMMAS: &[char] = &[
-    '\u{002C}', '\u{060C}', '\u{FE50}', '\u{FE10}', '\u{FE11}',
-    '\u{2E41}', '\u{2E34}', '\u{2E32}', '\u{FF0C}'];
+    '\u{002C}', '\u{060C}', '\u{FE50}', '\u{FE10}', '\u{FE11}', '\u{2E41}', '\u{2E34}', '\u{2E32}',
+    '\u{FF0C}',
+];
 
 pub(crate) static BLOCK_ELEMS: phf::Set<&'static str> = phf_set!(
     "blockquote",
