@@ -4,6 +4,10 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Introducing the `Config::candidate_select_mode`: this mode determines whether the top candidate is adjusted in the [Readability.js](https://github.com/mozilla/readability)  order or using the crate's exclusive implementation.
+- Introducing the `Config::text_mode`: this mode determines whether the text is formatted or not. The default is `TextMode::Raw`, which is completely compatible with previous versions of this crate.
+
 ### Changed
  - Changed the `Readability::grab_article` method implementation to retain only the best attempt among failed attempts, instead of keeping all of them until the exit.
  - Internal code optimizations aimed to reduce execution time.
@@ -19,6 +23,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 - Internal code change: use `dom_query::Document::base_uri` to extract the base uri instead of `dom_query::Matcher`. 
 - Updated the code (Byline extraction and JSON-LD parsing) to align with Mozilla's recent updates to the Readability library ([118f015](https://github.com/mozilla/readability/commit/118f01538e167218bd86ffd493bd3466aec4870a)).
 - **Breaking:** Revised `Readability::is_probably_readable` method: it now uses `Config::readable_min_score` and `Config::readable_min_content_length` from the instance configuration instead of accepting arguments.
+
 
 ## [0.3.0] - 2025-01-08
 

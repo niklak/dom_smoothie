@@ -62,13 +62,9 @@ fn clean_styles(n: &Node) {
 
 fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>) -> bool {
     let sel = Selection::from(node.clone());
-    let mut is_list = matches!(tag, "ul" | "ol");
-    if !is_list {
-        let list_length = sel
-            .select("ul, ol")
-            .iter()
-            .fold(0, |acc, s| acc + s.text().trim().chars().count());
-        is_list = (list_length as f32 / sel.text().trim().chars().count() as f32) > 0.9;
+    // keep element if it has a data tables
+    if sel.select("table[data-readability-table]").exists() {
+        return false;
     }
 
     let is_data_table = |n: &Node| n.has_attr("data-readability-table");
@@ -82,11 +78,6 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
     }
 
     if has_ancestor_tag::<NodePredicate>(node, "code", Some(0), None) {
-        return false;
-    }
-
-    // keep element if it has a data tables
-    if sel.select("table[data-readability-table]").exists() {
         return false;
     }
 
@@ -132,6 +123,15 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
             return true;
         }
 
+        let mut is_list = matches!(tag, "ul" | "ol");
+        if !is_list {
+            let list_length = sel
+                .select("ul, ol")
+                .iter()
+                .fold(0, |acc, s| acc + s.text().trim().chars().count());
+            is_list = (list_length as f32 / sel.text().trim().chars().count() as f32) > 0.9;
+        }
+
         let should_remove = || {
             let is_figure_child = has_ancestor_tag::<NodePredicate>(node, "figure", None, None);
 
@@ -160,11 +160,11 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
             if !is_list && weight < 25.0 && link_density > 0.2 {
                 return true;
             }
-    
+
             if weight >= 25.0 && link_density > 0.5 {
                 return true;
             }
-    
+
             if (embed_count == 1 && content_length < 75) || embed_count > 1 {
                 return true;
             }
@@ -176,7 +176,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
             false
         };
         let have_to_remove = should_remove();
-        
+
         if is_list && have_to_remove {
             for child in node.children_it(false) {
                 if child.element_children().len() > 1 {

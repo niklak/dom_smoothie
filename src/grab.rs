@@ -1,11 +1,12 @@
-use std::collections::HashSet;
+use foldhash::{HashMap, HashSet};
 use std::vec;
 
-use dom_query::Selection;
 use dom_query::{Document, Node, NodeRef};
+use dom_query::{NodeId, Selection};
 use flagset::FlagSet;
 use tendril::StrTendril;
 
+use crate::config::CandidateSelectMode;
 use crate::glob::*;
 use crate::grab_flags::GrabFlags;
 use crate::score::*;
@@ -102,7 +103,9 @@ impl Readability {
         doc: &'a Document,
         flags: &FlagSet<GrabFlags>,
     ) -> Option<NodeRef<'a>> {
+        let weigh_class = flags.contains(GrabFlags::WeightClasses);
         let mut top_candidates = score_elements(elements_to_score, flags);
+
         top_candidates.truncate(self.config.n_top_candidates);
 
         let mut top_candidate = top_candidates.first().cloned();
@@ -125,112 +128,46 @@ impl Readability {
             page_node.append_child(&tc);
             init_node_score(&tc, flags.contains(GrabFlags::WeightClasses));
             top_candidate = Some(tc);
-        } else if let Some(ref tc) = top_candidate {
-            // Find a better top candidate node if it contains (at least three) nodes which belong to `topCandidates` array
-            // and whose scores are quite closed with current `topCandidate` node.
-
-            let tc_score = get_node_score(tc);
-
-            let mut alternative_candidate_ancestors = vec![];
-            for alt in top_candidates.iter().skip(1) {
-                if get_node_score(alt) / tc_score >= 0.75 {
-                    alternative_candidate_ancestors.push(alt.ancestors(Some(0)));
-                }
+        } else if top_candidate.is_some() {
+            
+            if matches!(
+                self.config.candidate_select_mode,
+                CandidateSelectMode::DomSmoothie
+            ) {
+                top_candidate = find_common_candidate_alt(top_candidate, &top_candidates);
+            } else {
+                // Find a better top candidate node if it contains (at least three) nodes which belong to `topCandidates` array
+                // and whose scores are quite closed with current `topCandidate` node.
+                top_candidate = find_common_candidate(top_candidate, &top_candidates, weigh_class);
             }
-            if alternative_candidate_ancestors.len() > MINIMUM_TOP_CANDIDATES {
-                let mut parent_of_top_candidate = tc.parent();
-                while let Some(ref parent_of_tc) = parent_of_top_candidate {
-                    if node_name_is(parent_of_tc, "body") {
-                        break;
-                    }
-
-                    let mut lists_containing_this_ancestor = 0;
-
-                    for alt_ancestor in &alternative_candidate_ancestors {
-                        if lists_containing_this_ancestor >= MINIMUM_TOP_CANDIDATES {
-                            break;
-                        }
-
-                        if alt_ancestor.iter().any(|n| n.id == parent_of_tc.id) {
-                            lists_containing_this_ancestor += 1;
-                        }
-                    }
-
-                    if lists_containing_this_ancestor >= MINIMUM_TOP_CANDIDATES {
-                        top_candidate = parent_of_top_candidate;
-                        break;
-                    }
-
-                    parent_of_top_candidate = parent_of_tc.parent();
-                }
-            }
-
-            if let Some(ref tc) = top_candidate {
-                if !has_node_score(tc) {
-                    init_node_score(tc, flags.contains(GrabFlags::WeightClasses));
-                }
-                // Because of our bonus system, parents of candidates might have scores
-                // themselves. They get half of the node. There won't be nodes with higher
-                // scores than our topCandidate, but if we see the score going *up* in the first
-                // few steps up the tree, that's a decent sign that there might be more content
-                // lurking in other places that we want to unify in. The sibling stuff
-                // below does some of that - but only if we've looked high enough up the DOM
-                // tree.
-                let mut last_score = get_node_score(tc);
-                let score_threshold = last_score / 3.0;
-                let mut parent_of_top_candidate = tc.parent();
-                while let Some(ref parent_of_tc) = parent_of_top_candidate {
-                    if node_name_is(parent_of_tc, "body") {
-                        break;
-                    }
-
-                    if !has_node_score(parent_of_tc) {
-                        parent_of_top_candidate = parent_of_tc.parent();
-                        continue;
-                    }
-
-                    let parent_score = get_node_score(parent_of_tc);
-                    if parent_score < score_threshold {
-                        break;
-                    }
-                    if parent_score > last_score {
-                        top_candidate = parent_of_top_candidate;
-                        break;
-                    }
-                    last_score = parent_score;
-                    parent_of_top_candidate = parent_of_tc.parent();
-                }
-            }
-
             // If the top candidate is the only child, use parent instead. This will help sibling
             // joining logic when adjacent content is actually located in parent's sibling node.
             if let Some(ref tc) = top_candidate {
                 let mut parent_of_top_candidate = tc.parent();
 
-                while let Some(ref parent_of_tc) = parent_of_top_candidate {
-                    if node_name_is(parent_of_tc, "body") {
+                while let Some(ref tc_parent) = parent_of_top_candidate {
+                    if node_name_is(tc_parent, "body") {
                         break;
                     }
 
-                    if parent_of_tc.element_children().len() != 1 {
+                    if tc_parent.element_children().len() != 1 {
                         break;
                     }
                     top_candidate = parent_of_top_candidate.clone();
-                    parent_of_top_candidate = parent_of_tc.parent();
+                    parent_of_top_candidate = tc_parent.parent();
                 }
             }
         }
         if let Some(ref tc) = top_candidate {
             if !has_node_score(tc) {
-                init_node_score(tc, flags.contains(GrabFlags::WeightClasses));
+                init_node_score(tc, weigh_class);
             }
 
             // Now that we have the top candidate, look through its siblings for content
             // that might also be related. Things like preambles, content split by ads
             // that we removed, etc.
 
-            let mut article_content = doc.tree.new_element("div");
-            article_content.set_attr("id", "readability-content");
+            let article_content = doc.tree.new_element("div");
 
             handle_top_candidate(tc, &article_content);
 
@@ -238,21 +175,12 @@ impl Readability {
             prep_article(&article_content, flags, &self.config);
 
             if needed_to_create_top_candidate {
-                // This looks like nonsense
-                // We already created a fake div thing, and there wouldn't have been any siblings left
-                // for the previous loop, so there's no point trying to create a new div, and then
-                // move all the children over. Just assign IDs and class names here. No need to append
-                // because that already happened anyway.
-                tc.set_attr("id", "readability-page-1");
+                tc.set_attr("id", CONTENT_ID);
                 tc.set_attr("class", "page");
             } else {
-                let div = doc.tree.new_element("div");
-                div.set_attr("id", "readability-page-1");
-                div.set_attr("class", "page");
-                doc.tree
-                    .reparent_children_of(&article_content.id, Some(div.id));
-                article_content.replace_with(&div);
-                article_content = div;
+                // this code does the same this as mozilla's implementation, but it is more simpler.
+                article_content.set_attr("id", CONTENT_ID);
+                article_content.set_attr("class", "page");
             }
 
             return Some(article_content);
@@ -264,7 +192,7 @@ impl Readability {
 fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely: bool) {
     let mut should_remove_title_header = !metadata.title.is_empty();
 
-    let mut nodes_to_remove = HashSet::new();
+    let mut nodes_to_remove = HashSet::default();
 
     for node in root_node.descendants_it().filter(|n| n.is_element()) {
         if let Some(parent) = node.parent() {
@@ -352,7 +280,7 @@ fn is_valid_byline(node: &Node, match_string: &str) -> bool {
 
 fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
     // Assuming that `<body>` node can't can't reach this function
-    if matches!(node.node_name().as_deref(), Some("a")){
+    if node.node_name().as_deref() == Some("a") {
         return false;
     }
 
@@ -505,11 +433,11 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
         sibling_score_threshold = 10.0;
     }
     // Keep potential top candidate's parent node to try to get text direction of it later.
-    let Some(parent_of_top_candidate) = tc.parent() else {
+    let Some(tc_parent) = tc.parent() else {
         unreachable!()
     };
 
-    let siblings: Vec<Node> = parent_of_top_candidate.element_children();
+    let siblings: Vec<Node> = tc_parent.element_children();
 
     for sibling in siblings.iter() {
         let sibling_name = sibling.node_name().unwrap();
@@ -554,8 +482,152 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
 
             article_content.append_child(&sibling.id);
         }
-        parent_of_top_candidate.append_child(article_content);
+        tc_parent.append_child(article_content);
     }
+}
+
+/// Find a better top candidate across other candidates in a way that `mozilla/readability` does.
+fn find_common_candidate<'a>(
+    mut top_candidate: Option<NodeRef<'a>>,
+    top_candidates: &Vec<NodeRef<'a>>,
+    weigh_class: bool,
+) -> Option<NodeRef<'a>> {
+    let Some(ref tc) = top_candidate else {
+        return top_candidate;
+    };
+    let tc_score = get_node_score(tc);
+
+    let mut alternative_candidate_ancestors = vec![];
+    for alt in top_candidates.iter().skip(1) {
+        if get_node_score(alt) / tc_score >= 0.75 {
+            alternative_candidate_ancestors.push(alt.ancestors(Some(0)));
+        }
+    }
+    // MIN_COMMON_ANCESTORS (in mozilla/readability.js -- MINIMUM_TOPCANDIDATES)
+    // represents the number of top candidates' ancestors that may be common.
+    // The idea is good, but this magic number doesn't always work very well.
+    // For example, imagine we have only two candidates, and both are significant.
+    // So, we end up with one top candidate and another candidate.
+    // However, the second candidate will be excluded in the end because we require
+    // at least three (!) lists of ancestors,
+    // which is impossible to derive from just one candidate.
+    // To adjust the top candidate to share a common ancestor with other candidates,
+    // we would need at least three other candidates.
+    // Currently, I consider this approach to be flawed...
+
+    if alternative_candidate_ancestors.len() > MIN_COMMON_ANCESTORS {
+        let mut parent_of_top_candidate = tc.parent();
+        while let Some(ref tc_parent) = parent_of_top_candidate {
+            if node_name_is(tc_parent, "body") {
+                break;
+            }
+
+            let mut lists_containing_this_ancestor = 0;
+
+            for alt_ancestor in &alternative_candidate_ancestors {
+                if alt_ancestor.iter().any(|n| n.id == tc_parent.id) {
+                    lists_containing_this_ancestor += 1;
+                }
+            }
+
+            if lists_containing_this_ancestor >= MIN_COMMON_ANCESTORS {
+                top_candidate = parent_of_top_candidate;
+                break;
+            }
+
+            parent_of_top_candidate = tc_parent.parent();
+        }
+    }
+
+    if let Some(ref tc) = top_candidate {
+        if !has_node_score(tc) {
+            init_node_score(tc, weigh_class);
+        }
+        // Because of our bonus system, parents of candidates might have scores
+        // themselves. They get half of the node. There won't be nodes with higher
+        // scores than our topCandidate, but if we see the score going *up* in the first
+        // few steps up the tree, that's a decent sign that there might be more content
+        // lurking in other places that we want to unify in. The sibling stuff
+        // below does some of that - but only if we've looked high enough up the DOM
+        // tree.
+        let mut last_score = get_node_score(tc);
+        let score_threshold = last_score / 3.0;
+        let mut parent_of_top_candidate = tc.parent();
+        while let Some(ref tc_parent) = parent_of_top_candidate {
+            if node_name_is(tc_parent, "body") {
+                break;
+            }
+
+            if !has_node_score(tc_parent) {
+                parent_of_top_candidate = tc_parent.parent();
+                continue;
+            }
+
+            let parent_score = get_node_score(tc_parent);
+            if parent_score < score_threshold {
+                break;
+            }
+            if parent_score > last_score {
+                top_candidate = parent_of_top_candidate;
+                break;
+            }
+            last_score = parent_score;
+            parent_of_top_candidate = tc_parent.parent();
+        }
+    }
+    top_candidate
+}
+
+/// Find a better top candidate across other candidates (alternative approach).
+fn find_common_candidate_alt<'a>(
+    mut top_candidate: Option<NodeRef<'a>>,
+    top_candidates: &Vec<NodeRef<'a>>,
+) -> Option<NodeRef<'a>> {
+    let Some(ref tc) = top_candidate else {
+        return top_candidate;
+    };
+
+    if top_candidates.len() < 2 {
+        return top_candidate;
+    }
+
+    let tc_ancestors = get_node_ancestors(tc);
+    let tc_score = get_node_score(tc);
+
+    let mut ancestor_match_counter: HashMap<NodeId, usize> = HashMap::default();
+
+    for alt in top_candidates.iter().skip(1) {
+        if get_node_score(alt) / tc_score >= 0.75 {
+            // TODO: what if other candidate is an ancestor of top candidate?
+            let alt_ancestors = get_node_ancestors(alt);
+            let intersect = tc_ancestors.intersection(&alt_ancestors);
+            for item in intersect {
+                *ancestor_match_counter.entry(*item).or_insert(0) += 1;
+            }
+        }
+    }
+
+    if let Some(best_candidate_id) = ancestor_match_counter
+        .into_iter()
+        .max_by(|x, y| y.1.cmp(&x.1).then(y.0.cmp(&x.0)))
+        .map(|n| n.0)
+    {
+        top_candidate = Some(NodeRef::new(best_candidate_id, tc.tree));
+    }
+    top_candidate
+}
+
+fn get_node_ancestors(node: &NodeRef) -> HashSet<NodeId> {
+    // only elements, no html or body, and have a score
+    node.ancestors(Some(0))
+        .iter()
+        .filter(|n| {
+            n.is_element()
+                && !matches!(n.node_name().as_deref(), Some("html") | Some("body"))
+                && has_node_score(n)
+        })
+        .map(|n| n.id)
+        .collect::<HashSet<_>>()
 }
 
 #[cfg(test)]
