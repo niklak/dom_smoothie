@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use foldhash::{HashMap, HashSet};
 use std::vec;
 
 use dom_query::{Document, Node, NodeRef};
@@ -194,7 +194,7 @@ impl Readability {
 fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely: bool) {
     let mut should_remove_title_header = !metadata.title.is_empty();
 
-    let mut nodes_to_remove = HashSet::new();
+    let mut nodes_to_remove = HashSet::default();
 
     for node in root_node.descendants_it().filter(|n| n.is_element()) {
         if let Some(parent) = node.parent() {
@@ -596,7 +596,7 @@ fn find_common_candidate_alt<'a>(
     let tc_ancestors = get_node_ancestors(tc);
     let tc_score = get_node_score(tc);
 
-    let mut ancestor_match_counter: HashMap<NodeId, usize> = HashMap::new();
+    let mut ancestor_match_counter: HashMap<NodeId, usize> = HashMap::default();
 
     for alt in top_candidates.iter().skip(1) {
         if get_node_score(alt) / tc_score >= 0.75 {

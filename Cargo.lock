@@ -196,6 +196,7 @@ version = "0.4.0"
 dependencies = [
  "dom_query",
  "flagset",
+ "foldhash",
  "gjson",
  "html-escape",
  "html5ever",
