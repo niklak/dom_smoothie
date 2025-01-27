@@ -168,6 +168,10 @@ pub(crate) static JSONLD_ARTICLE_TYPES: &[&str] = &[
     "APIReference",
 ];
 
+pub(crate) static COMMAS: &[char] = &[
+    '\u{002C}', '\u{060C}', '\u{FE50}', '\u{FE10}', '\u{FE11}',
+    '\u{2E41}', '\u{2E34}', '\u{2E32}', '\u{FF0C}'];
+
 pub(crate) static BLOCK_ELEMS: phf::Set<&'static str> = phf_set!(
     "blockquote",
     "dl",
@@ -187,7 +191,7 @@ pub(crate) static DEFAULT_TAGS_TO_SCORE: phf::Set<&'static str> =
     phf_set!("section", "h2", "h3", "h4", "h5", "h6", "p", "td", "pre");
 
 pub(crate) static TAGS_WITH_CONTENT: phf::Set<&'static str> =
-    phf_set!("div", "section", "header", "h1", "h2", "h3", "h4", "h5", "h6",);
+    phf_set!("div", "section", "header", "h1", "h2", "h3", "h4", "h5", "h6");
 
 pub(crate) static EMBED_ELEMENTS: phf::Set<&'static str> = phf_set!("object", "embed", "iframe");
 
@@ -198,15 +202,14 @@ pub(crate) static UNLIKELY_ROLES: phf::Set<&'static str> = phf_set!(
     "navigation",
     "alert",
     "alertdialog",
-    "dialog",
+    "dialog"
 );
 
 pub(crate) static PHRASING_ELEMS: phf::Set<&'static str> = phf_set!(
-    // "canvas", "iframe", "svg", "video",
     "abbr", "audio", "b", "bdo", "br", "button", "cite", "code", "data", "datalist", "dfn", "em",
     "embed", "i", "img", "input", "kbd", "label", "mark", "math", "meter", "noscript", "object",
     "output", "progress", "q", "ruby", "samp", "script", "select", "small", "span", "strong",
-    "sub", "sup", "textarea", "time", "var", "wbr",
+    "sub", "sup", "textarea", "time", "var", "wbr"
 );
 
 pub(crate) static CLASSES_NEGATIVE: phf::Set<&'static str> = phf_set!(
@@ -276,8 +279,7 @@ pub(crate) static RX_META_PROPERTY: Lazy<Regex> = lazy_re!(
 );
 
 pub(crate) static RX_HASH_URL: Lazy<Regex> = lazy_re!(r#"^#.+"#);
-pub(crate) static RX_COMMAS: Lazy<Regex> =
-    lazy_re!(r#"\u002C|\u060C|\uFE50|\uFE10|\uFE11|\u2E41|\u2E34|\u2E32|\uFF0C"#);
+
 pub(crate) static RX_CLASSES_NEGATIVE: Lazy<Regex> = lazy_re!(r"\bhid\b");
 
 pub(crate) static RX_SENTENCE: Lazy<Regex> = lazy_re!(r"\.( |$)");

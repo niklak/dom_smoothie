@@ -389,7 +389,7 @@ fn score_elements<'a>(
 
         let mut content_score: usize = 1;
 
-        content_score += RX_COMMAS.split(inner_text.as_ref()).count();
+        content_score += inner_text.split(COMMAS).count();
 
         content_score += std::cmp::min(inner_text.chars().count() / 100, 3);
         for (level, ancestor) in ancestors.iter().enumerate() {
