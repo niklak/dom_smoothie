@@ -115,17 +115,17 @@ impl Readability {
             .and_then(|n| n.node_name())
             .unwrap_or_else(StrTendril::new);
 
-        let page_sel = doc.select("body");
-        let page_node = page_sel.nodes().first().unwrap();
+        
         let mut needed_to_create_top_candidate = false;
 
         if top_candidate.is_none() || tc_name.as_ref() == "body" {
             needed_to_create_top_candidate = true;
-
+            let body_sel = doc.select_single("body");
+            let body_node = body_sel.nodes().first().unwrap();
             let tc = doc.tree.new_element("div");
 
-            doc.tree.reparent_children_of(&page_node.id, Some(tc.id));
-            page_node.append_child(&tc);
+            doc.tree.reparent_children_of(&body_node.id, Some(tc.id));
+            body_node.append_child(&tc);
             init_node_score(&tc, flags.contains(GrabFlags::WeightClasses));
             top_candidate = Some(tc);
         } else if top_candidate.is_some() {

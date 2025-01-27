@@ -260,13 +260,13 @@ fn mark_data_tables(n: &Node) {
             set_data_readability_table(node, true);
             continue;
         }
-        let caption_sel = sel.select("caption");
+        let caption_sel = sel.select_single("caption");
         if caption_sel.exists() {
             set_data_readability_table(node, true);
             continue;
         }
 
-        let descendants_sel = sel.select("col,colgroup,tfoot,thead,th");
+        let descendants_sel = sel.select_single("col,colgroup,tfoot,thead,th");
 
         if descendants_sel.exists() {
             set_data_readability_table(node, true);
@@ -274,7 +274,7 @@ fn mark_data_tables(n: &Node) {
         }
 
         // nested tables indicate a layout table
-        if sel.select("table").exists() {
+        if sel.select_single("table").exists() {
             set_data_readability_table(node, false);
             continue;
         }
@@ -429,6 +429,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
     clean(article_node, "textarea");
     clean(article_node, "select");
     clean(article_node, "button");
+    
     clean_headers(article_node, flags);
 
     // Do these last as the previous stuff may have removed junk

@@ -18,13 +18,13 @@ pub(crate) fn set_node_score(node: &Node, score: f32) {
     node.set_attr(SCORE_ATTR, &score.to_string());
 }
 
-pub(crate) fn init_node_score(node: &Node, weight_classes: bool) -> f32 {
-    let score = determine_node_score(node, weight_classes);
+pub(crate) fn init_node_score(node: &Node, weigh_classes: bool) -> f32 {
+    let score = determine_node_score(node, weigh_classes);
     set_node_score(node, score);
     score
 }
 
-pub(crate) fn determine_node_score(node: &Node, weight_classes: bool) -> f32 {
+pub(crate) fn determine_node_score(node: &Node, weigh_classes: bool) -> f32 {
     let Some(node_name) = node.node_name() else {
         return 0.0;
     };
@@ -37,13 +37,13 @@ pub(crate) fn determine_node_score(node: &Node, weight_classes: bool) -> f32 {
         _ => 0.0,
     };
 
-    score + get_class_weight(node, weight_classes)
+    score + get_class_weight(node, weigh_classes)
 }
 
-pub(crate) fn get_class_weight(node: &Node, weight_classes: bool) -> f32 {
+pub(crate) fn get_class_weight(node: &Node, weigh_classes: bool) -> f32 {
     let mut weight = 0.0;
 
-    if !weight_classes {
+    if !weigh_classes {
         return weight;
     }
 
