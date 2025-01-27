@@ -258,14 +258,18 @@ fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely:
 
 fn get_node_matching_string(node: &NodeRef) -> String {
     let mut matched_buf = StrTendril::new();
-    if let Some(class) = node.attr("class") {
-        matched_buf.push_tendril(&class);
-        matched_buf.push_char(' ');
-    }
-
-    if let Some(id) = node.attr("id") {
-        matched_buf.push_tendril(&id);
-    }
+    node.query(|n| match n.data {
+        dom_query::NodeData::Element(ref el) => {
+            el.attrs.iter().find(|attr| &attr.name.local == "class").map(|a| {
+                matched_buf.push_tendril(&a.value);
+                matched_buf.push_char(' ');
+            });
+            el.attrs.iter().find(|attr| &attr.name.local == "id").map(|a| {
+                matched_buf.push_tendril(&a.value);
+            });
+        },
+        _ => {}
+    });
     matched_buf.to_lowercase()
 }
 
