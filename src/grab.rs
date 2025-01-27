@@ -256,23 +256,16 @@ fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely:
 
 fn get_node_matching_string(node: &NodeRef) -> String {
     let mut matched_buf = StrTendril::new();
-    node.query(|n| match n.data {
-        dom_query::NodeData::Element(ref el) => {
-            el.attrs
-                .iter()
-                .find(|attr| &attr.name.local == "class")
-                .map(|a| {
-                    matched_buf.push_tendril(&a.value);
-                    matched_buf.push_char(' ');
-                });
-            el.attrs
-                .iter()
-                .find(|attr| &attr.name.local == "id")
-                .map(|a| {
-                    matched_buf.push_tendril(&a.value);
-                });
+    node.query(|n| {
+        if let dom_query::NodeData::Element(ref el) = n.data {
+            if let Some(a) = el.attrs.iter().find(|attr| &attr.name.local == "class") {
+                matched_buf.push_tendril(&a.value);
+                matched_buf.push_char(' ');
+            };
+            if let Some(a) = el.attrs.iter().find(|attr| &attr.name.local == "id") {
+                matched_buf.push_tendril(&a.value);
+            }
         }
-        _ => {}
     });
     matched_buf.to_lowercase()
 }

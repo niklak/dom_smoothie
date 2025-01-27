@@ -209,6 +209,49 @@ pub(crate) static PHRASING_ELEMS: phf::Set<&'static str> = phf_set!(
     "sub", "sup", "textarea", "time", "var", "wbr",
 );
 
+pub(crate) static CLASSES_NEGATIVE: phf::Set<&'static str> = phf_set!(
+    "-ad-",
+    "hidden",
+    "banner",
+    "combx",
+    "comment",
+    "com-",
+    "contact",
+    "footer",
+    "gdpr",
+    "masthead",
+    "media",
+    "meta",
+    "outbrain",
+    "promo",
+    "related",
+    "scroll",
+    "share",
+    "shoutbox",
+    "sidebar",
+    "skyscraper",
+    "sponsor",
+    "shopping",
+    "tags",
+    "widget"
+);
+
+pub(crate) static CLASSES_POSITIVE: phf::Set<&'static str> = phf_set!(
+    "article",
+    "body",
+    "content",
+    "entry",
+    "hentry",
+    "h-entry",
+    "main",
+    "page",
+    "pagination",
+    "post",
+    "text",
+    "blog",
+    "story",
+);
+
 pub(crate) static DEPRECATED_SIZE_ATTRIBUTE_ELEMS: phf::Set<&'static str> =
     phf_set!("table", "th", "td", "hr", "pre");
 
@@ -235,12 +278,8 @@ pub(crate) static RX_META_PROPERTY: Lazy<Regex> = lazy_re!(
 pub(crate) static RX_HASH_URL: Lazy<Regex> = lazy_re!(r#"^#.+"#);
 pub(crate) static RX_COMMAS: Lazy<Regex> =
     lazy_re!(r#"\u002C|\u060C|\uFE50|\uFE10|\uFE11|\u2E41|\u2E34|\u2E32|\uFF0C"#);
-pub(crate) static RX_CLASSES_NEGATIVE: Lazy<Regex> = lazy_re!(
-    r#"(?i)-ad-|hidden|^hid$| hid$| hid |^hid |banner|combx|comment|com-|contact|footer|gdpr|masthead|media|meta|outbrain|promo|related|scroll|share|shoutbox|sidebar|skyscraper|sponsor|shopping|tags|widget"#
-);
-pub(crate) static RX_CLASSES_POSITIVE: Lazy<Regex> = lazy_re!(
-    r#"(?i)article|body|content|entry|hentry|h-entry|main|page|pagination|post|text|blog|story"#
-);
+pub(crate) static RX_CLASSES_NEGATIVE: Lazy<Regex> = lazy_re!(r"\bhid\b");
+
 pub(crate) static RX_SENTENCE: Lazy<Regex> = lazy_re!(r"\.( |$)");
 pub(crate) static RX_VIDEO_ATTRS: Lazy<Regex> = lazy_re!(
     r#"//(www\.)?((dailymotion|youtube|youtube-nocookie|player\.vimeo|v\.qq)\.com|(archive|upload\.wikimedia)\.org|player\.twitch\.tv)"#

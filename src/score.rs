@@ -1,4 +1,4 @@
-use dom_query::Node;
+use dom_query::{Node, NodeData};
 
 use crate::glob::*;
 
@@ -47,23 +47,35 @@ pub(crate) fn get_class_weight(node: &Node, weigh_classes: bool) -> f32 {
         return weight;
     }
 
-    if let Some(class_name) = node.attr("class") {
-        if RX_CLASSES_NEGATIVE.is_match(&class_name) {
-            weight -= 25.0;
-        }
-        if RX_CLASSES_POSITIVE.is_match(&class_name) {
-            weight += 25.0;
-        }
-    }
+    node.query(|n| {
+        if let NodeData::Element(ref el) = n.data {
+            if let Some(a) = el.attrs.iter().find(|attr| &attr.name.local == "class") {
+                let class_name = &a.value.to_lowercase();
+                if RX_CLASSES_NEGATIVE.is_match(class_name) {
+                    weight -= 25.0;
+                }
+                if CLASSES_NEGATIVE.iter().any(|pat| class_name.contains(pat)) {
+                    weight -= 25.0;
+                }
+                if CLASSES_POSITIVE.iter().any(|pat| class_name.contains(pat)) {
+                    weight += 25.0;
+                }
+            };
 
-    if let Some(id) = node.attr("id") {
-        if RX_CLASSES_NEGATIVE.is_match(&id) {
-            weight -= 25.0;
+            if let Some(a) = el.attrs.iter().find(|attr| &attr.name.local == "id") {
+                let id = &a.value.to_lowercase();
+                if RX_CLASSES_NEGATIVE.is_match(id) {
+                    weight -= 25.0;
+                }
+                if CLASSES_NEGATIVE.iter().any(|pat| id.contains(pat)) {
+                    weight -= 25.0;
+                }
+                if CLASSES_POSITIVE.iter().any(|pat| id.contains(pat)) {
+                    weight += 25.0;
+                }
+            }
         }
-        if RX_CLASSES_POSITIVE.is_match(&id) {
-            weight += 25.0;
-        }
-    }
+    });
 
     weight
 }
