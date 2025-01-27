@@ -483,10 +483,18 @@ impl Readability {
             return Err(ReadabilityError::GrabFailed);
         };
 
+        let root_sel = doc.select_single_matcher(&MATCHER_CONTENT_ID);
+
+        let Some(root_node) = root_sel.nodes().first() else {
+            // After `grab_article` successfully returns a document
+            // there is no way that `#readability-page-1 does not exists
+            return Err(ReadabilityError::GrabFailed);
+        };
+
+
         // Getting a base uri from the Readability.document,
         // which wasn't changed after the grabbing the article
         let base_url = self.parse_base_url();
-        let root_sel = doc.select_single("#readability-page-1");
         self.post_process_content(&root_sel, base_url);
 
         // If we haven't found an excerpt in the article's metadata, use the article's
@@ -499,11 +507,6 @@ impl Readability {
             metadata.excerpt = extract_excerpt(&doc)
         }
 
-        let Some(root_node) = root_sel.nodes().first() else {
-            // After `grab_article` successfully returns a document
-            // there is no way that `#readability-page-1 does not exists
-            unreachable!();
-        };
         let text_content = match self.config.text_mode {
             TextMode::Raw => root_node.text(),
             TextMode::Formatted => format_text(root_node),

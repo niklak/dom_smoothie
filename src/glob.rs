@@ -14,12 +14,13 @@ macro_rules! lazy_matcher {
         Lazy::new(|| Matcher::new($pattern).unwrap())
     };
 }
-
+pub(crate) static CONTENT_ID: &str = "readability-page-1";
 pub(crate) static MIN_COMMON_ANCESTORS: usize = 3;
 pub(crate) static SCORE_ATTR: &str = "data-readability-score";
 pub(crate) static MIN_SCORE: f32 = 20.0;
 pub(crate) static MIN_CONTENT_LENGTH: usize = 140;
 
+pub(crate) static MATCHER_CONTENT_ID: Lazy<Matcher> = lazy_matcher!(&format!("#{}", CONTENT_ID));
 pub(crate) static MATCHER_LI_P: Lazy<Matcher> = lazy_matcher!("li p");
 pub(crate) static MATCHER_TITLE: Lazy<Matcher> = lazy_matcher!("head title");
 pub(crate) static MATCHER_SCRIPT: Lazy<Matcher> = lazy_matcher!("script, noscript");

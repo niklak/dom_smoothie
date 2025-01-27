@@ -169,8 +169,7 @@ impl Readability {
             // that might also be related. Things like preambles, content split by ads
             // that we removed, etc.
 
-            let mut article_content = doc.tree.new_element("div");
-            article_content.set_attr("id", "readability-content");
+            let article_content = doc.tree.new_element("div");
 
             handle_top_candidate(tc, &article_content);
 
@@ -178,21 +177,12 @@ impl Readability {
             prep_article(&article_content, flags, &self.config);
 
             if needed_to_create_top_candidate {
-                // This looks like nonsense
-                // We already created a fake div thing, and there wouldn't have been any siblings left
-                // for the previous loop, so there's no point trying to create a new div, and then
-                // move all the children over. Just assign IDs and class names here. No need to append
-                // because that already happened anyway.
-                tc.set_attr("id", "readability-page-1");
+                tc.set_attr("id", CONTENT_ID);
                 tc.set_attr("class", "page");
             } else {
-                let div = doc.tree.new_element("div");
-                div.set_attr("id", "readability-page-1");
-                div.set_attr("class", "page");
-                doc.tree
-                    .reparent_children_of(&article_content.id, Some(div.id));
-                article_content.replace_with(&div);
-                article_content = div;
+                // this code does the same this as mozilla's implementation, but it is more simpler.
+                article_content.set_attr("id", CONTENT_ID);
+                article_content.set_attr("class", "page");
             }
 
             return Some(article_content);
