@@ -129,19 +129,17 @@ impl Readability {
             init_node_score(&tc, flags.contains(GrabFlags::WeightClasses));
             top_candidate = Some(tc);
         } else if top_candidate.is_some() {
-            // Find a better top candidate node if it contains (at least three) nodes which belong to `topCandidates` array
-            // and whose scores are quite closed with current `topCandidate` node.
+            
             if matches!(
                 self.config.candidate_select_mode,
                 CandidateSelectMode::DomSmoothie
             ) {
                 top_candidate = find_common_candidate_alt(top_candidate, &top_candidates);
             } else {
+                // Find a better top candidate node if it contains (at least three) nodes which belong to `topCandidates` array
+                // and whose scores are quite closed with current `topCandidate` node.
                 top_candidate = find_common_candidate(top_candidate, &top_candidates, weigh_class);
             }
-
-            //top_candidate = find_common_candidate_alt(top_candidate, &top_candidates);
-
             // If the top candidate is the only child, use parent instead. This will help sibling
             // joining logic when adjacent content is actually located in parent's sibling node.
             if let Some(ref tc) = top_candidate {
