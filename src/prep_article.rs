@@ -429,7 +429,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
     clean(article_node, "textarea");
     clean(article_node, "select");
     clean(article_node, "button");
-    
+
     clean_headers(article_node, flags);
 
     // Do these last as the previous stuff may have removed junk

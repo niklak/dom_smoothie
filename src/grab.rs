@@ -115,7 +115,6 @@ impl Readability {
             .and_then(|n| n.node_name())
             .unwrap_or_else(StrTendril::new);
 
-        
         let mut needed_to_create_top_candidate = false;
 
         if top_candidate.is_none() || tc_name.as_ref() == "body" {
@@ -129,7 +128,6 @@ impl Readability {
             init_node_score(&tc, flags.contains(GrabFlags::WeightClasses));
             top_candidate = Some(tc);
         } else if top_candidate.is_some() {
-            
             if matches!(
                 self.config.candidate_select_mode,
                 CandidateSelectMode::DomSmoothie
@@ -260,26 +258,33 @@ fn get_node_matching_string(node: &NodeRef) -> String {
     let mut matched_buf = StrTendril::new();
     node.query(|n| match n.data {
         dom_query::NodeData::Element(ref el) => {
-            el.attrs.iter().find(|attr| &attr.name.local == "class").map(|a| {
-                matched_buf.push_tendril(&a.value);
-                matched_buf.push_char(' ');
-            });
-            el.attrs.iter().find(|attr| &attr.name.local == "id").map(|a| {
-                matched_buf.push_tendril(&a.value);
-            });
-        },
+            el.attrs
+                .iter()
+                .find(|attr| &attr.name.local == "class")
+                .map(|a| {
+                    matched_buf.push_tendril(&a.value);
+                    matched_buf.push_char(' ');
+                });
+            el.attrs
+                .iter()
+                .find(|attr| &attr.name.local == "id")
+                .map(|a| {
+                    matched_buf.push_tendril(&a.value);
+                });
+        }
         _ => {}
     });
     matched_buf.to_lowercase()
 }
 
 fn is_valid_byline(node: &Node, match_string: &str) -> bool {
+    let is_byline = MATCHER_BYLINE.match_element(node)
+        || BYLINE_PATTERNS.iter().any(|p| match_string.contains(p));
+    if !is_byline {
+        return false;
+    }
     let byline_len = node.text().trim().chars().count();
-    let byline_len_in_range = byline_len > 0 && byline_len < 100;
-
-    byline_len_in_range
-        && (MATCHER_BYLINE.match_element(node)
-            || BYLINE_PATTERNS.iter().any(|p| match_string.contains(p)))
+    byline_len > 0 && byline_len < 100
 }
 
 fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
