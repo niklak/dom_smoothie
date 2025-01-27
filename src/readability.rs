@@ -491,7 +491,6 @@ impl Readability {
             return Err(ReadabilityError::GrabFailed);
         };
 
-
         // Getting a base uri from the Readability.document,
         // which wasn't changed after the grabbing the article
         let base_url = self.parse_base_url();

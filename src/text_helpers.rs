@@ -8,7 +8,7 @@ enum SerializeOp {
     Close(QualName),
 }
 
-pub fn format_text(root_node: &NodeRef) -> StrTendril {
+pub(crate) fn format_text(root_node: &NodeRef) -> StrTendril {
     let id = root_node.id;
     let tree = root_node.tree;
     let mut ops: Vec<_> = tree
@@ -39,9 +39,6 @@ pub fn format_text(root_node: &NodeRef) -> StrTendril {
                             return;
                         }
 
-                        ops.extend(tree.child_ids_of_it(&id, true).map(SerializeOp::Open));
-                    }
-                    NodeData::Document | NodeData::Fragment => {
                         ops.extend(tree.child_ids_of_it(&id, true).map(SerializeOp::Open));
                     }
                     _ => {}
