@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use foldhash::HashMap;
 
 use dom_query::{Document, Node, NodeData, NodeRef, Selection};
 use tendril::StrTendril;
@@ -715,29 +715,29 @@ impl Readability {
     ///
     /// A [`Metadata`] object containing the extracted metadata.
     pub fn get_article_metadata(&self, json_ld: Option<Metadata>) -> Metadata {
-        let mut values: HashMap<String, StrTendril> = HashMap::new();
+        let mut values: HashMap<String, StrTendril> = HashMap::default();
         let mut metadata = json_ld.unwrap_or_default();
 
         let selection = self.doc.select_matcher(&MATCHER_META);
 
-        for sel in selection.iter() {
-            if let Some(content) = sel.attr("content") {
-                let content: StrTendril = content.trim().into();
+        for node in selection.nodes().iter() {
+            if let Some(content) = node.attr("content") {
+                let content = content.trim();
                 if content.is_empty() {
                     continue;
                 }
-                if let Some(property) = sel.attr("property") {
+                if let Some(property) = node.attr("property") {
                     let property = property.trim();
                     if RX_META_PROPERTY.is_match(property) {
                         if let Some(caps) = RX_META_PROPERTY.captures(property) {
                             let k = caps[0].to_string().trim().to_string();
-                            values.insert(k, content.clone());
+                            values.insert(k, content.into());
                         }
                     }
                 }
-                if let Some(name) = sel.attr("name") {
+                if let Some(name) = node.attr("name") {
                     if RX_META_NAME.is_match(&name) {
-                        values.insert(normalize_meta_key(&name), content);
+                        values.insert(normalize_meta_key(&name), content.into());
                     }
                 }
             }
@@ -995,10 +995,9 @@ impl Readability {
     }
 }
 
-fn get_map_any_value(map: &HashMap<String, StrTendril>, keys: &[&str]) -> Option<StrTendril> {
+fn get_map_any_value<'a>(map: &'a HashMap<String, StrTendril>, keys: &[&str]) -> Option<&'a StrTendril> {
     keys.iter()
         .find_map(|&key| map.get(key))
-        .map(|s| s.to_owned())
 }
 
 fn remove_comments(n: &Node) {

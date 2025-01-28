@@ -29,7 +29,7 @@ pub(crate) static MATCHER_STYLE: Lazy<Matcher> = lazy_matcher!("style");
 pub(crate) static MATCHER_FONT: Lazy<Matcher> = lazy_matcher!("font");
 pub(crate) static MATCHER_BR: Lazy<Matcher> = lazy_matcher!("br");
 pub(crate) static MATCHER_IMG: Lazy<Matcher> = lazy_matcher!("img");
-pub(crate) static MATCHER_META: Lazy<Matcher> = lazy_matcher!("meta");
+pub(crate) static MATCHER_META: Lazy<Matcher> = lazy_matcher!("meta[content]");
 pub(crate) static MATCHER_JS_LINK: Lazy<Matcher> = lazy_matcher!(r#"a[href^="javascript:"]"#);
 pub(crate) static MATCHER_JSONLD: Lazy<Matcher> =
     lazy_matcher!(r#"script[type="application/ld+json"]"#);
