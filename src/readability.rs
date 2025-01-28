@@ -995,9 +995,11 @@ impl Readability {
     }
 }
 
-fn get_map_any_value<'a>(map: &'a HashMap<String, StrTendril>, keys: &[&str]) -> Option<&'a StrTendril> {
-    keys.iter()
-        .find_map(|&key| map.get(key))
+fn get_map_any_value<'a>(
+    map: &'a HashMap<String, StrTendril>,
+    keys: &[&str],
+) -> Option<&'a StrTendril> {
+    keys.iter().find_map(|&key| map.get(key))
 }
 
 fn remove_comments(n: &Node) {

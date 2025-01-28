@@ -31,14 +31,9 @@ foldhash = "0.1.4"
 [dev-dependencies]
 serde_json = {version = "1.0"}
 serde = {version = "1.0", features = ["derive"]}
-dhat = "0.3.3"
 
 [features]
 serde = ["dep:serde"]
-
-
-[profile.release]
-debug = 1
 
 [workspace]
 members = [

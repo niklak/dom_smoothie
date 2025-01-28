@@ -374,11 +374,12 @@ fn score_elements<'a>(
 
         visited.push(element.id);
 
-        if !element.is_element() || element.parent().is_none() {
+        if element.parent().is_none() {
             continue;
         }
         let inner_text = normalize_spaces(&element.text());
-        if inner_text.chars().count() < 25 {
+        let content_len = inner_text.chars().count();
+        if content_len < 25 {
             continue;
         }
         let ancestors = element.ancestors(Some(5));
@@ -387,11 +388,9 @@ fn score_elements<'a>(
             continue;
         }
 
-        let mut content_score: usize = 1;
+        let mut content_score = inner_text.split(COMMAS).count() + 1;
 
-        content_score += inner_text.split(COMMAS).count();
-
-        content_score += std::cmp::min(inner_text.chars().count() / 100, 3);
+        content_score += std::cmp::min(content_len / 100, 3);
         for (level, ancestor) in ancestors.iter().enumerate() {
             if !ancestor.is_element() || ancestor.parent().is_none() {
                 continue;
@@ -403,12 +402,12 @@ fn score_elements<'a>(
                 _ => (level * 3) as f32,
             };
 
-            if !has_node_score(ancestor) {
-                init_node_score(ancestor, flags.contains(GrabFlags::WeightClasses));
+            let mut ancestor_score = if !has_node_score(ancestor) {
                 candidates.push(ancestor.clone());
-            }
-
-            let mut ancestor_score = get_node_score(ancestor);
+                determine_node_score(ancestor, flags.contains(GrabFlags::WeightClasses))
+            } else {
+                get_node_score(ancestor)
+            };
             ancestor_score += content_score as f32 / score_divider;
             set_node_score(ancestor, ancestor_score);
         }
