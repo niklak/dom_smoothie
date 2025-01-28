@@ -89,7 +89,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
 
     let node_text = node.text();
     let inner_text = node_text.trim();
-    let content_len = normalized_char_count(&inner_text);
+    let content_len = normalized_char_count(inner_text);
 
     if inner_text.matches(',').count() < 10 {
         // If there are not very many commas, and the number of
@@ -117,7 +117,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
             embed_count += 1;
         }
 
-        if RX_AD_WORDS.is_match(&inner_text) || RX_LOADING_WORDS.is_match(&inner_text) {
+        if RX_AD_WORDS.is_match(inner_text) || RX_LOADING_WORDS.is_match(inner_text) {
             return true;
         }
 
