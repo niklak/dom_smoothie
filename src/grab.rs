@@ -338,7 +338,7 @@ fn div_into_p<'a>(node: &'a Node, doc: &'a Document, elements_to_score: &mut Vec
     // safely converted into plain P elements to avoid confusing the scoring
     // algorithm with DIVs with are, in practice, paragraphs.
 
-    if has_single_tag_inside_element(node, "p") && link_density(node) < 0.25 {
+    if has_single_tag_inside_element(node, "p") && link_density(node, None) < 0.25 {
         let new_node = node.first_element_child().unwrap();
         node.replace_with(&new_node);
         elements_to_score.push(new_node.clone());
@@ -420,7 +420,7 @@ fn score_elements<'a>(
 
     for candidate in candidates.iter() {
         let prev_score = get_node_score(candidate);
-        let score = prev_score * (1.0 - link_density(candidate));
+        let score = prev_score * (1.0 - link_density(candidate, None));
         set_node_score(candidate, score);
     }
 
@@ -459,9 +459,10 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
                     append = true;
                 }
             } else if sibling_name.as_ref() == "p" {
-                let link_density = link_density(sibling);
-                let node_content = normalize_spaces(&sibling.text());
+                let sibling_text = sibling.text();
+                let node_content = normalize_spaces(&sibling_text);
                 let node_length = node_content.chars().count();
+                let link_density = link_density(sibling, Some(node_length));
 
                 if (node_length > 80 && link_density < 0.25)
                     || node_length < 80

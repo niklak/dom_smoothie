@@ -87,7 +87,11 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
         return true;
     }
 
-    if node.text().matches(",").count() < 10 {
+    let node_text = node.text();
+    let inner_text = node_text.trim();
+    let content_len = normalized_char_count(&inner_text);
+
+    if inner_text.matches(',').count() < 10 {
         // If there are not very many commas, and the number of
         // non-paragraph elements is more than paragraphs or other
         // ominous signs, remove the element.
@@ -113,19 +117,19 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
             embed_count += 1;
         }
 
-        let inner_text = sel.text();
-        let trimmed_text = inner_text.trim();
-        if RX_AD_WORDS.is_match(trimmed_text) || RX_LOADING_WORDS.is_match(trimmed_text) {
+        if RX_AD_WORDS.is_match(&inner_text) || RX_LOADING_WORDS.is_match(&inner_text) {
             return true;
         }
 
+        //TODO: tag "ol" unhandled
         let mut is_list = matches!(tag, "ul" | "ol");
         if !is_list {
-            let list_length = sel
+            let list_length: usize = sel
                 .select("ul, ol")
                 .iter()
-                .fold(0, |acc, s| acc + s.text().trim().chars().count());
-            is_list = (list_length as f32 / sel.text().trim().chars().count() as f32) > 0.9;
+                .map(|s| normalized_char_count(&s.text()))
+                .sum();
+            is_list = (list_length as f32 / content_len as f32) > 0.9;
         }
 
         let should_remove = || {
@@ -146,14 +150,13 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
                 return true;
             }
 
-            let content_length = normalized_char_count(&inner_text);
-            let link_density = link_density(node);
-            let heading_density = get_text_density(node, "h1,h2,h3,h4,h5,h6");
+            let link_density = link_density(node, Some(content_len));
+            let heading_density = get_text_density(node, "h1,h2,h3,h4,h5,h6", Some(content_len));
 
             if !is_list
                 && !is_figure_child
                 && heading_density < 0.9
-                && content_length < 25
+                && content_len < 25
                 && (img == 0.0 || img > 2.0)
                 && link_density > 0.0
             {
@@ -167,11 +170,11 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
                 return true;
             }
 
-            if (embed_count == 1 && content_length < 75) || embed_count > 1 {
+            if (embed_count == 1 && content_len < 75) || embed_count > 1 {
                 return true;
             }
 
-            let text_density = get_text_density(node, TEXTISH_TAGS);
+            let text_density = get_text_density(node, TEXTISH_TAGS, Some(content_len));
             if img == 0.0 && text_density == 0.0 {
                 return true;
             }

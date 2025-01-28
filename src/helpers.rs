@@ -91,8 +91,12 @@ where
     }
 }
 
-pub(crate) fn get_text_density(node: &Node, selector: &str) -> f32 {
-    let text_length = normalized_char_count(&node.text()) as f32;
+pub(crate) fn get_text_density(node: &Node, selector: &str, char_count: Option<usize>) -> f32 {
+    let text_length = if let Some(c) = char_count {
+        c as f32
+    } else {
+        normalized_char_count(&node.text()) as f32
+    };
     if text_length == 0.0 {
         return 0.0;
     }
@@ -134,8 +138,12 @@ pub(crate) fn normalized_char_count(text: &str) -> usize {
     char_count
 }
 
-pub(crate) fn link_density(node: &Node) -> f32 {
-    let text_length: f32 = normalized_char_count(&node.text()) as f32;
+pub(crate) fn link_density(node: &Node, char_count: Option<usize>) -> f32 {
+    let text_length = if let Some(c) = char_count {
+        c as f32
+    } else {
+        normalized_char_count(&node.text()) as f32
+    };
     if text_length == 0.0 {
         return 0.0;
     }
