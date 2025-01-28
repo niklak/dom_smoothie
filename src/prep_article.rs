@@ -116,8 +116,8 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
             }
             embed_count += 1;
         }
-
-        if RX_AD_WORDS.is_match(inner_text) || RX_LOADING_WORDS.is_match(inner_text) {
+        let text_low = inner_text.to_lowercase();
+        if RX_AD_WORDS.is_match(&text_low) || RX_LOADING_WORDS.is_match(&text_low) {
             return true;
         }
 

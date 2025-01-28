@@ -275,15 +275,17 @@ pub(crate) static RX_VIDEO_ATTRS: Lazy<Regex> = lazy_re!(
     r#"//(www\.)?((dailymotion|youtube|youtube-nocookie|player\.vimeo|v\.qq)\.com|(archive|upload\.wikimedia)\.org|player\.twitch\.tv)"#
 );
 pub(crate) static RX_BASE64_URL: Lazy<Regex> =
-    lazy_re!(r#"(?i)^data:\s*([^\s;,]+)\s*;\s*base64\s*"#);
+    lazy_re!(r#"^data:\s*([^\s;,]+)\s*;\s*base64\s*"#);
 pub(crate) static RX_IMG_ATTR: Lazy<Regex> = lazy_re!(r#"(?i).(jpg|jpeg|png|webp)"#);
 pub(crate) static RX_IMG_ATTR_TO_SRC: Lazy<Regex> =
     lazy_re!(r#"(?i)^\s*\S+\.(jpg|jpeg|png|webp)\S*\s*$"#);
 pub(crate) static RX_IMG_ATTR_TO_SRCSET: Lazy<Regex> = lazy_re!(r#"(?i).(jpg|jpeg|png|webp)\s+\d"#);
 
 pub(crate) static RX_AD_WORDS: Lazy<Regex> =
-    lazy_re!(r#"(?i)^(ad(vertising|vertisement)?|pub(licité)?|werb(ung)?|广告|Реклама|Anuncio)$"#);
+    lazy_re!(r#"^(ad(vertising|vertisement)?|pub(licité)?|werb(ung)?|广告|реклама|anuncio)$"#);
 pub(crate) static RX_LOADING_WORDS: Lazy<Regex> =
-    lazy_re!(r#"(?i)^((loading|正在加载|Загрузка|chargement|cargando)(…|\.\.\.)?)$"#);
+    lazy_re!(r#"^((loading|正在加载|загрузка|chargement|cargando)(…|\.\.\.)?)$"#);
 pub(crate) static RX_SHARE_ELEMENTS: Lazy<Regex> =
     lazy_re!(r#"(?i)(\b|_)(share|sharedaddy)(\b|_)"#);
+
+// TODO: using (?i) brings up to 20% memory consumption compared to without it.
