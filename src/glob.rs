@@ -127,7 +127,7 @@ pub(crate) static UNLIKELY_CANDIDATES: &[&str] = &[
 ];
 
 pub(crate) static MAYBE_CANDIDATES: &[&str] = &[
-    "and", "article", "body", "column", "content", "main", "shadow",
+    "and", "article", "body", "column", "content", "main", "shadow", "layout",
 ];
 
 pub(crate) static BYLINE_PATTERNS: &[&str] =

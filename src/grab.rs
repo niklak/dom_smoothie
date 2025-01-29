@@ -294,6 +294,9 @@ fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
         return false;
     }
 
+    // TODO: There is also a chance that `unlikely` block may contain `likely` block. 
+    // It may be checked in place instead of starting a new loop iteration.
+
     if has_ancestor_tag::<NodePredicate>(node, "table", Some(0), None) {
         return false;
     }

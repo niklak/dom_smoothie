@@ -188,9 +188,12 @@ pub(crate) fn is_element_without_content(node: &Node) -> bool {
         return false;
     }
     let children = node.element_children();
+    if children.is_empty() {
+        return true;
+    }
 
     let line_breaks = node.find(&["br"]).len() + node.find(&["hr"]).len();
-    children.is_empty() || children.len() == line_breaks
+    children.len() == line_breaks
 }
 
 pub(crate) fn get_dir_attr(node: &Node) -> Option<String> {
