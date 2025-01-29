@@ -117,7 +117,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
             embed_count += 1;
         }
         let text_low = inner_text.to_lowercase();
-        if RX_AD_WORDS.is_match(&text_low) || RX_LOADING_WORDS.is_match(&text_low) {
+        if AD_WORDS.contains(&text_low) || is_loading_word(&text_low) {
             return true;
         }
 
@@ -496,4 +496,9 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
             }
         }
     }
+}
+
+pub(crate) fn is_loading_word(text: &str) -> bool {
+    let trimmed = text.trim_end_matches(['…', '.']);
+    LOADING_WORDS.contains(trimmed)
 }

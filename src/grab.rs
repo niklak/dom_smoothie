@@ -467,7 +467,7 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
                     || node_length < 80
                         && node_length > 0
                         && link_density == 0.0
-                        && RX_SENTENCE.is_match(&node_content)
+                        && is_sentence(&node_content)
                 {
                     append = true;
                 }
@@ -630,6 +630,10 @@ fn get_node_ancestors(node: &NodeRef) -> HashSet<NodeId> {
         })
         .map(|n| n.id)
         .collect::<HashSet<_>>()
+}
+
+fn is_sentence(text: &str) -> bool {
+    text.ends_with('.') || text.contains(". ")
 }
 
 #[cfg(test)]

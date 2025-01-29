@@ -151,7 +151,7 @@ pub(crate) fn link_density(node: &Node, char_count: Option<usize>) -> f32 {
 
     for a in node.find(&["a"]) {
         let href = a.attr_or("href", "");
-        let coeff = if !href.is_empty() && RX_HASH_URL.is_match(href.as_ref()) {
+        let coeff = if href.len() > 1 && href.starts_with('#') {
             0.3
         } else {
             1.0

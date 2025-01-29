@@ -163,16 +163,9 @@ pub(crate) static COMMAS: &[char] = &[
 pub(crate) static TITLE_SEPARATORS: &[char] = &['|', '-', '\\', '/', '>', '»'];
 pub(crate) static TITLE_HIERARCHY_SEP: &[char] = &['\\', '/', '>', '»'];
 
+#[rustfmt::skip]
 pub(crate) static BLOCK_ELEMS: phf::Set<&'static str> = phf_set!(
-    "blockquote",
-    "dl",
-    "div",
-    "img",
-    "ol",
-    "p",
-    "pre",
-    "table",
-    "ul",
+    "blockquote", "dl", "div", "img", "ol", "p", "pre", "table", "ul",
 );
 
 pub(crate) static ALTER_TO_DIV_EXCEPTIONS: phf::Set<&'static str> =
@@ -186,16 +179,12 @@ pub(crate) static TAGS_WITH_CONTENT: phf::Set<&'static str> =
 
 pub(crate) static EMBED_ELEMENTS: phf::Set<&'static str> = phf_set!("object", "embed", "iframe");
 
+#[rustfmt::skip]
 pub(crate) static UNLIKELY_ROLES: phf::Set<&'static str> = phf_set!(
-    "menu",
-    "menubar",
-    "complementary",
-    "navigation",
-    "alert",
-    "alertdialog",
-    "dialog"
+    "menu", "menubar", "complementary", "navigation", "alert", "alertdialog", "dialog"
 );
 
+#[rustfmt::skip]
 pub(crate) static PHRASING_ELEMS: phf::Set<&'static str> = phf_set!(
     "abbr", "audio", "b", "bdo", "br", "button", "cite", "code", "data", "datalist", "dfn", "em",
     "embed", "i", "img", "input", "kbd", "label", "mark", "math", "meter", "noscript", "object",
@@ -203,51 +192,32 @@ pub(crate) static PHRASING_ELEMS: phf::Set<&'static str> = phf_set!(
     "sub", "sup", "textarea", "time", "var", "wbr"
 );
 
+#[rustfmt::skip]
 pub(crate) static CLASSES_NEGATIVE: phf::Set<&'static str> = phf_set!(
-    "-ad-",
-    "hidden",
-    "banner",
-    "combx",
-    "comment",
-    "com-",
-    "contact",
-    "footer",
-    "gdpr",
-    "masthead",
-    "media",
-    "meta",
-    "outbrain",
-    "promo",
-    "related",
-    "scroll",
-    "share",
-    "shoutbox",
-    "sidebar",
-    "skyscraper",
-    "sponsor",
-    "shopping",
-    "tags",
+    "-ad-", "hidden", "banner", "combx", "comment", "com-", "contact", "footer",
+    "gdpr", "masthead", "media", "meta", "outbrain", "promo", "related", "scroll",
+    "share", "shoutbox", "sidebar", "skyscraper", "sponsor", "shopping", "tags",
     "widget"
 );
 
+#[rustfmt::skip]
 pub(crate) static CLASSES_POSITIVE: phf::Set<&'static str> = phf_set!(
-    "article",
-    "body",
-    "content",
-    "entry",
-    "hentry",
-    "h-entry",
-    "main",
-    "page",
-    "pagination",
-    "post",
-    "text",
-    "blog",
-    "story",
+    "article", "body", "content", "entry", "hentry", "h-entry", "main", "page",
+    "pagination", "post", "text", "blog", "story",
 );
 
 pub(crate) static DEPRECATED_SIZE_ATTRIBUTE_ELEMS: phf::Set<&'static str> =
     phf_set!("table", "th", "td", "hr", "pre");
+
+#[rustfmt::skip]
+pub(crate) static AD_WORDS: phf::Set<&'static str> = phf_set!(
+    "ad", "advertising", "advertisement", "pub", "publicité", 
+    "werb", "werbung", "广告", "реклама", "anuncio"
+);
+#[rustfmt::skip]
+pub(crate) static LOADING_WORDS: phf::Set<&'static str> = phf_set!(
+    "loading", "正在加载", "загрузка", "chargement", "cargando"
+);
 
 pub(crate) static RX_STYLE_DISPLAY_NONE: Lazy<Regex> =
     lazy_re!(r#"display\s*:\s*none|visibility\s*:\s*hidden"#);
@@ -264,11 +234,8 @@ pub(crate) static RX_META_PROPERTY: Lazy<Regex> = lazy_re!(
     r#"\s*(article|dc|dcterm|og|twitter)\s*:\s*(author|creator|description|published_time|title|site_name)\s*"#
 );
 
-pub(crate) static RX_HASH_URL: Lazy<Regex> = lazy_re!(r#"^#.+"#);
-
 pub(crate) static RX_CLASSES_NEGATIVE: Lazy<Regex> = lazy_re!(r"\bhid\b");
 
-pub(crate) static RX_SENTENCE: Lazy<Regex> = lazy_re!(r"\.( |$)");
 pub(crate) static RX_VIDEO_ATTRS: Lazy<Regex> = lazy_re!(
     r#"//(www\.)?((dailymotion|youtube|youtube-nocookie|player\.vimeo|v\.qq)\.com|(archive|upload\.wikimedia)\.org|player\.twitch\.tv)"#
 );
@@ -278,11 +245,5 @@ pub(crate) static RX_IMG_ATTR_TO_SRC: Lazy<Regex> =
     lazy_re!(r#"^\s*\S+\.(jpg|jpeg|png|webp)\S*\s*$"#);
 pub(crate) static RX_IMG_ATTR_TO_SRCSET: Lazy<Regex> = lazy_re!(r#".(jpg|jpeg|png|webp)\s+\d"#);
 
-pub(crate) static RX_AD_WORDS: Lazy<Regex> =
-    lazy_re!(r#"^(ad(vertising|vertisement)?|pub(licité)?|werb(ung)?|广告|реклама|anuncio)$"#);
-pub(crate) static RX_LOADING_WORDS: Lazy<Regex> =
-    lazy_re!(r#"^((loading|正在加载|загрузка|chargement|cargando)(…|\.\.\.)?)$"#);
 pub(crate) static RX_SHARE_ELEMENTS: Lazy<Regex> =
     lazy_re!(r#"(?i)(\b|_)(share|sharedaddy)(\b|_)"#);
-
-// TODO: using (?i) brings up to 20% memory consumption compared to without it.
