@@ -727,15 +727,15 @@ impl Readability {
                     continue;
                 }
                 if let Some(property) = node.attr("property") {
-                    let property = property.trim();
-                    if RX_META_PROPERTY.is_match(property) {
-                        if let Some(caps) = RX_META_PROPERTY.captures(property) {
-                            let k = caps[0].to_string().trim().to_string();
-                            values.insert(k, content.into());
-                        }
+                    let property = property.trim().to_lowercase();
+                    if let Some(caps) = RX_META_PROPERTY.captures(&property) {
+                        let k = caps[0].trim().to_string();
+                        values.insert(k, content.into());
                     }
+                    continue;
                 }
                 if let Some(name) = node.attr("name") {
+                    let name = name.trim().to_lowercase();
                     if RX_META_NAME.is_match(&name) {
                         values.insert(normalize_meta_key(&name), content.into());
                     }
@@ -1073,7 +1073,6 @@ fn extract_excerpt(doc: &Document) -> Option<String> {
 
 fn normalize_meta_key(raw_key: &str) -> String {
     raw_key
-        .to_lowercase()
         .split_whitespace()
         .collect::<Vec<_>>()
         .join("")

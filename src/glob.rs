@@ -247,9 +247,9 @@ pub(crate) static DEPRECATED_SIZE_ATTRIBUTE_ELEMS: phf::Set<&'static str> =
     phf_set!("table", "th", "td", "hr", "pre");
 
 pub(crate) static RX_STYLE_DISPLAY_NONE: Lazy<Regex> =
-    lazy_re!(r#"(?i)display\s*:\s*none|visibility\s*:\s*hidden"#);
+    lazy_re!(r#"display\s*:\s*none|visibility\s*:\s*hidden"#);
 pub(crate) static RX_CDATA: Lazy<Regex> = lazy_re!(r#"^\s*<!\[CDATA\[|\]\]>\s*$"#);
-pub(crate) static RX_SCHEMA_ORG: Lazy<Regex> = lazy_re!(r#"(?i)^https?://schema\.org/?$"#);
+pub(crate) static RX_SCHEMA_ORG: Lazy<Regex> = lazy_re!(r#"^https?://schema\.org/?$"#);
 
 pub(crate) static RX_TITLE_SEP: Lazy<Regex> = lazy_re!(r#" [\|\-\\/>»] "#);
 pub(crate) static RX_TITLE_W_LAST: Lazy<Regex> = lazy_re!(r#"(.*)[\|\-\\/>»] .*"#);
@@ -260,10 +260,10 @@ pub(crate) static RX_HIERARCHY_SEP: Lazy<Regex> = lazy_re!(r#"[\\/>»]"#);
 //TODO: replace these with &[&str], because there is no reason to use regex here.
 
 pub(crate) static RX_META_NAME: Lazy<Regex> = lazy_re!(
-    r#"(?i)^\s*(?:(dc|dcterm|og|twitter|parsely|weibo:(article|webpage))\s*[-\.:]\s*)?(author|creator|pub-date|description|title|site_name)\s*$"#
+    r#"(?:(dc|dcterm|og|twitter|parsely|weibo:(article|webpage))\s*[-\.:]\s*)?(author|creator|pub-date|description|title|site_name)"#
 );
 pub(crate) static RX_META_PROPERTY: Lazy<Regex> = lazy_re!(
-    r#"(?i)\s*(article|dc|dcterm|og|twitter)\s*:\s*(author|creator|description|published_time|title|site_name)\s*"#
+    r#"\s*(article|dc|dcterm|og|twitter)\s*:\s*(author|creator|description|published_time|title|site_name)\s*"#
 );
 
 pub(crate) static RX_HASH_URL: Lazy<Regex> = lazy_re!(r#"^#.+"#);
@@ -276,10 +276,10 @@ pub(crate) static RX_VIDEO_ATTRS: Lazy<Regex> = lazy_re!(
 );
 pub(crate) static RX_BASE64_URL: Lazy<Regex> =
     lazy_re!(r#"^data:\s*([^\s;,]+)\s*;\s*base64\s*"#);
-pub(crate) static RX_IMG_ATTR: Lazy<Regex> = lazy_re!(r#"(?i).(jpg|jpeg|png|webp)"#);
+pub(crate) static RX_IMG_ATTR: Lazy<Regex> = lazy_re!(r#".(jpg|jpeg|png|webp)"#);
 pub(crate) static RX_IMG_ATTR_TO_SRC: Lazy<Regex> =
-    lazy_re!(r#"(?i)^\s*\S+\.(jpg|jpeg|png|webp)\S*\s*$"#);
-pub(crate) static RX_IMG_ATTR_TO_SRCSET: Lazy<Regex> = lazy_re!(r#"(?i).(jpg|jpeg|png|webp)\s+\d"#);
+    lazy_re!(r#"^\s*\S+\.(jpg|jpeg|png|webp)\S*\s*$"#);
+pub(crate) static RX_IMG_ATTR_TO_SRCSET: Lazy<Regex> = lazy_re!(r#".(jpg|jpeg|png|webp)\s+\d"#);
 
 pub(crate) static RX_AD_WORDS: Lazy<Regex> =
     lazy_re!(r#"^(ad(vertising|vertisement)?|pub(licité)?|werb(ung)?|广告|реклама|anuncio)$"#);
