@@ -258,8 +258,8 @@ impl Readability {
         let char_count = orig_title.chars().count();
         let mut has_hierarchy_sep = false;
         //TODO: handle `—` or not?
-        if RX_TITLE_SEP.is_match(&orig_title) {
-            has_hierarchy_sep = RX_HIERARCHY_SEP.is_match(&orig_title);
+        if orig_title.chars().any(|c| TITLE_SEPARATORS.contains(&c)) {
+            has_hierarchy_sep = orig_title.chars().any(|c| TITLE_HIERARCHY_SEP.contains(&c));
             cur_title = RX_TITLE_W_LAST.replace(&orig_title, "$1").to_string();
 
             if cur_title.split_whitespace().count() < 3 {
@@ -307,9 +307,10 @@ impl Readability {
         // title or we decreased the number of words by more than 1 word, use
         // the original title.
         let cur_title_wc = cur_title.split_whitespace().count();
-        let orig_wc = RX_TITLE_ANY_SEP
-            .replace_all(&orig_title, "")
-            .split_whitespace()
+
+        let orig_wc = orig_title
+            .split(TITLE_SEPARATORS)
+            .flat_map(str::split_whitespace)
             .count();
         if cur_title_wc <= 4 && (!has_hierarchy_sep || cur_title_wc != orig_wc - 1) {
             cur_title = orig_title;

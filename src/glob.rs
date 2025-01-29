@@ -160,6 +160,9 @@ pub(crate) static COMMAS: &[char] = &[
     '\u{FF0C}',
 ];
 
+pub(crate) static TITLE_SEPARATORS: &[char] = &['|', '-', '\\', '/', '>', '»'];
+pub(crate) static TITLE_HIERARCHY_SEP: &[char] = &['\\', '/', '>', '»'];
+
 pub(crate) static BLOCK_ELEMS: phf::Set<&'static str> = phf_set!(
     "blockquote",
     "dl",
@@ -251,13 +254,8 @@ pub(crate) static RX_STYLE_DISPLAY_NONE: Lazy<Regex> =
 pub(crate) static RX_CDATA: Lazy<Regex> = lazy_re!(r#"^\s*<!\[CDATA\[|\]\]>\s*$"#);
 pub(crate) static RX_SCHEMA_ORG: Lazy<Regex> = lazy_re!(r#"^https?://schema\.org/?$"#);
 
-pub(crate) static RX_TITLE_SEP: Lazy<Regex> = lazy_re!(r#" [\|\-\\/>»] "#);
 pub(crate) static RX_TITLE_W_LAST: Lazy<Regex> = lazy_re!(r#"(.*)[\|\-\\/>»] .*"#);
 pub(crate) static RX_TITLE_W_FIRST: Lazy<Regex> = lazy_re!(r#"[^\|\-\\/>»]*[\|\-\\/>»](.*)"#);
-pub(crate) static RX_TITLE_ANY_SEP: Lazy<Regex> = lazy_re!(r#"[\|\-\\/>»]+"#);
-pub(crate) static RX_HIERARCHY_SEP: Lazy<Regex> = lazy_re!(r#"[\\/>»]"#);
-
-//TODO: replace these with &[&str], because there is no reason to use regex here.
 
 pub(crate) static RX_META_NAME: Lazy<Regex> = lazy_re!(
     r#"(?:(dc|dcterm|og|twitter|parsely|weibo:(article|webpage))\s*[-\.:]\s*)?(author|creator|pub-date|description|title|site_name)"#
@@ -274,8 +272,7 @@ pub(crate) static RX_SENTENCE: Lazy<Regex> = lazy_re!(r"\.( |$)");
 pub(crate) static RX_VIDEO_ATTRS: Lazy<Regex> = lazy_re!(
     r#"//(www\.)?((dailymotion|youtube|youtube-nocookie|player\.vimeo|v\.qq)\.com|(archive|upload\.wikimedia)\.org|player\.twitch\.tv)"#
 );
-pub(crate) static RX_BASE64_URL: Lazy<Regex> =
-    lazy_re!(r#"^data:\s*([^\s;,]+)\s*;\s*base64\s*"#);
+pub(crate) static RX_BASE64_URL: Lazy<Regex> = lazy_re!(r#"^data:\s*([^\s;,]+)\s*;\s*base64\s*"#);
 pub(crate) static RX_IMG_ATTR: Lazy<Regex> = lazy_re!(r#".(jpg|jpeg|png|webp)"#);
 pub(crate) static RX_IMG_ATTR_TO_SRC: Lazy<Regex> =
     lazy_re!(r#"^\s*\S+\.(jpg|jpeg|png|webp)\S*\s*$"#);
