@@ -219,6 +219,8 @@ pub(crate) static LOADING_WORDS: phf::Set<&'static str> = phf_set!(
     "loading", "正在加载", "загрузка", "chargement", "cargando"
 );
 
+pub(crate) static SHARE_WORDS: phf::Set<&'static str> = phf_set!("share", "sharedaddy");
+
 pub(crate) static RX_STYLE_DISPLAY_NONE: Lazy<Regex> =
     lazy_re!(r#"display\s*:\s*none|visibility\s*:\s*hidden"#);
 pub(crate) static RX_CDATA: Lazy<Regex> = lazy_re!(r#"^\s*<!\[CDATA\[|\]\]>\s*$"#);
@@ -244,6 +246,3 @@ pub(crate) static RX_IMG_ATTR: Lazy<Regex> = lazy_re!(r#".(jpg|jpeg|png|webp)"#)
 pub(crate) static RX_IMG_ATTR_TO_SRC: Lazy<Regex> =
     lazy_re!(r#"^\s*\S+\.(jpg|jpeg|png|webp)\S*\s*$"#);
 pub(crate) static RX_IMG_ATTR_TO_SRCSET: Lazy<Regex> = lazy_re!(r#".(jpg|jpeg|png|webp)\s+\d"#);
-
-pub(crate) static RX_SHARE_ELEMENTS: Lazy<Regex> =
-    lazy_re!(r#"(?i)(\b|_)(share|sharedaddy)(\b|_)"#);

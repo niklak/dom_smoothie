@@ -1,6 +1,7 @@
+use dom_query::NodeData;
 use dom_query::{Node, Selection};
 use flagset::FlagSet;
-use tendril::format_tendril;
+use html5ever::local_name;
 
 use crate::glob::*;
 use crate::grab_flags::GrabFlags;
@@ -413,20 +414,12 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
     clean(article_node, "link");
     clean(article_node, "aside");
 
-    let share_element_threshold = cfg.char_threshold;
+    let article_sel = Selection::from(article_node.clone());
 
     // Clean out elements with little content that have "share" in their id/class combinations from final top candidates,
     // which means we don't remove the top candidates even they have "share".
 
-    for child in article_node.descendants() {
-        let class = child.attr_or("class", "");
-        let id = child.attr_or("id", "");
-        let class_and_id = format_tendril!("{} {}", class, id);
-        if RX_SHARE_ELEMENTS.is_match(&class_and_id) && child.text().len() < share_element_threshold
-        {
-            child.remove_from_parent();
-        }
-    }
+    remove_share_elements(&article_sel, cfg.char_threshold);
 
     clean(article_node, "iframe");
     clean(article_node, "input");
@@ -443,8 +436,6 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
     clean_conditionally(article_node, "div", flags);
 
     // replace H1 with H2 as H1 should be only title that is displayed separately
-
-    let article_sel = Selection::from(article_node.clone());
 
     article_sel.select("h1").rename("h2");
 
@@ -498,7 +489,48 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
     }
 }
 
-pub(crate) fn is_loading_word(text: &str) -> bool {
+fn remove_share_elements(root_sel: &Selection, share_element_threshold: usize) {
+    for child in root_sel.select("*[class],*[id]").nodes().iter() {
+        let mut has_share_elements = false;
+
+        if child.text().len() >= share_element_threshold {
+            continue;
+        }
+
+        child.query(|n| {
+            if let NodeData::Element(ref el) = n.data {
+                if let Some(a) = el
+                    .attrs
+                    .iter()
+                    .find(|attr| attr.name.local == local_name!("class"))
+                {
+                    has_share_elements = contains_share_elements(&a.value);
+                };
+                if has_share_elements {
+                    return;
+                }
+                if let Some(a) = el
+                    .attrs
+                    .iter()
+                    .find(|attr| attr.name.local == local_name!("id"))
+                {
+                    has_share_elements = contains_share_elements(&a.value);
+                }
+            }
+        });
+
+        if has_share_elements {
+            child.remove_from_parent();
+        }
+    }
+}
+
+fn is_loading_word(text: &str) -> bool {
     let trimmed = text.trim_end_matches(['…', '.']);
     LOADING_WORDS.contains(trimmed)
+}
+
+fn contains_share_elements(value: &str) -> bool {
+    let lower_value = value.to_lowercase();
+    lower_value.split([' ', '_']).any(|word| SHARE_WORDS.contains(word))
 }
