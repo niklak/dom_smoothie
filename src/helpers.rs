@@ -91,12 +91,20 @@ where
     }
 }
 
-pub(crate) fn get_text_density(node: &Node, selector: &str) -> f32 {
-    let text_length = normalized_char_count(&node.text()) as f32;
+pub(crate) fn get_text_density(node: &Node, selector: &str, char_count: Option<usize>) -> f32 {
+    let text_length = if let Some(c) = char_count {
+        c as f32
+    } else {
+        normalized_char_count(&node.text()) as f32
+    };
     if text_length == 0.0 {
         return 0.0;
     }
     let sel = Selection::from(node.clone()).select(selector);
+    if sel.nodes().is_empty() {
+        return 0.0;
+    }
+
     let children_length = normalized_char_count(&sel.text()) as f32;
     children_length / text_length
 }
@@ -130,8 +138,12 @@ pub(crate) fn normalized_char_count(text: &str) -> usize {
     char_count
 }
 
-pub(crate) fn link_density(node: &Node) -> f32 {
-    let text_length: f32 = normalized_char_count(&node.text()) as f32;
+pub(crate) fn link_density(node: &Node, char_count: Option<usize>) -> f32 {
+    let text_length = if let Some(c) = char_count {
+        c as f32
+    } else {
+        normalized_char_count(&node.text()) as f32
+    };
     if text_length == 0.0 {
         return 0.0;
     }
@@ -139,7 +151,7 @@ pub(crate) fn link_density(node: &Node) -> f32 {
 
     for a in node.find(&["a"]) {
         let href = a.attr_or("href", "");
-        let coeff = if !href.is_empty() && RX_HASH_URL.is_match(href.as_ref()) {
+        let coeff = if href.len() > 1 && href.starts_with('#') {
             0.3
         } else {
             1.0
@@ -176,9 +188,12 @@ pub(crate) fn is_element_without_content(node: &Node) -> bool {
         return false;
     }
     let children = node.element_children();
+    if children.is_empty() {
+        return true;
+    }
 
     let line_breaks = node.find(&["br"]).len() + node.find(&["hr"]).len();
-    children.is_empty() || children.len() == line_breaks
+    children.len() == line_breaks
 }
 
 pub(crate) fn get_dir_attr(node: &Node) -> Option<String> {

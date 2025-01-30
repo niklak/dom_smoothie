@@ -51,6 +51,7 @@ pub(crate) fn format_text(root_node: &NodeRef) -> StrTendril {
                 if matches!(
                     name.local,
                     local_name!("article")
+                        | local_name!("blockquote")
                         | local_name!("section")
                         | local_name!("div")
                         | local_name!("p")
@@ -63,6 +64,7 @@ pub(crate) fn format_text(root_node: &NodeRef) -> StrTendril {
                         | local_name!("h6")
                         | local_name!("ul")
                         | local_name!("ol")
+                        | local_name!("dl")
                         | local_name!("table")
                 ) {
                     text.push_slice("\n\n");

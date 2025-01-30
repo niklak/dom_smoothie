@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use foldhash::HashMap;
 
 use dom_query::{Document, Node, NodeData, NodeRef, Selection};
 use tendril::StrTendril;
@@ -258,8 +258,8 @@ impl Readability {
         let char_count = orig_title.chars().count();
         let mut has_hierarchy_sep = false;
         //TODO: handle `—` or not?
-        if RX_TITLE_SEP.is_match(&orig_title) {
-            has_hierarchy_sep = RX_HIERARCHY_SEP.is_match(&orig_title);
+        if orig_title.chars().any(|c| TITLE_SEPARATORS.contains(&c)) {
+            has_hierarchy_sep = orig_title.chars().any(|c| TITLE_HIERARCHY_SEP.contains(&c));
             cur_title = RX_TITLE_W_LAST.replace(&orig_title, "$1").to_string();
 
             if cur_title.split_whitespace().count() < 3 {
@@ -307,9 +307,10 @@ impl Readability {
         // title or we decreased the number of words by more than 1 word, use
         // the original title.
         let cur_title_wc = cur_title.split_whitespace().count();
-        let orig_wc = RX_TITLE_ANY_SEP
-            .replace_all(&orig_title, "")
-            .split_whitespace()
+
+        let orig_wc = orig_title
+            .split(TITLE_SEPARATORS)
+            .flat_map(str::split_whitespace)
             .count();
         if cur_title_wc <= 4 && (!has_hierarchy_sep || cur_title_wc != orig_wc - 1) {
             cur_title = orig_title;
@@ -715,29 +716,29 @@ impl Readability {
     ///
     /// A [`Metadata`] object containing the extracted metadata.
     pub fn get_article_metadata(&self, json_ld: Option<Metadata>) -> Metadata {
-        let mut values: HashMap<String, StrTendril> = HashMap::new();
+        let mut values: HashMap<String, StrTendril> = HashMap::default();
         let mut metadata = json_ld.unwrap_or_default();
 
         let selection = self.doc.select_matcher(&MATCHER_META);
 
-        for sel in selection.iter() {
-            if let Some(content) = sel.attr("content") {
-                let content: StrTendril = content.trim().into();
+        for node in selection.nodes().iter() {
+            if let Some(content) = node.attr("content") {
+                let content = content.trim();
                 if content.is_empty() {
                     continue;
                 }
-                if let Some(property) = sel.attr("property") {
-                    let property = property.trim();
-                    if RX_META_PROPERTY.is_match(property) {
-                        if let Some(caps) = RX_META_PROPERTY.captures(property) {
-                            let k = caps[0].to_string().trim().to_string();
-                            values.insert(k, content.clone());
-                        }
+                if let Some(property) = node.attr("property") {
+                    let property = property.trim().to_lowercase();
+                    if let Some(caps) = RX_META_PROPERTY.captures(&property) {
+                        let k = caps[0].trim().to_string();
+                        values.insert(k, content.into());
                     }
+                    continue;
                 }
-                if let Some(name) = sel.attr("name") {
+                if let Some(name) = node.attr("name") {
+                    let name = name.trim().to_lowercase();
                     if RX_META_NAME.is_match(&name) {
-                        values.insert(normalize_meta_key(&name), content);
+                        values.insert(normalize_meta_key(&name), content.into());
                     }
                 }
             }
@@ -995,10 +996,11 @@ impl Readability {
     }
 }
 
-fn get_map_any_value(map: &HashMap<String, StrTendril>, keys: &[&str]) -> Option<StrTendril> {
-    keys.iter()
-        .find_map(|&key| map.get(key))
-        .map(|s| s.to_owned())
+fn get_map_any_value<'a>(
+    map: &'a HashMap<String, StrTendril>,
+    keys: &[&str],
+) -> Option<&'a StrTendril> {
+    keys.iter().find_map(|&key| map.get(key))
 }
 
 fn remove_comments(n: &Node) {
@@ -1072,7 +1074,6 @@ fn extract_excerpt(doc: &Document) -> Option<String> {
 
 fn normalize_meta_key(raw_key: &str) -> String {
     raw_key
-        .to_lowercase()
         .split_whitespace()
         .collect::<Vec<_>>()
         .join("")

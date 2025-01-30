@@ -115,21 +115,19 @@ impl Readability {
             .and_then(|n| n.node_name())
             .unwrap_or_else(StrTendril::new);
 
-        let page_sel = doc.select("body");
-        let page_node = page_sel.nodes().first().unwrap();
         let mut needed_to_create_top_candidate = false;
 
         if top_candidate.is_none() || tc_name.as_ref() == "body" {
             needed_to_create_top_candidate = true;
-
+            let body_sel = doc.select_single("body");
+            let body_node = body_sel.nodes().first().unwrap();
             let tc = doc.tree.new_element("div");
 
-            doc.tree.reparent_children_of(&page_node.id, Some(tc.id));
-            page_node.append_child(&tc);
+            doc.tree.reparent_children_of(&body_node.id, Some(tc.id));
+            body_node.append_child(&tc);
             init_node_score(&tc, flags.contains(GrabFlags::WeightClasses));
             top_candidate = Some(tc);
         } else if top_candidate.is_some() {
-            
             if matches!(
                 self.config.candidate_select_mode,
                 CandidateSelectMode::DomSmoothie
@@ -258,24 +256,28 @@ fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely:
 
 fn get_node_matching_string(node: &NodeRef) -> String {
     let mut matched_buf = StrTendril::new();
-    if let Some(class) = node.attr("class") {
-        matched_buf.push_tendril(&class);
-        matched_buf.push_char(' ');
-    }
-
-    if let Some(id) = node.attr("id") {
-        matched_buf.push_tendril(&id);
-    }
+    node.query(|n| {
+        if let dom_query::NodeData::Element(ref el) = n.data {
+            if let Some(a) = el.attrs.iter().find(|attr| &attr.name.local == "class") {
+                matched_buf.push_tendril(&a.value);
+                matched_buf.push_char(' ');
+            };
+            if let Some(a) = el.attrs.iter().find(|attr| &attr.name.local == "id") {
+                matched_buf.push_tendril(&a.value);
+            }
+        }
+    });
     matched_buf.to_lowercase()
 }
 
 fn is_valid_byline(node: &Node, match_string: &str) -> bool {
+    let is_byline = MATCHER_BYLINE.match_element(node)
+        || BYLINE_PATTERNS.iter().any(|p| match_string.contains(p));
+    if !is_byline {
+        return false;
+    }
     let byline_len = node.text().trim().chars().count();
-    let byline_len_in_range = byline_len > 0 && byline_len < 100;
-
-    byline_len_in_range
-        && (MATCHER_BYLINE.match_element(node)
-            || BYLINE_PATTERNS.iter().any(|p| match_string.contains(p)))
+    byline_len > 0 && byline_len < 100
 }
 
 fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
@@ -291,6 +293,9 @@ fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
     if MAYBE_CANDIDATES.iter().any(|p| match_string.contains(p)) {
         return false;
     }
+
+    // TODO: There is also a chance that `unlikely` block may contain `likely` block. 
+    // It may be checked in place instead of starting a new loop iteration.
 
     if has_ancestor_tag::<NodePredicate>(node, "table", Some(0), None) {
         return false;
@@ -336,7 +341,7 @@ fn div_into_p<'a>(node: &'a Node, doc: &'a Document, elements_to_score: &mut Vec
     // safely converted into plain P elements to avoid confusing the scoring
     // algorithm with DIVs with are, in practice, paragraphs.
 
-    if has_single_tag_inside_element(node, "p") && link_density(node) < 0.25 {
+    if has_single_tag_inside_element(node, "p") && link_density(node, None) < 0.25 {
         let new_node = node.first_element_child().unwrap();
         node.replace_with(&new_node);
         elements_to_score.push(new_node.clone());
@@ -372,11 +377,12 @@ fn score_elements<'a>(
 
         visited.push(element.id);
 
-        if !element.is_element() || element.parent().is_none() {
+        if element.parent().is_none() {
             continue;
         }
         let inner_text = normalize_spaces(&element.text());
-        if inner_text.chars().count() < 25 {
+        let content_len = inner_text.chars().count();
+        if content_len < 25 {
             continue;
         }
         let ancestors = element.ancestors(Some(5));
@@ -385,11 +391,9 @@ fn score_elements<'a>(
             continue;
         }
 
-        let mut content_score: usize = 1;
+        let mut content_score = inner_text.split(COMMAS).count() + 1;
 
-        content_score += RX_COMMAS.split(inner_text.as_ref()).count();
-
-        content_score += std::cmp::min(inner_text.chars().count() / 100, 3);
+        content_score += std::cmp::min(content_len / 100, 3);
         for (level, ancestor) in ancestors.iter().enumerate() {
             if !ancestor.is_element() || ancestor.parent().is_none() {
                 continue;
@@ -401,12 +405,12 @@ fn score_elements<'a>(
                 _ => (level * 3) as f32,
             };
 
-            if !has_node_score(ancestor) {
-                init_node_score(ancestor, flags.contains(GrabFlags::WeightClasses));
+            let mut ancestor_score = if !has_node_score(ancestor) {
                 candidates.push(ancestor.clone());
-            }
-
-            let mut ancestor_score = get_node_score(ancestor);
+                determine_node_score(ancestor, flags.contains(GrabFlags::WeightClasses))
+            } else {
+                get_node_score(ancestor)
+            };
             ancestor_score += content_score as f32 / score_divider;
             set_node_score(ancestor, ancestor_score);
         }
@@ -418,7 +422,7 @@ fn score_elements<'a>(
 
     for candidate in candidates.iter() {
         let prev_score = get_node_score(candidate);
-        let score = prev_score * (1.0 - link_density(candidate));
+        let score = prev_score * (1.0 - link_density(candidate, None));
         set_node_score(candidate, score);
     }
 
@@ -457,15 +461,16 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
                     append = true;
                 }
             } else if sibling_name.as_ref() == "p" {
-                let link_density = link_density(sibling);
-                let node_content = normalize_spaces(&sibling.text());
+                let sibling_text = sibling.text();
+                let node_content = normalize_spaces(&sibling_text);
                 let node_length = node_content.chars().count();
+                let link_density = link_density(sibling, Some(node_length));
 
                 if (node_length > 80 && link_density < 0.25)
                     || node_length < 80
                         && node_length > 0
                         && link_density == 0.0
-                        && RX_SENTENCE.is_match(&node_content)
+                        && is_sentence(&node_content)
                 {
                     append = true;
                 }
@@ -628,6 +633,10 @@ fn get_node_ancestors(node: &NodeRef) -> HashSet<NodeId> {
         })
         .map(|n| n.id)
         .collect::<HashSet<_>>()
+}
+
+fn is_sentence(text: &str) -> bool {
+    text.ends_with('.') || text.contains(". ")
 }
 
 #[cfg(test)]

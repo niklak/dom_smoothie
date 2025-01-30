@@ -1,6 +1,7 @@
+use dom_query::NodeData;
 use dom_query::{Node, Selection};
 use flagset::FlagSet;
-use tendril::format_tendril;
+use html5ever::local_name;
 
 use crate::glob::*;
 use crate::grab_flags::GrabFlags;
@@ -87,15 +88,15 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
         return true;
     }
 
-    if node.text().matches(",").count() < 10 {
+    let node_text = node.text();
+    let inner_text = node_text.trim();
+    let content_len = normalized_char_count(inner_text);
+
+    if inner_text.matches(',').count() < 10 {
         // If there are not very many commas, and the number of
         // non-paragraph elements is more than paragraphs or other
         // ominous signs, remove the element.
-        let p: f32 = node.find(&["p"]).len() as f32;
         let img = node.find(&["img"]).len() as f32;
-        let li = node.find(&["li"]).len() as f32 - 100.0;
-        let input = node.find(&["input"]).len() as f32;
-        let heading_density = get_text_density(node, "h1,h2,h3,h4,h5,h6");
 
         let mut embed_count = 0;
 
@@ -116,42 +117,47 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
             }
             embed_count += 1;
         }
-
-        let inner_text = sel.text();
-        let trimmed_text = inner_text.trim();
-        if RX_AD_WORDS.is_match(trimmed_text) || RX_LOADING_WORDS.is_match(trimmed_text) {
+        let text_low = inner_text.to_lowercase();
+        if AD_WORDS.contains(&text_low) || is_loading_word(&text_low) {
             return true;
         }
 
+        //TODO: tag "ol" unhandled
         let mut is_list = matches!(tag, "ul" | "ol");
         if !is_list {
-            let list_length = sel
+            let list_length: usize = sel
                 .select("ul, ol")
                 .iter()
-                .fold(0, |acc, s| acc + s.text().trim().chars().count());
-            is_list = (list_length as f32 / sel.text().trim().chars().count() as f32) > 0.9;
+                .map(|s| normalized_char_count(&s.text()))
+                .sum();
+            is_list = (list_length as f32 / content_len as f32) > 0.9;
         }
 
         let should_remove = || {
             let is_figure_child = has_ancestor_tag::<NodePredicate>(node, "figure", None, None);
+            let p: f32 = node.find(&["p"]).len() as f32;
+            let li = node.find(&["li"]).len() as f32 - 100.0;
 
             if !is_figure_child && img > 1.0 && p / img < 0.5 {
                 return true;
             }
+
             if !is_list && li > p {
                 return true;
             }
+
+            let input = node.find(&["input"]).len() as f32;
             if input > (p / 3.0).floor() {
                 return true;
             }
 
-            let content_length = normalized_char_count(&inner_text);
-            let link_density = link_density(node);
+            let link_density = link_density(node, Some(content_len));
+            let heading_density = get_text_density(node, "h1,h2,h3,h4,h5,h6", Some(content_len));
 
             if !is_list
                 && !is_figure_child
                 && heading_density < 0.9
-                && content_length < 25
+                && content_len < 25
                 && (img == 0.0 || img > 2.0)
                 && link_density > 0.0
             {
@@ -165,11 +171,11 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
                 return true;
             }
 
-            if (embed_count == 1 && content_length < 75) || embed_count > 1 {
+            if (embed_count == 1 && content_len < 75) || embed_count > 1 {
                 return true;
             }
 
-            let text_density = get_text_density(node, &TEXTISH_TAGS.join(","));
+            let text_density = get_text_density(node, TEXTISH_TAGS, Some(content_len));
             if img == 0.0 && text_density == 0.0 {
                 return true;
             }
@@ -260,13 +266,13 @@ fn mark_data_tables(n: &Node) {
             set_data_readability_table(node, true);
             continue;
         }
-        let caption_sel = sel.select("caption");
+        let caption_sel = sel.select_single("caption");
         if caption_sel.exists() {
             set_data_readability_table(node, true);
             continue;
         }
 
-        let descendants_sel = sel.select("col,colgroup,tfoot,thead,th");
+        let descendants_sel = sel.select_single("col,colgroup,tfoot,thead,th");
 
         if descendants_sel.exists() {
             set_data_readability_table(node, true);
@@ -274,7 +280,7 @@ fn mark_data_tables(n: &Node) {
         }
 
         // nested tables indicate a layout table
-        if sel.select("table").exists() {
+        if sel.select_single("table").exists() {
             set_data_readability_table(node, false);
             continue;
         }
@@ -399,7 +405,6 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
     fix_lazy_images(article_node);
 
     clean_conditionally(article_node, "form", flags);
-
     clean_conditionally(article_node, "fieldset", flags);
 
     // Clean out junk from the article content
@@ -409,26 +414,19 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
     clean(article_node, "link");
     clean(article_node, "aside");
 
-    let share_element_threshold = cfg.char_threshold;
+    let article_sel = Selection::from(article_node.clone());
 
     // Clean out elements with little content that have "share" in their id/class combinations from final top candidates,
     // which means we don't remove the top candidates even they have "share".
 
-    for child in article_node.descendants() {
-        let class = child.attr_or("class", "");
-        let id = child.attr_or("id", "");
-        let class_and_id = format_tendril!("{} {}", class, id);
-        if RX_SHARE_ELEMENTS.is_match(&class_and_id) && child.text().len() < share_element_threshold
-        {
-            child.remove_from_parent();
-        }
-    }
+    remove_share_elements(&article_sel, cfg.char_threshold);
 
     clean(article_node, "iframe");
     clean(article_node, "input");
     clean(article_node, "textarea");
     clean(article_node, "select");
     clean(article_node, "button");
+
     clean_headers(article_node, flags);
 
     // Do these last as the previous stuff may have removed junk
@@ -438,8 +436,6 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
     clean_conditionally(article_node, "div", flags);
 
     // replace H1 with H2 as H1 should be only title that is displayed separately
-
-    let article_sel = Selection::from(article_node.clone());
 
     article_sel.select("h1").rename("h2");
 
@@ -491,4 +487,50 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
             }
         }
     }
+}
+
+fn remove_share_elements(root_sel: &Selection, share_element_threshold: usize) {
+    for child in root_sel.select("*[class],*[id]").nodes().iter() {
+        let mut has_share_elements = false;
+
+        if child.text().len() >= share_element_threshold {
+            continue;
+        }
+
+        child.query(|n| {
+            if let NodeData::Element(ref el) = n.data {
+                if let Some(a) = el
+                    .attrs
+                    .iter()
+                    .find(|attr| attr.name.local == local_name!("class"))
+                {
+                    has_share_elements = contains_share_elements(&a.value);
+                };
+                if has_share_elements {
+                    return;
+                }
+                if let Some(a) = el
+                    .attrs
+                    .iter()
+                    .find(|attr| attr.name.local == local_name!("id"))
+                {
+                    has_share_elements = contains_share_elements(&a.value);
+                }
+            }
+        });
+
+        if has_share_elements {
+            child.remove_from_parent();
+        }
+    }
+}
+
+fn is_loading_word(text: &str) -> bool {
+    let trimmed = text.trim_end_matches(['…', '.']);
+    LOADING_WORDS.contains(trimmed)
+}
+
+fn contains_share_elements(value: &str) -> bool {
+    let lower_value = value.to_lowercase();
+    lower_value.split([' ', '_']).any(|word| SHARE_WORDS.contains(word))
 }
