@@ -49,15 +49,16 @@ impl Readability {
                         continue;
                     }
                 }
-                // this block is relate to previous block
-                if node_name.as_ref() == "div" {
-                    div_into_p(node, &doc, &mut elements_to_score);
-                    continue;
-                }
 
                 if DEFAULT_TAGS_TO_SCORE.contains(&node_name) {
                     elements_to_score.push(node.clone());
                 }
+
+                // this block is relate to previous block
+                if node_name.as_ref() == "div" {
+                    div_into_p(node, &doc, &mut elements_to_score);
+                }
+
             }
 
             let article_node = self.handle_candidates(&mut elements_to_score, &doc, &flags);
@@ -331,6 +332,7 @@ fn div_into_p<'a>(node: &'a Node, doc: &'a Document, elements_to_score: &mut Vec
                     break;
                 }
             }
+            elements_to_score.push(p.clone());
             p_node = None;
         }
         child_node = next_sibling;
