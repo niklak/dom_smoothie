@@ -1051,7 +1051,7 @@ fn simplify_nested_elements(root_sel: &Selection) {
 
     for node in only_sel.nodes().iter().rev() {
         let Some(parent) = node.parent() else {
-            unreachable!();
+            continue;
         };
         for attr in parent.attrs() {
             node.set_attr(&attr.name.local, &attr.value);
