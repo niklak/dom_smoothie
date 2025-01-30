@@ -1051,7 +1051,7 @@ fn simplify_nested_elements(root_sel: &Selection) {
 
     for node in only_sel.nodes().iter().rev() {
         let Some(parent) = node.parent() else {
-            unreachable!();
+            continue;
         };
         for attr in parent.attrs() {
             node.set_attr(&attr.name.local, &attr.value);
@@ -1104,6 +1104,29 @@ fn to_absolute_url(raw_url: &str, base_uri: &Url) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use dom_query::Document;
+
+    #[test]
+    fn test_simplify_nested_divs() {
+        let contents = r#"<!DOCTYPE>
+        <html>
+            <head><title>Test</title></head>
+            <body>
+                <div>
+                    <div>
+                        <div>
+                            <div>Text</div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        </html>"#;
+        let doc = Document::from(contents);
+        let body_sel = doc.select_single("body");
+
+        simplify_nested_elements(&body_sel);
+        assert_eq!(doc.select("div").length(), 1);
+    }
 
     #[test]
     fn test_replace_font_tags() {
