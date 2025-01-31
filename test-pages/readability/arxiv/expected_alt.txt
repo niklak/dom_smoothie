@@ -1,3 +1,7 @@
+Computer Science > Information Retrieval
+
+arXiv:2501.16450 (cs) 
+
 Authors:Hamed Firooz, Maziar Sanjabi, Adrian Englhardt, Aman Gupta, Ben Levine, Dre Olgiati, Gungor Polatkan, Iuliia Melnychuk, Karthik Ramgopal, Kirill Talanine, Kutta Srinivasan, Luke Simon, Natesh Sivasubramoniapillai, Necip Fazil Ayan, Qingquan Song, Samira Sriram, Souvik Ghosh, Tao Song, Vignesh Kothapalli, Xiaoling Zhai, Ya Xu, Yu Wang, Yun Dai
 
 View PDFHTML (experimental)
@@ -8,3 +12,8 @@ Subjects:Information Retrieval (cs.IR); Artificial Intelligence (cs.AI)
 Cite as:arXiv:2501.16450 [cs.IR]
 (or arXiv:2501.16450v1 [cs.IR] for this version) 
 https://doi.org/10.48550/arXiv.2501.16450 arXiv-issued DOI via DataCite
+
+Submission history
+
+From: Maziar Sanjabi [view email] 
+[v1] Mon, 27 Jan 2025 19:14:52 UTC (1,931 KB)

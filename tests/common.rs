@@ -27,7 +27,7 @@ where
 {
     let base_path = test_path.as_ref();
     let source_path = base_path.join("source.html");
-    let expected_path = base_path.join("expected.txt");
+    let expected_path = base_path.join("expected_alt.txt");
     // for more options check the documentation
     let cfg = Config {
         candidate_select_mode: CandidateSelectMode::DomSmoothie,
