@@ -19,9 +19,9 @@ impl Readability {
     pub(crate) fn grab_article(&self, metadata: &mut Metadata) -> Option<Document> {
         let mut flags =
             GrabFlags::CleanConditionally | GrabFlags::StripUnlikelys | GrabFlags::WeightClasses;
-        let selection = self.doc.select_single("body");
+        let body_sel = self.doc.select_single("body");
         // html5ever always puts body element, even if it wasn't in the document's contents
-        let body_node = selection.nodes().first().unwrap();
+        let body_node = body_sel.nodes().first()?;
         pre_filter_document(body_node, metadata);
 
         let mut best_attempt: Option<(Document, usize)> = None;
@@ -29,11 +29,16 @@ impl Readability {
             let doc = self.doc.clone();
             let selection = doc.select_single("body");
             // html5ever always puts body element, even if it wasn't in the document's contents
-            let body_node = selection.nodes().first().unwrap();
+            let body_node = selection.nodes().first()?;
             let strip_unlikely = flags.contains(GrabFlags::StripUnlikelys);
 
             let mut elements_to_score = collect_elements_to_score(body_node, strip_unlikely);
             let article_node = self.handle_candidates(&mut elements_to_score, &doc, &flags);
+            // Now that we've gone through the full algorithm, check to see if
+            // we got any meaningful content. If we didn't, we may need to re-run
+            // grabArticle with different flags set. This gives us a higher likelihood of
+            // finding the content, and the sieve approach gives us a higher likelihood of
+            // finding the -right- content.
 
             if let Some(ref article_node) = article_node {
                 metadata.dir = get_dir_attr(article_node);
@@ -54,7 +59,8 @@ impl Readability {
                     } else if flags.contains(GrabFlags::CleanConditionally) {
                         flags -= GrabFlags::CleanConditionally;
                     } else {
-                        // No luck after removing flags, just return the longest text we found during the different loops
+                        // No luck after removing flags,
+                        // just return the longest text we found during the different loops
                         let (best_doc, _) = best_attempt?;
                         return Some(best_doc);
                     }
@@ -62,13 +68,9 @@ impl Readability {
                     return Some(doc);
                 }
             }
-            // Now that we've gone through the full algorithm, check to see if
-            // we got any meaningful content. If we didn't, we may need to re-run
-            // grabArticle with different flags set. This gives us a higher likelihood of
-            // finding the content, and the sieve approach gives us a higher likelihood of
-            // finding the -right- content.
         }
     }
+
 
     fn handle_candidates<'a>(
         &self,
@@ -674,6 +676,7 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
         .map(|n| NodeRef::new(*n, tree))
         .collect()
 }
+
 
 #[cfg(test)]
 mod tests {
