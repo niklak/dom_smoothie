@@ -266,7 +266,7 @@ fn is_unlikely_candidate(node: &NodeRef, match_string: &str) -> bool {
     true
 }
 
-fn div_into_p<'a>(node: &'a NodeRef) {
+fn div_into_p(node: &NodeRef) {
     // Turn all divs that don't have children block level elements into p's
     let tree = node.tree;
     // Put phrasing content into paragraphs.
@@ -671,7 +671,7 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
     }
     elements_id_to_score
         .iter()
-        .map(|n| NodeRef::new(*n, &tree))
+        .map(|n| NodeRef::new(*n, tree))
         .collect()
 }
 
