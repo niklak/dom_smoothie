@@ -364,6 +364,10 @@ fn score_elements<'a>(
             };
             ancestor_score += content_score as f32 / score_divider;
             set_node_score(ancestor, ancestor_score);
+
+            if ancestor.is("body") {
+                break;
+            }
         }
     }
 
