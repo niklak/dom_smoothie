@@ -1,7 +1,7 @@
 use foldhash::{HashMap, HashSet};
 use std::vec;
 
-use dom_query::{Document, NodeRef, NodeId, Selection};
+use dom_query::{Document, NodeId, NodeRef, Selection};
 use flagset::FlagSet;
 use tendril::StrTendril;
 
@@ -264,7 +264,7 @@ fn is_unlikely_candidate(node: &NodeRef, match_string: &str) -> bool {
         return false;
     }
 
-    // TODO: There is also a chance that `unlikely` block may contain `likely` block. 
+    // TODO: There is also a chance that `unlikely` block may contain `likely` block.
     // It may be checked in place instead of starting a new loop iteration.
 
     if has_ancestor_tag::<NodePredicate>(node, "table", Some(0), None) {
@@ -306,8 +306,6 @@ fn div_into_p<'a>(node: &'a NodeRef, doc: &'a Document) {
         }
         child_node = next_sibling;
     }
-
-    
 }
 
 fn has_child_block_element(node: &NodeRef) -> bool {
@@ -325,9 +323,8 @@ fn score_elements<'a>(
     flags: &FlagSet<GrabFlags>,
 ) -> Vec<NodeRef<'a>> {
     let mut candidates = vec![];
-    
-    for element in elements_to_score {
 
+    for element in elements_to_score {
         if element.parent().is_none() {
             continue;
         }
@@ -594,14 +591,13 @@ fn is_sentence(text: &str) -> bool {
     text.ends_with('.') || text.contains(". ")
 }
 
-
 fn get_child_or_sibling_id<'a>(node: &'a NodeRef<'a>, ignore_self: bool) -> Option<NodeId> {
     if !ignore_self {
         if let Some(first_child) = node.first_element_child() {
             return Some(first_child.id);
         }
     }
-     
+
     if let Some(sibling) = node.next_element_sibling() {
         Some(sibling.id)
     } else {
@@ -617,55 +613,58 @@ fn get_child_or_sibling_id<'a>(node: &'a NodeRef<'a>, ignore_self: bool) -> Opti
     }
 }
 
-fn collect_elements_to_score<'a>(root_node: &NodeRef, doc: &'a Document) -> Vec<NodeRef<'a>>{
+fn collect_elements_to_score<'a>(root_node: &NodeRef, doc: &'a Document) -> Vec<NodeRef<'a>> {
     let tree = &doc.tree;
     let mut elements_id_to_score: Vec<NodeId> = vec![];
     let mut next_node_id = get_child_or_sibling_id(root_node, false);
-            while let Some(node_id) =  next_node_id {
-                let mut node = NodeRef::new(node_id, tree);                
-                let Some(node_name) = node.node_name() else {
-                    unreachable!()
-                };
+    while let Some(node_id) = next_node_id {
+        let mut node = NodeRef::new(node_id, tree);
+        let Some(node_name) = node.node_name() else {
+            unreachable!()
+        };
 
-                if TAGS_WITH_CONTENT.contains(&node_name) {
-                    // TODO: this is a controversial moment, it may leave an empty block,
-                    // which will have an impact on the result.
-                    // When parent of the top candidate have more than one child,
-                    // then parent will be a new top candidate.
+        if TAGS_WITH_CONTENT.contains(&node_name) {
+            // TODO: this is a controversial moment, it may leave an empty block,
+            // which will have an impact on the result.
+            // When parent of the top candidate have more than one child,
+            // then parent will be a new top candidate.
 
-                    if is_element_without_content(&node) {
-                        next_node_id = get_child_or_sibling_id(&node, true);
-                        node.remove_from_parent();
-                        continue;
-                    }
-                }
-
-                if DEFAULT_TAGS_TO_SCORE.contains(&node_name) {
-                    elements_id_to_score.push(node.id);
-                }
-
-                // this block is relate to previous block
-                if node_name.as_ref() == "div" {
-                    div_into_p(&node, doc);
-
-                    // Sites like http://mobile.slate.com encloses each paragraph with a DIV
-                    // element. DIVs with only a P element inside and no text content can be
-                    // safely converted into plain P elements to avoid confusing the scoring
-                    // algorithm with DIVs with are, in practice, paragraphs.
-
-                    if has_single_tag_inside_element(&node, "p") && link_density(&node, None) < 0.25 {
-                        let new_node = node.first_element_child().unwrap();
-                        node.replace_with(&new_node);
-                        elements_id_to_score.push(new_node.id);
-                        node = new_node;
-                    } else if !has_child_block_element(&node) {
-                        node.rename("p");
-                        elements_id_to_score.push(node.id);
-                    }
-                }
-                next_node_id = get_child_or_sibling_id(&node, false);
+            if is_element_without_content(&node) {
+                next_node_id = get_child_or_sibling_id(&node, true);
+                node.remove_from_parent();
+                continue;
             }
-            elements_id_to_score.iter().map(|n| NodeRef::new(*n, &doc.tree)).collect()
+        }
+
+        if DEFAULT_TAGS_TO_SCORE.contains(&node_name) {
+            elements_id_to_score.push(node.id);
+        }
+
+        // this block is relate to previous block
+        if node_name.as_ref() == "div" {
+            div_into_p(&node, doc);
+
+            // Sites like http://mobile.slate.com encloses each paragraph with a DIV
+            // element. DIVs with only a P element inside and no text content can be
+            // safely converted into plain P elements to avoid confusing the scoring
+            // algorithm with DIVs with are, in practice, paragraphs.
+
+            if has_single_tag_inside_element(&node, "p") && link_density(&node, None) < 0.25 {
+                let new_node = node.first_element_child().unwrap();
+                node.replace_with(&new_node);
+                elements_id_to_score.push(new_node.id);
+                node = new_node;
+            } else if !has_child_block_element(&node) {
+                node.rename("p");
+                elements_id_to_score.push(node.id);
+            }
+        }
+        next_node_id = get_child_or_sibling_id(&node, false);
+    }
+    elements_id_to_score
+        .iter()
+        .map(|n| NodeRef::new(*n, &doc.tree))
+        .collect()
 }
 
 #[cfg(test)]
