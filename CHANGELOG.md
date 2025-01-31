@@ -12,7 +12,6 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 - Changed the `Readability::grab_article` method implementation to retain only the best attempt among failed attempts, instead of keeping all of them until the exit.
 - Internal code optimizations aimed to reduce execution time.
 - **Breaking** Revised document filtering. Since most of the filtering is now separated from extracting elements for scoring, there is a higher chance of assigning `Metadata.title` if it was empty before grabbing the article. The same applies to `Metadata.byline`, which previously could incorrectly assign a commentator as the article's author or leave it missing altogether. In the `mozilla/readability` test pages, I've encountered cases where this happened because `Readability` failed to extract readable content on the first iteration.
-I'm sure it's better to keep metadata parsing separate from article scoring.
 - If Metadata.byline was assigned while grabbing the article, it will be normalized (no new lines or trailing spaces).
 
 ## [0.4.0] - 2025-01-08
