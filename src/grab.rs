@@ -19,6 +19,10 @@ impl Readability {
     pub(crate) fn grab_article(&self, metadata: &mut Metadata) -> Option<Document> {
         let mut flags =
             GrabFlags::CleanConditionally | GrabFlags::StripUnlikelys | GrabFlags::WeightClasses;
+        let selection = self.doc.select_single("body");
+        // html5ever always puts body element, even if it wasn't in the document's contents
+        let body_node = selection.nodes().first().unwrap();
+        pre_filter_document(body_node, metadata);
 
         let mut best_attempt: Option<(Document, usize)> = None;
         loop {
@@ -27,9 +31,8 @@ impl Readability {
             // html5ever always puts body element, even if it wasn't in the document's contents
             let body_node = selection.nodes().first().unwrap();
             let strip_unlikely = flags.contains(GrabFlags::StripUnlikelys);
-            filter_document(body_node, metadata, strip_unlikely);
 
-            let mut elements_to_score = collect_elements_to_score(body_node, &doc);
+            let mut elements_to_score = collect_elements_to_score(body_node, strip_unlikely);
             let article_node = self.handle_candidates(&mut elements_to_score, &doc, &flags);
 
             if let Some(ref article_node) = article_node {
@@ -157,7 +160,7 @@ impl Readability {
     }
 }
 
-fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely: bool) {
+fn pre_filter_document(root_node: &NodeRef, metadata: &mut Metadata) {
     let mut should_remove_title_header = !metadata.title.is_empty();
 
     let mut nodes_to_remove = HashSet::default();
@@ -195,27 +198,14 @@ fn filter_document(root_node: &NodeRef, metadata: &mut Metadata, strip_unlikely:
                 .nodes()
                 .first()
             {
-                item_prop_name.text().trim().to_string()
+                normalize_spaces(&item_prop_name.text())
             } else {
-                node.text().trim().to_string()
+                normalize_spaces(&node.text())
             };
 
             metadata.byline = Some(byline);
             nodes_to_remove.insert(node.id);
             continue;
-        }
-
-        if strip_unlikely {
-            if !match_string.is_empty() && is_unlikely_candidate(&node, &match_string) {
-                nodes_to_remove.insert(node.id);
-                continue;
-            }
-
-            if let Some(role) = node.attr("role") {
-                if UNLIKELY_ROLES.contains(&role) {
-                    nodes_to_remove.insert(node.id);
-                }
-            }
         }
     }
 
@@ -276,9 +266,9 @@ fn is_unlikely_candidate(node: &NodeRef, match_string: &str) -> bool {
     true
 }
 
-fn div_into_p<'a>(node: &'a NodeRef, doc: &'a Document) {
+fn div_into_p<'a>(node: &'a NodeRef) {
     // Turn all divs that don't have children block level elements into p's
-
+    let tree = node.tree;
     // Put phrasing content into paragraphs.
     let mut p_node: Option<NodeRef> = None;
     let mut child_node = node.first_child();
@@ -288,7 +278,7 @@ fn div_into_p<'a>(node: &'a NodeRef, doc: &'a Document) {
             if let Some(ref p) = p_node {
                 p.append_child(child);
             } else if !is_whitespace(child) {
-                let raw_p = doc.tree.new_element("p");
+                let raw_p = tree.new_element("p");
                 child.insert_before(&raw_p);
                 raw_p.append_child(&child.id);
                 p_node = Some(raw_p);
@@ -613,8 +603,8 @@ fn get_child_or_sibling_id<'a>(node: &'a NodeRef<'a>, ignore_self: bool) -> Opti
     }
 }
 
-fn collect_elements_to_score<'a>(root_node: &NodeRef, doc: &'a Document) -> Vec<NodeRef<'a>> {
-    let tree = &doc.tree;
+fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -> Vec<NodeRef<'a>> {
+    let tree = &root_node.tree;
     let mut elements_id_to_score: Vec<NodeId> = vec![];
     let mut next_node_id = get_child_or_sibling_id(root_node, false);
     while let Some(node_id) = next_node_id {
@@ -622,6 +612,24 @@ fn collect_elements_to_score<'a>(root_node: &NodeRef, doc: &'a Document) -> Vec<
         let Some(node_name) = node.node_name() else {
             unreachable!()
         };
+
+        let match_string = get_node_matching_string(&node);
+
+        if strip_unlikely {
+            if !match_string.is_empty() && is_unlikely_candidate(&node, &match_string) {
+                next_node_id = get_child_or_sibling_id(&node, true);
+                node.remove_from_parent();
+                continue;
+            }
+
+            if let Some(role) = node.attr("role") {
+                if UNLIKELY_ROLES.contains(&role) {
+                    next_node_id = get_child_or_sibling_id(&node, true);
+                    node.remove_from_parent();
+                    continue;
+                }
+            }
+        }
 
         if TAGS_WITH_CONTENT.contains(&node_name) {
             // TODO: this is a controversial moment, it may leave an empty block,
@@ -642,7 +650,7 @@ fn collect_elements_to_score<'a>(root_node: &NodeRef, doc: &'a Document) -> Vec<
 
         // this block is relate to previous block
         if node_name.as_ref() == "div" {
-            div_into_p(&node, doc);
+            div_into_p(&node);
 
             // Sites like http://mobile.slate.com encloses each paragraph with a DIV
             // element. DIVs with only a P element inside and no text content can be
@@ -663,7 +671,7 @@ fn collect_elements_to_score<'a>(root_node: &NodeRef, doc: &'a Document) -> Vec<
     }
     elements_id_to_score
         .iter()
-        .map(|n| NodeRef::new(*n, &doc.tree))
+        .map(|n| NodeRef::new(*n, &tree))
         .collect()
 }
 
@@ -690,7 +698,7 @@ mod tests {
 
         let doc = Document::from(contents);
         let mut meta = Metadata::default();
-        filter_document(&doc.root(), &mut meta, true);
+        pre_filter_document(&doc.root(), &mut meta);
 
         assert_eq!(2, doc.select("p").length());
     }
@@ -711,7 +719,7 @@ mod tests {
         let doc = Document::from(contents);
         assert!(doc.select("#dialog1").exists());
 
-        filter_document(&doc.root(), &mut Metadata::default(), true);
+        pre_filter_document(&doc.root(), &mut Metadata::default());
         assert!(!doc.select("#dialog1").exists());
         assert!(!doc.select("#close1").exists());
     }
@@ -733,7 +741,7 @@ mod tests {
         let doc = Document::from(contents);
         assert!(doc.select("*[role]").exists());
 
-        filter_document(&doc.root(), &mut Metadata::default(), true);
+        collect_elements_to_score(&doc.root(), true);
         assert!(!doc.select("*[role]").exists());
     }
 
@@ -783,7 +791,7 @@ mod tests {
 
         let doc = Document::from(contents);
         // consuming byline during grabbing the article
-        filter_document(&doc.root(), &mut Metadata::default(), true);
+        pre_filter_document(&doc.root(), &mut Metadata::default());
         assert!(!doc.select("a").exists())
     }
 
@@ -803,7 +811,7 @@ mod tests {
             ..Default::default()
         };
         // consuming byline during grabbing the article
-        filter_document(&doc.root(), &mut metadata, true);
+        pre_filter_document(&doc.root(), &mut metadata);
         assert!(doc.select("a").exists())
     }
 
@@ -821,7 +829,7 @@ mod tests {
         let mut metadata = readability.get_article_metadata(None);
 
         assert!(readability.doc.select("h1").exists());
-        filter_document(&readability.doc.root(), &mut metadata, true);
+        pre_filter_document(&readability.doc.root(), &mut metadata);
 
         assert!(!readability.doc.select("h1").exists())
     }
@@ -840,7 +848,7 @@ mod tests {
         let doc = Document::from(contents);
         assert!(doc.select("div.banner").exists());
 
-        filter_document(&doc.root(), &mut Metadata::default(), true);
+        collect_elements_to_score(&doc.root(), true);
         assert!(!doc.select("div.banner").exists())
     }
     #[test]
@@ -856,7 +864,7 @@ mod tests {
 
         let doc = Document::from(contents);
         assert!(doc.select("a.banner").exists());
-        filter_document(&doc.root(), &mut Metadata::default(), true);
+        collect_elements_to_score(&doc.root(), true);
         assert!(doc.select("a.banner").exists())
     }
 }
