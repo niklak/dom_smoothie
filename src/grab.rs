@@ -1,8 +1,7 @@
 use foldhash::{HashMap, HashSet};
 use std::vec;
 
-use dom_query::{Document, Node, NodeRef};
-use dom_query::{NodeId, Selection};
+use dom_query::{Document, NodeRef, NodeId, Selection};
 use flagset::FlagSet;
 use tendril::StrTendril;
 
@@ -23,7 +22,6 @@ impl Readability {
 
         let mut best_attempt: Option<(Document, usize)> = None;
         loop {
-            let mut elements_to_score: Vec<NodeRef<'_>> = vec![];
             let doc = self.doc.clone();
             let selection = doc.select_single("body");
             // html5ever always puts body element, even if it wasn't in the document's contents
@@ -31,35 +29,7 @@ impl Readability {
             let strip_unlikely = flags.contains(GrabFlags::StripUnlikelys);
             filter_document(body_node, metadata, strip_unlikely);
 
-            let descendants = body_node.descendants();
-
-            for node in descendants.iter().filter(|n| n.is_element()) {
-                let Some(node_name) = node.node_name() else {
-                    unreachable!()
-                };
-
-                if TAGS_WITH_CONTENT.contains(&node_name) {
-                    // TODO: this is a controversial moment, it may leave an empty block,
-                    // which will have an impact on the result.
-                    // When parent of the top candidate have more than one child,
-                    // then parent will be a new top candidate.
-
-                    if is_element_without_content(node) {
-                        node.remove_from_parent();
-                        continue;
-                    }
-                }
-                // this block is relate to previous block
-                if node_name.as_ref() == "div" {
-                    div_into_p(node, &doc, &mut elements_to_score);
-                    continue;
-                }
-
-                if DEFAULT_TAGS_TO_SCORE.contains(&node_name) {
-                    elements_to_score.push(node.clone());
-                }
-            }
-
+            let mut elements_to_score = collect_elements_to_score(body_node, &doc);
             let article_node = self.handle_candidates(&mut elements_to_score, &doc, &flags);
 
             if let Some(ref article_node) = article_node {
@@ -270,7 +240,7 @@ fn get_node_matching_string(node: &NodeRef) -> String {
     matched_buf.to_lowercase()
 }
 
-fn is_valid_byline(node: &Node, match_string: &str) -> bool {
+fn is_valid_byline(node: &NodeRef, match_string: &str) -> bool {
     let is_byline = MATCHER_BYLINE.match_element(node)
         || BYLINE_PATTERNS.iter().any(|p| match_string.contains(p));
     if !is_byline {
@@ -280,7 +250,7 @@ fn is_valid_byline(node: &Node, match_string: &str) -> bool {
     byline_len > 0 && byline_len < 100
 }
 
-fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
+fn is_unlikely_candidate(node: &NodeRef, match_string: &str) -> bool {
     // Assuming that `<body>` node can't can't reach this function
     if node.node_name().as_deref() == Some("a") {
         return false;
@@ -306,11 +276,11 @@ fn is_unlikely_candidate(node: &Node, match_string: &str) -> bool {
     true
 }
 
-fn div_into_p<'a>(node: &'a Node, doc: &'a Document, elements_to_score: &mut Vec<NodeRef<'a>>) {
+fn div_into_p<'a>(node: &'a NodeRef, doc: &'a Document) {
     // Turn all divs that don't have children block level elements into p's
 
     // Put phrasing content into paragraphs.
-    let mut p_node: Option<Node> = None;
+    let mut p_node: Option<NodeRef> = None;
     let mut child_node = node.first_child();
     while let Some(ref child) = child_node {
         let next_sibling = child.next_sibling();
@@ -331,27 +301,16 @@ fn div_into_p<'a>(node: &'a Node, doc: &'a Document, elements_to_score: &mut Vec
                     break;
                 }
             }
+            //elements_to_score.push(p.clone());
             p_node = None;
         }
         child_node = next_sibling;
     }
 
-    // Sites like http://mobile.slate.com encloses each paragraph with a DIV
-    // element. DIVs with only a P element inside and no text content can be
-    // safely converted into plain P elements to avoid confusing the scoring
-    // algorithm with DIVs with are, in practice, paragraphs.
-
-    if has_single_tag_inside_element(node, "p") && link_density(node, None) < 0.25 {
-        let new_node = node.first_element_child().unwrap();
-        node.replace_with(&new_node);
-        elements_to_score.push(new_node.clone());
-    } else if !has_child_block_element(node) {
-        node.rename("p");
-        elements_to_score.push(node.clone());
-    }
+    
 }
 
-fn has_child_block_element(node: &Node) -> bool {
+fn has_child_block_element(node: &NodeRef) -> bool {
     node.children().iter().any(|n| {
         if let Some(name) = n.node_name() {
             BLOCK_ELEMS.contains(&name) || has_child_block_element(n)
@@ -362,20 +321,12 @@ fn has_child_block_element(node: &Node) -> bool {
 }
 
 fn score_elements<'a>(
-    elements_to_score: &mut Vec<NodeRef<'a>>,
+    elements_to_score: &Vec<NodeRef<'a>>,
     flags: &FlagSet<GrabFlags>,
 ) -> Vec<NodeRef<'a>> {
     let mut candidates = vec![];
-    let mut visited = vec![];
-
+    
     for element in elements_to_score {
-        // TODO: made it without duplicates!
-
-        if visited.contains(&element.id) {
-            continue;
-        }
-
-        visited.push(element.id);
 
         if element.parent().is_none() {
             continue;
@@ -430,7 +381,7 @@ fn score_elements<'a>(
     candidates
 }
 
-fn handle_top_candidate(tc: &Node, article_content: &Node) {
+fn handle_top_candidate(tc: &NodeRef, article_content: &NodeRef) {
     let tc_node_score = get_node_score(tc);
     let mut sibling_score_threshold = tc_node_score * 0.2;
     if sibling_score_threshold < 10.0 {
@@ -441,7 +392,7 @@ fn handle_top_candidate(tc: &Node, article_content: &Node) {
         unreachable!()
     };
 
-    let siblings: Vec<Node> = tc_parent.element_children();
+    let siblings: Vec<NodeRef> = tc_parent.element_children();
 
     for sibling in siblings.iter() {
         let sibling_name = sibling.node_name().unwrap();
@@ -614,7 +565,7 @@ fn find_common_candidate_alt<'a>(
 
     if let Some(best_candidate_id) = ancestor_match_counter
         .into_iter()
-        .max_by(|x, y| y.1.cmp(&x.1).then(y.0.cmp(&x.0)))
+        .max_by(|x, y| x.0.cmp(&y.0).then(x.1.cmp(&y.1)))
         .map(|n| n.0)
     {
         top_candidate = Some(NodeRef::new(best_candidate_id, tc.tree));
@@ -637,6 +588,80 @@ fn get_node_ancestors(node: &NodeRef) -> HashSet<NodeId> {
 
 fn is_sentence(text: &str) -> bool {
     text.ends_with('.') || text.contains(". ")
+}
+
+
+fn get_child_or_sibling_id<'a>(node: &'a NodeRef<'a>, ignore_self: bool) -> Option<NodeId> {
+    if !ignore_self {
+        if let Some(first_child) = node.first_element_child() {
+            return Some(first_child.id);
+        }
+    }
+     
+    if let Some(sibling) = node.next_element_sibling() {
+        Some(sibling.id)
+    } else {
+        let mut parent = node.parent();
+        while let Some(parent_node) = parent {
+            if let Some(next_sibling) = parent_node.next_element_sibling() {
+                return Some(next_sibling.id);
+            } else {
+                parent = parent_node.parent()
+            }
+        }
+        None
+    }
+}
+
+fn collect_elements_to_score<'a>(root_node: &NodeRef, doc: &'a Document) -> Vec<NodeRef<'a>>{
+    let tree = &doc.tree;
+    let mut elements_id_to_score: Vec<NodeId> = vec![];
+    let mut next_node_id = get_child_or_sibling_id(root_node, false);
+            while let Some(node_id) =  next_node_id {
+                let mut node = NodeRef::new(node_id, tree);                
+                let Some(node_name) = node.node_name() else {
+                    unreachable!()
+                };
+
+                if TAGS_WITH_CONTENT.contains(&node_name) {
+                    // TODO: this is a controversial moment, it may leave an empty block,
+                    // which will have an impact on the result.
+                    // When parent of the top candidate have more than one child,
+                    // then parent will be a new top candidate.
+
+                    if is_element_without_content(&node) {
+                        next_node_id = get_child_or_sibling_id(&node, true);
+                        node.remove_from_parent();
+                        continue;
+                    }
+                }
+
+                if DEFAULT_TAGS_TO_SCORE.contains(&node_name) {
+                    elements_id_to_score.push(node.id);
+                }
+
+                // this block is relate to previous block
+                if node_name.as_ref() == "div" {
+                    div_into_p(&node, doc);
+
+                    // Sites like http://mobile.slate.com encloses each paragraph with a DIV
+                    // element. DIVs with only a P element inside and no text content can be
+                    // safely converted into plain P elements to avoid confusing the scoring
+                    // algorithm with DIVs with are, in practice, paragraphs.
+
+                    if has_single_tag_inside_element(&node, "p") && link_density(&node, None) < 0.25 {
+                        let new_node = node.first_element_child().unwrap();
+                        node.replace_with(&new_node);
+                        elements_id_to_score.push(new_node.id);
+                        node = new_node;
+                    } else if !has_child_block_element(&node) {
+                        node.rename("p");
+                        elements_id_to_score.push(node.id);
+                    }
+                }
+                next_node_id = get_child_or_sibling_id(&node, false);
+            }
+            elements_id_to_score.iter().map(|n| NodeRef::new(*n, &doc.tree)).collect()
 }
 
 #[cfg(test)]
