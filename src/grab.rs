@@ -292,7 +292,6 @@ fn div_into_p(node: &NodeRef) {
                     break;
                 }
             }
-            //elements_to_score.push(p.clone());
             p_node = None;
         }
         child_node = next_sibling;
