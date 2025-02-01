@@ -199,12 +199,12 @@ fn pre_filter_document(root_node: &NodeRef, metadata: &mut Metadata) {
                 .nodes()
                 .first()
             {
-                normalize_spaces(&item_prop_name.text())
+                item_prop_name.text()
             } else {
-                normalize_spaces(&node.text())
+                node.text()
             };
 
-            metadata.byline = Some(byline);
+            metadata.byline = Some(normalize_spaces(&byline));
             nodes_to_remove.insert(node.id);
             continue;
         }
