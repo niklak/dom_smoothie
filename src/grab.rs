@@ -43,30 +43,29 @@ impl Readability {
             if let Some(ref article_node) = article_node {
                 metadata.dir = get_dir_attr(article_node);
                 let text_length = normalized_char_count(&article_node.text());
-                if text_length < self.config.char_threshold {
-                    if let Some((_, best_text_length)) = best_attempt {
-                        if text_length > best_text_length {
-                            best_attempt = Some((doc, text_length));
-                        }
-                    } else {
-                        best_attempt = Some((doc, text_length));
-                    }
-
-                    if flags.contains(GrabFlags::StripUnlikelys) {
-                        flags -= GrabFlags::StripUnlikelys;
-                    } else if flags.contains(GrabFlags::WeightClasses) {
-                        flags -= GrabFlags::WeightClasses;
-                    } else if flags.contains(GrabFlags::CleanConditionally) {
-                        flags -= GrabFlags::CleanConditionally;
-                    } else {
-                        // No luck after removing flags,
-                        // just return the longest text we found during the different loops
-                        let (best_doc, _) = best_attempt?;
-                        return Some(best_doc);
-                    }
-                } else {
+                if text_length >= self.config.char_threshold {
                     return Some(doc);
                 }
+
+                if let Some((_, best_text_length)) = best_attempt {
+                    if text_length > best_text_length {
+                        best_attempt = Some((doc, text_length));
+                    }
+                } else {
+                    best_attempt = Some((doc, text_length));
+                }
+            }
+            if flags.contains(GrabFlags::StripUnlikelys) {
+                flags -= GrabFlags::StripUnlikelys;
+            } else if flags.contains(GrabFlags::WeightClasses) {
+                flags -= GrabFlags::WeightClasses;
+            } else if flags.contains(GrabFlags::CleanConditionally) {
+                flags -= GrabFlags::CleanConditionally;
+            } else {
+                // No luck after removing flags,
+                // just return the longest text we found during the different loops
+                let (best_doc, _) = best_attempt?;
+                return Some(best_doc);
             }
         }
     }
