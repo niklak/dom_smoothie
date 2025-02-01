@@ -21,11 +21,12 @@ fn test_skip_body_ancestor() {
     let res = ra.parse().unwrap();
     let expected: String = r#"<div id="readability-page-1" class="page">
         <p><a href="https://example.com/sign-up"> Sign Up for Live Updates!</a></p>
-        </div>"#.split_whitespace().collect();
+        </div>"#
+        .split_whitespace()
+        .collect();
     let got: String = res.content.split_whitespace().collect();
     assert_eq!(got, expected);
 }
-
 
 #[test]
 fn test_skip_body_ancestor_fragment() {
@@ -39,8 +40,9 @@ fn test_skip_body_ancestor_fragment() {
     let res = ra.parse().unwrap();
     let expected: String = r#"<div id="readability-page-1" class="page"><div>
         <p><a href="https://example.com/sign-up"> Sign Up for Live Updates!</a></p>
-        </div></div>"#.split_whitespace().collect();
+        </div></div>"#
+        .split_whitespace()
+        .collect();
     let got: String = res.content.split_whitespace().collect();
     assert_eq!(got, expected);
 }
-

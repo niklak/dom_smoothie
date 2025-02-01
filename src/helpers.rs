@@ -125,16 +125,25 @@ pub(crate) fn normalize_spaces(text: &str) -> String {
 
 pub(crate) fn normalized_char_count(text: &str) -> usize {
     let mut char_count = 0;
-    let mut iter = text.split_whitespace();
+    let mut prev_was_whitespace = true;
 
-    if let Some(first) = iter.next() {
-        char_count += first.chars().count();
-        for word in iter {
-            // whitespace between words
-            char_count += 1;
-            char_count += word.chars().count();
+    for c in text.chars() {
+        if c.is_whitespace() {
+            if prev_was_whitespace {
+                continue;
+            }
+            prev_was_whitespace = true;
+        } else {
+            prev_was_whitespace = false;
         }
+
+        char_count += 1;
     }
+
+    if prev_was_whitespace && char_count > 0 {
+        char_count -= 1;
+    }
+
     char_count
 }
 

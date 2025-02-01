@@ -532,5 +532,7 @@ fn is_loading_word(text: &str) -> bool {
 
 fn contains_share_elements(value: &str) -> bool {
     let lower_value = value.to_lowercase();
-    lower_value.split([' ', '_']).any(|word| SHARE_WORDS.contains(word))
+    lower_value
+        .split([' ', '_'])
+        .any(|word| SHARE_WORDS.contains(word))
 }
