@@ -90,7 +90,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
 
     let node_text = node.text();
     let inner_text = node_text.trim();
-    let content_len = normalized_char_count(inner_text);
+    let content_len = node.normalized_char_count();
 
     if inner_text.matches(',').count() < 10 {
         // If there are not very many commas, and the number of
@@ -127,8 +127,9 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
         if !is_list {
             let list_length: usize = sel
                 .select("ul, ol")
+                .nodes()
                 .iter()
-                .map(|s| normalized_char_count(&s.text()))
+                .map(|n| n.normalized_char_count())
                 .sum();
             is_list = (list_length as f32 / content_len as f32) > 0.9;
         }

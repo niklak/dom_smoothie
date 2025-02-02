@@ -7,7 +7,6 @@ mod prep_article;
 mod readability;
 mod readable;
 mod score;
-mod text_helpers;
 
 #[cfg(feature = "serde")]
 mod serde_helpers;
