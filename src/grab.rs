@@ -42,7 +42,7 @@ impl Readability {
 
             if let Some(ref article_node) = article_node {
                 metadata.dir = get_dir_attr(article_node);
-                let text_length = normalized_char_count(&article_node.text());
+                let text_length = article_node.normalized_char_count();
                 if text_length >= self.config.char_threshold {
                     return Some(doc);
                 }
@@ -69,7 +69,6 @@ impl Readability {
             }
         }
     }
-
 
     fn handle_candidates<'a>(
         &self,
@@ -405,7 +404,7 @@ fn handle_top_candidate(tc: &NodeRef, article_content: &NodeRef) {
             } else if sibling_name.as_ref() == "p" {
                 let sibling_text = sibling.text();
                 let node_content = normalize_spaces(&sibling_text);
-                let node_length = node_content.chars().count();
+                let node_length = sibling.normalized_char_count();
                 let link_density = link_density(sibling, Some(node_length));
 
                 if (node_length > 80 && link_density < 0.25)
@@ -674,7 +673,6 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
         .map(|n| NodeRef::new(*n, tree))
         .collect()
 }
-
 
 #[cfg(test)]
 mod tests {

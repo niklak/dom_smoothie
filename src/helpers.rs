@@ -95,17 +95,22 @@ pub(crate) fn get_text_density(node: &Node, selector: &str, char_count: Option<u
     let text_length = if let Some(c) = char_count {
         c as f32
     } else {
-        normalized_char_count(&node.text()) as f32
+        node.normalized_char_count() as f32
     };
     if text_length == 0.0 {
         return 0.0;
     }
     let sel = Selection::from(node.clone()).select(selector);
-    if sel.nodes().is_empty() {
+    let sel_nodes = sel.nodes();
+
+    if sel_nodes.is_empty() {
         return 0.0;
     }
 
-    let children_length = normalized_char_count(&sel.text()) as f32;
+    let children_length = sel_nodes
+        .iter()
+        .map(|n| n.normalized_char_count() as f32)
+        .sum::<f32>();
     children_length / text_length
 }
 
@@ -123,35 +128,11 @@ pub(crate) fn normalize_spaces(text: &str) -> String {
     result
 }
 
-pub(crate) fn normalized_char_count(text: &str) -> usize {
-    let mut char_count = 0;
-    let mut prev_was_whitespace = true;
-
-    for c in text.chars() {
-        if c.is_whitespace() {
-            if prev_was_whitespace {
-                continue;
-            }
-            prev_was_whitespace = true;
-        } else {
-            prev_was_whitespace = false;
-        }
-
-        char_count += 1;
-    }
-
-    if prev_was_whitespace && char_count > 0 {
-        char_count -= 1;
-    }
-
-    char_count
-}
-
 pub(crate) fn link_density(node: &Node, char_count: Option<usize>) -> f32 {
     let text_length = if let Some(c) = char_count {
         c as f32
     } else {
-        normalized_char_count(&node.text()) as f32
+        node.normalized_char_count() as f32
     };
     if text_length == 0.0 {
         return 0.0;
@@ -165,7 +146,7 @@ pub(crate) fn link_density(node: &Node, char_count: Option<usize>) -> f32 {
         } else {
             1.0
         };
-        link_length += normalized_char_count(&a.text()) as f32 * coeff;
+        link_length += a.normalized_char_count() as f32 * coeff;
     }
 
     link_length / text_length
