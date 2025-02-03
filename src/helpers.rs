@@ -240,11 +240,7 @@ fn style_has_kv(style: &str, key: &str, val: &str) -> bool {
     if let Some(pos) = style.find(key) {
         let mut rest = &style[pos..];
         if let Some(pos) = rest.find(':') {
-            if let Some(rest_slice) = rest.get(pos + 1..) {
-                rest = rest_slice;
-            }else {
-                return false;
-            }
+            rest = &rest[pos+1..];
         }else {
             return false;
         }
