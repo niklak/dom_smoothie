@@ -8,12 +8,13 @@ use crate::glob::*;
 
 pub(crate) fn text_similarity(text_a: &str, text_b: &str) -> f64 {
     //TODO: revise this later (use Jaccard index)
+    if text_a.is_empty() || text_b.is_empty() {
+        return 0.0;
+    }
+
     let a = text_a.to_lowercase();
     let b = text_b.to_lowercase();
 
-    if a.is_empty() || b.is_empty() {
-        return 0.0;
-    }
     if a.contains(&b) {
         return 1.0;
     }

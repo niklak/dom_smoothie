@@ -214,7 +214,7 @@ fn pre_filter_document(root_node: &NodeRef, metadata: &mut Metadata) {
     }
 }
 
-fn get_node_matching_string(node: &NodeRef) -> String {
+fn get_node_matching_string(node: &NodeRef) -> StrTendril {
     let mut matched_buf = StrTendril::new();
     node.query(|n| {
         if let dom_query::NodeData::Element(ref el) = n.data {
@@ -227,7 +227,8 @@ fn get_node_matching_string(node: &NodeRef) -> String {
             }
         }
     });
-    matched_buf.to_lowercase()
+    matched_buf.make_ascii_lowercase();
+    matched_buf
 }
 
 fn is_valid_byline(node: &NodeRef, match_string: &str) -> bool {
