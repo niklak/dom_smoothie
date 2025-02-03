@@ -697,6 +697,9 @@ mod tests {
                  <p style="visibility:hidden">This paragraph should be hidden.</p>
                  <p aria-hidden="true" class="mwe-math-fallback-image-inline">123*123</p>
                  <p>This paragraph is visible</p>
+                 <p style="DISPLAY: NONE">This paragraph should be hidden.</p>
+                 <p style="display: none; visibility: visible">This paragraph should be hidden.</p>
+                 <p style="font-family: 'Times New Roman'; display: none">This paragraph should be hidden.</p>
             </body>
         </html>"#;
 
