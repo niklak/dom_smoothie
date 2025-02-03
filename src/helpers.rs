@@ -209,11 +209,7 @@ pub(crate) fn is_probably_visible(node: &Node) -> bool {
         return false;
     }
 
-    let is_invisible_style = node
-        .attr("style")
-        .map_or(false, |s| RX_STYLE_DISPLAY_NONE.is_match(&s));
-
-    if is_invisible_style {
+    if is_invisible_style(node) {
         return false;
     }
 
@@ -229,6 +225,35 @@ pub(crate) fn is_probably_visible(node: &Node) -> bool {
     }
 
     true
+}
+
+fn is_invisible_style(node: &Node) -> bool {
+    if let Some(mut style) = node.attr("style") {
+        style.make_ascii_lowercase();
+        return style_has_kv(&style, "display", "none") ||
+        style_has_kv(&style, "visibility", "hidden");
+    }
+    false
+}
+
+fn style_has_kv(style: &str, key: &str, val: &str) -> bool {
+    if let Some(pos) = style.find(key) {
+        let mut rest = &style[pos..];
+        if let Some(colon) = rest.find(':') {
+            if let Some(rest_slice) = rest.get(colon + 1..) {
+                rest = rest_slice;
+            }else {
+                return false;
+            }
+        }else {
+            return false;
+        }
+        if let Some(semicolon) = rest.find(';') {
+            rest = &rest[..semicolon];
+        }
+        return rest.trim() == val;
+    }
+    false
 }
 
 #[cfg(test)]

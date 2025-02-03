@@ -221,8 +221,6 @@ pub(crate) static LOADING_WORDS: phf::Set<&'static str> = phf_set!(
 
 pub(crate) static SHARE_WORDS: phf::Set<&'static str> = phf_set!("share", "sharedaddy");
 
-pub(crate) static RX_STYLE_DISPLAY_NONE: Lazy<Regex> =
-    lazy_re!(r#"display\s*:\s*none|visibility\s*:\s*hidden"#);
 pub(crate) static RX_CDATA: Lazy<Regex> = lazy_re!(r#"^\s*<!\[CDATA\[|\]\]>\s*$"#);
 pub(crate) static RX_SCHEMA_ORG: Lazy<Regex> = lazy_re!(r#"^https?://schema\.org/?$"#);
 

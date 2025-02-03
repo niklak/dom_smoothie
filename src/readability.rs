@@ -296,7 +296,7 @@ impl Readability {
         } else if !(15..=150).contains(&char_count) {
             let h1_sel = self.doc.select_single("h1");
             if !h1_sel.is_empty() {
-                cur_title = self.doc.select_single("h1").text().to_string();
+                cur_title = h1_sel.text().to_string();
             }
         }
         cur_title = normalize_spaces(&cur_title);
