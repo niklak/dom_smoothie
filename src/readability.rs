@@ -296,7 +296,7 @@ impl Readability {
         } else if !(15..=150).contains(&char_count) {
             let h1_sel = self.doc.select_single("h1");
             if !h1_sel.is_empty() {
-                cur_title = self.doc.select_single("h1").text().to_string();
+                cur_title = h1_sel.text().to_string();
             }
         }
         cur_title = normalize_spaces(&cur_title);
@@ -726,16 +726,16 @@ impl Readability {
                 if content.is_empty() {
                     continue;
                 }
-                if let Some(property) = node.attr("property") {
-                    let property = property.trim().to_lowercase();
+                if let Some(mut property) = node.attr("property") {
+                    property.make_ascii_lowercase();
                     if let Some(caps) = RX_META_PROPERTY.captures(&property) {
                         let k = caps[0].trim().to_string();
                         values.insert(k, content.into());
                     }
                     continue;
                 }
-                if let Some(name) = node.attr("name") {
-                    let name = name.trim().to_lowercase();
+                if let Some(mut name) = node.attr("name") {
+                    name.make_ascii_lowercase();
                     if RX_META_NAME.is_match(&name) {
                         values.insert(normalize_meta_key(&name), content.into());
                     }

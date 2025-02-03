@@ -214,7 +214,7 @@ fn pre_filter_document(root_node: &NodeRef, metadata: &mut Metadata) {
     }
 }
 
-fn get_node_matching_string(node: &NodeRef) -> String {
+fn get_node_matching_string(node: &NodeRef) -> StrTendril {
     let mut matched_buf = StrTendril::new();
     node.query(|n| {
         if let dom_query::NodeData::Element(ref el) = n.data {
@@ -227,7 +227,8 @@ fn get_node_matching_string(node: &NodeRef) -> String {
             }
         }
     });
-    matched_buf.to_lowercase()
+    matched_buf.make_ascii_lowercase();
+    matched_buf
 }
 
 fn is_valid_byline(node: &NodeRef, match_string: &str) -> bool {
@@ -689,9 +690,17 @@ mod tests {
                  <p hidden>This paragraph should be hidden.</p> 
                  <p aria-hidden="true">This paragraph should be hidden.</p>
                  <p style="display:none">This paragraph should be hidden.</p>
+                 <p style="display: none !important">This paragraph should be hidden.</p>
+                 <p style="display: none!important">This paragraph should be visible.</p>
+                 <p style="display:">This paragraph should be visible.</p>
+                 <p style="display">This paragraph should be visible.</p>
+                 <p style=":">This paragraph should be visible.</p>
                  <p style="visibility:hidden">This paragraph should be hidden.</p>
                  <p aria-hidden="true" class="mwe-math-fallback-image-inline">123*123</p>
                  <p>This paragraph is visible</p>
+                 <p style="DISPLAY: NONE">This paragraph should be hidden.</p>
+                 <p style="display: none; visibility: visible">This paragraph should be hidden.</p>
+                 <p style="font-family: 'Times New Roman'; display: none">This paragraph should be hidden.</p>
             </body>
         </html>"#;
 
@@ -699,7 +708,7 @@ mod tests {
         let mut meta = Metadata::default();
         pre_filter_document(&doc.root(), &mut meta);
 
-        assert_eq!(2, doc.select("p").length());
+        assert_eq!(6, doc.select("p").length());
     }
 
     #[test]

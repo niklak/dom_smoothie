@@ -8,12 +8,13 @@ use crate::glob::*;
 
 pub(crate) fn text_similarity(text_a: &str, text_b: &str) -> f64 {
     //TODO: revise this later (use Jaccard index)
+    if text_a.is_empty() || text_b.is_empty() {
+        return 0.0;
+    }
+
     let a = text_a.to_lowercase();
     let b = text_b.to_lowercase();
 
-    if a.is_empty() || b.is_empty() {
-        return 0.0;
-    }
     if a.contains(&b) {
         return 1.0;
     }
@@ -209,11 +210,7 @@ pub(crate) fn is_probably_visible(node: &Node) -> bool {
         return false;
     }
 
-    let is_invisible_style = node
-        .attr("style")
-        .map_or(false, |s| RX_STYLE_DISPLAY_NONE.is_match(&s));
-
-    if is_invisible_style {
+    if is_invisible_style(node) {
         return false;
     }
 
@@ -229,6 +226,35 @@ pub(crate) fn is_probably_visible(node: &Node) -> bool {
     }
 
     true
+}
+
+fn is_invisible_style(node: &Node) -> bool {
+    if let Some(mut style) = node.attr("style") {
+        style.make_ascii_lowercase();
+        return style_has_kv(&style, "display", "none") ||
+        style_has_kv(&style, "visibility", "hidden");
+    }
+    false
+}
+
+fn style_has_kv(style: &str, key: &str, val: &str) -> bool {
+    if let Some(pos) = style.find(key) {
+        let mut rest = &style[pos..];
+        if let Some(pos) = rest.find(':') {
+            rest = &rest[pos+1..];
+        }else {
+            return false;
+        }
+        if let Some(pos) = rest.find(';') {
+            rest = &rest[..pos];
+        }
+        rest = rest.trim_start();
+        if let Some(pos) = rest.find(char::is_whitespace) {
+            rest = &rest[..pos];
+        }
+        return rest.trim_end() == val;
+    }
+    false
 }
 
 #[cfg(test)]

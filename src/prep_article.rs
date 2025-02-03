@@ -306,10 +306,9 @@ fn fix_lazy_images(n: &Node) {
         .nodes()
         .iter()
     {
-        let src = node.attr_or("src", "");
         // In some sites (e.g. Kotaku), they put 1px square image as base64 data uri in the src attribute.
         // So, here we check if the data uri is too short, just might as well remove it.
-        if !src.is_empty() {
+        if let Some(src) = node.attr("src") {
             if let Some(parts) = RX_BASE64_URL.captures(&src) {
                 if parts.len() != 2 {
                     continue;

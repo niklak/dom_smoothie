@@ -55,7 +55,7 @@ pub(crate) fn get_class_weight(node: &Node, weigh_classes: bool) -> f32 {
                 .iter()
                 .find(|a| a.name.local == local_name!("class"))
             {
-                let class_name = &a.value.to_lowercase();
+                let class_name = &a.value.to_ascii_lowercase();
                 if RX_CLASSES_NEGATIVE.is_match(class_name) {
                     weight -= 25.0;
                 }
@@ -68,7 +68,7 @@ pub(crate) fn get_class_weight(node: &Node, weigh_classes: bool) -> f32 {
             };
 
             if let Some(a) = el.attrs.iter().find(|a| a.name.local == local_name!("id")) {
-                let id = &a.value.to_lowercase();
+                let id = &a.value.to_ascii_lowercase();
                 if RX_CLASSES_NEGATIVE.is_match(id) {
                     weight -= 25.0;
                 }
