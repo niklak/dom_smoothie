@@ -239,8 +239,8 @@ fn is_invisible_style(node: &Node) -> bool {
 fn style_has_kv(style: &str, key: &str, val: &str) -> bool {
     if let Some(pos) = style.find(key) {
         let mut rest = &style[pos..];
-        if let Some(colon) = rest.find(':') {
-            if let Some(rest_slice) = rest.get(colon + 1..) {
+        if let Some(pos) = rest.find(':') {
+            if let Some(rest_slice) = rest.get(pos + 1..) {
                 rest = rest_slice;
             }else {
                 return false;
@@ -248,10 +248,14 @@ fn style_has_kv(style: &str, key: &str, val: &str) -> bool {
         }else {
             return false;
         }
-        if let Some(semicolon) = rest.find(';') {
-            rest = &rest[..semicolon];
+        if let Some(pos) = rest.find(';') {
+            rest = &rest[..pos];
         }
-        return rest.trim() == val;
+        rest = rest.trim_start();
+        if let Some(pos) = rest.find(char::is_whitespace) {
+            rest = &rest[..pos];
+        }
+        return rest.trim_end() == val;
     }
     false
 }

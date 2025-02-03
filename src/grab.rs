@@ -689,6 +689,9 @@ mod tests {
                  <p hidden>This paragraph should be hidden.</p> 
                  <p aria-hidden="true">This paragraph should be hidden.</p>
                  <p style="display:none">This paragraph should be hidden.</p>
+                 <p style="display: none !important">This paragraph should be hidden.</p>
+                 <p style="display: none!important">This paragraph should be visible.</p>
+                 <p style="display:">This paragraph should be visible.</p>
                  <p style="visibility:hidden">This paragraph should be hidden.</p>
                  <p aria-hidden="true" class="mwe-math-fallback-image-inline">123*123</p>
                  <p>This paragraph is visible</p>
@@ -699,7 +702,7 @@ mod tests {
         let mut meta = Metadata::default();
         pre_filter_document(&doc.root(), &mut meta);
 
-        assert_eq!(2, doc.select("p").length());
+        assert_eq!(4, doc.select("p").length());
     }
 
     #[test]
