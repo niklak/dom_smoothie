@@ -197,6 +197,49 @@ if readability.is_probably_readable() {
 ```
 </details>
 
+
+<details>
+    <summary><b>Using an alternative approach to selecting the best candidate</b></summary>
+
+Unfortunately, the approach used in mozilla/readability does not always produce the desired 
+result when extracting meaningful content. Sometimes, this approach discards part of the 
+content simply because there were fewer than three alternative candidates to the best one. 
+While this method does a good job, it still relies on too many magic numbers.
+
+
+After @emschwartz discovered this issue, I decided to add an alternative implementation 
+for finding the common candidate. Currently, this implementation may produce a less 
+"clean" result compared to mozilla/readability, but in return, it can capture more of
+the meaningful content, whereas the original approach from mozilla/readability may fail in 
+some cases.
+
+That said, this approach is not necessarily superior to the original—there is still 
+room for improvement.
+
+```rust
+use std::error::Error;
+
+use dom_smoothie::{Article, Config, Readability, CandidateSelectMode};
+
+fn main() -> Result<(), Box<dyn Error>> {
+
+    let html = include_str!("../test-pages/alt/arstechnica/source.html");
+    // for more options check the documentation
+    let cfg = Config {
+        // activating alternative approach for candidate selection
+        candidate_select_mode: CandidateSelectMode::DomSmoothie,
+        ..Default::default()
+    };
+
+    let mut readability = Readability::new(html, None, Some(cfg))?;
+
+    let article: Article = readability.parse()?;
+    println!("Text Content: {}", article.text_content);
+    Ok(())
+}
+```
+</details>
+
 ## Crate Features
 
 - `serde`: Enables the `serde::Serialize` and `serde::Deserialize` traits for the `Article`, `Metadata`, and `Config` structures.
