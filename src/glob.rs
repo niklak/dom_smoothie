@@ -224,19 +224,15 @@ pub(crate) static LOADING_WORDS: phf::Set<&'static str> = phf_set!(
 
 pub(crate) static SHARE_WORDS: phf::Set<&'static str> = phf_set!("share", "sharedaddy");
 
-pub(crate) static RX_SCHEMA_ORG: Lazy<Regex> = lazy_re!(r#"^https?://schema\.org/?$"#);
 pub(crate) static RX_TITLE_W_LAST: Lazy<Regex> = lazy_re!(r#"(.*)[\|\-\\/>»] .*"#);
 pub(crate) static RX_TITLE_W_FIRST: Lazy<Regex> = lazy_re!(r#"[^\|\-\\/>»]*[\|\-\\/>»](.*)"#);
-
 pub(crate) static RX_META_NAME: Lazy<Regex> = lazy_re!(
     r#"(?:(dc|dcterm|og|twitter|parsely|weibo:(article|webpage))\s*[-\.:]\s*)?(author|creator|pub-date|description|title|site_name)"#
 );
 pub(crate) static RX_META_PROPERTY: Lazy<Regex> = lazy_re!(
     r#"\s*(article|dc|dcterm|og|twitter)\s*:\s*(author|creator|description|published_time|title|site_name)\s*"#
 );
-
 pub(crate) static RX_CLASSES_NEGATIVE: Lazy<Regex> = lazy_re!(r"\bhid\b");
-
 pub(crate) static RX_VIDEO_ATTRS: Lazy<Regex> = lazy_re!(
     r#"//(www\.)?((dailymotion|youtube|youtube-nocookie|player\.vimeo|v\.qq)\.com|(archive|upload\.wikimedia)\.org|player\.twitch\.tv)"#
 );

@@ -571,7 +571,7 @@ impl Readability {
 
             let context_val = parsed.get("^context");
             if context_val.kind() == gjson::Kind::String
-                && RX_SCHEMA_ORG.is_match(context_val.str())
+                && is_schema_org_url(context_val.str())
             {
                 // validating @context
                 context_matched = true;
@@ -579,7 +579,7 @@ impl Readability {
 
             let context_vocab = parsed.get("^context.^vocab");
             if context_vocab.kind() == gjson::Kind::String
-                && RX_SCHEMA_ORG.is_match(context_vocab.str())
+                && is_schema_org_url(context_vocab.str())
             {
                 // validating @context
                 context_matched = true;

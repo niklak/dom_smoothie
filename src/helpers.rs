@@ -269,6 +269,12 @@ pub(crate) fn strip_cdata(content: &StrTendril) -> &str {
     content
 }
 
+pub(crate) fn is_schema_org_url(url: &str) -> bool {
+    let trimmed_url = url.trim_end_matches('/');
+    trimmed_url.ends_with("://schema.org")
+        && (trimmed_url.starts_with("http://") || trimmed_url.starts_with("https://"))
+}
+
 #[cfg(test)]
 mod tests {
 
