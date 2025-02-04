@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use tendril::StrTendril;
 use unicode_segmentation::UnicodeSegmentation;
 
 use dom_query::{Node, Selection};
@@ -255,6 +256,17 @@ fn style_has_kv(style: &str, key: &str, val: &str) -> bool {
         return rest.trim_end() == val;
     }
     false
+}
+
+pub(crate) fn strip_cdata(content: StrTendril) -> StrTendril {
+    let trimmed = content.trim_start();
+    if let Some(rest) = trimmed.strip_prefix("<![CDATA[") {
+        if let Some(pos) = rest.rfind("]]>") {
+            return StrTendril::from_slice(&rest[..pos]);
+        }
+        return StrTendril::from_slice(rest);
+    }
+    content
 }
 
 #[cfg(test)]
