@@ -537,9 +537,12 @@ fn contains_share_elements(value: &str) -> bool {
 
 fn split_base64_url(src: &str) -> Option<(&str, &str)> {
     if let Some(rest) = src.strip_prefix("data:") {
-        if let Some(pos) = rest.find(";base64,") {
+        if let Some(pos) = rest.find(BASE64_MARKER) {
             let image_type = &rest[..pos];
-            let image_data = &rest[pos+8..];
+            let image_data = &rest[pos+BASE64_MARKER_LEN..];
+            if image_data.is_empty() {
+                return None;
+            }
             return Some((image_type, image_data));
         }    
     }
@@ -558,5 +561,17 @@ mod tests {
         let (image_type, image_data) = split_base64_url(src).unwrap();
         assert_eq!(image_type, "image/gif");
         assert_eq!(image_data, "R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==");
+
+        // Test empty base64 data
+        let src = "data:image/gif;base64,";
+        assert!(split_base64_url(src).is_none());
+
+        // Test invalid data URL format
+        let src = "invalid:image/gif;base64,data";
+        assert!(split_base64_url(src).is_none());
+
+        // Test missing base64 marker
+        let src = "data:image/gif,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+        assert!(split_base64_url(src).is_none());
     }
 }

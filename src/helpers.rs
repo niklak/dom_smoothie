@@ -258,13 +258,13 @@ fn style_has_kv(style: &str, key: &str, val: &str) -> bool {
     false
 }
 
-pub(crate) fn strip_cdata(content: StrTendril) -> StrTendril {
+pub(crate) fn strip_cdata(content: &StrTendril) -> &str {
     let trimmed = content.trim_start();
     if let Some(rest) = trimmed.strip_prefix("<![CDATA[") {
         if let Some(pos) = rest.rfind("]]>") {
-            return StrTendril::from_slice(&rest[..pos]);
+            return &rest[..pos];
         }
-        return StrTendril::from_slice(rest);
+        return rest;
     }
     content
 }
@@ -297,4 +297,27 @@ mod tests {
         let similarity = text_similarity(text_a, text_b);
         assert_eq!(similarity, 1.0);
     }
+
+    #[test]
+fn test_strip_cdata() {
+    // Test valid CDATA
+    let content = StrTendril::from_slice("<![CDATA[test content]]>");
+    assert_eq!(strip_cdata(&content), "test content");
+
+    // Test missing closing marker
+    let content = StrTendril::from_slice("<![CDATA[test content");
+    assert_eq!(strip_cdata(&content), "test content");
+
+    // Test no CDATA
+    let content = StrTendril::from_slice("test content");
+    assert_eq!(strip_cdata(&content), "test content");
+
+    // Test empty content
+    let content = StrTendril::from_slice("");
+    assert_eq!(strip_cdata(&content), "");
+
+    // Test whitespace
+    let content = StrTendril::from_slice("  <![CDATA[test content]]>");
+    assert_eq!(strip_cdata(&content), "test content");
+}
 }

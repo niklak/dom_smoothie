@@ -20,6 +20,9 @@ pub(crate) static SCORE_ATTR: &str = "data-readability-score";
 pub(crate) static MIN_SCORE: f32 = 20.0;
 pub(crate) static MIN_CONTENT_LENGTH: usize = 140;
 
+pub(crate) static BASE64_MARKER: &str = ";base64,";
+pub(crate) static BASE64_MARKER_LEN: usize = 8; // length of ";base64,"
+
 pub(crate) static MATCHER_CONTENT_ID: Lazy<Matcher> = lazy_matcher!(&format!("#{}", CONTENT_ID));
 pub(crate) static MATCHER_LI_P: Lazy<Matcher> = lazy_matcher!("li p");
 pub(crate) static MATCHER_TITLE: Lazy<Matcher> = lazy_matcher!("head title");
