@@ -240,6 +240,45 @@ fn main() -> Result<(), Box<dyn Error>> {
 ```
 </details>
 
+
+<details>
+    <summary><b>Formatted text content</b></summary>
+
+By default, the text content is output as-is, without formatting, 
+preserving whitespace from the original HTML document. 
+Depending on the document's initial markup, this can be quite verbose and inconvenient.
+
+In version 0.5.0, it will be possible to retrieve formatted text content. 
+To enable this, set `text_mode: TextMode::Formatted` in the config.
+This formatting is simple; for example, it does not account for table formatting.
+It is certainly nowhere near markdown-level, but the result is noticeably 
+cleaner than without formatting.
+
+
+
+```rust
+use std::error::Error;
+
+use dom_smoothie::{Article, Config, Readability, TextMode};
+
+fn main() -> Result<(), Box<dyn Error>> {
+    
+    let html = include_str!("../test-pages/hacker_news.html");
+    let cfg = Config {
+        // Enable formatted text output
+        text_mode: TextMode::Formatted,
+        ..Default::default()
+    };
+
+    let mut readability = Readability::new(html, None, Some(cfg))?;
+
+    let article: Article = readability.parse()?;
+    println!("Text Content: {}", article.text_content);
+    Ok(())
+}
+```
+</details>
+
 ## Crate Features
 
 - `serde`: Enables the `serde::Serialize` and `serde::Deserialize` traits for the `Article`, `Metadata`, and `Config` structures.
