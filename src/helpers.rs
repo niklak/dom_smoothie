@@ -232,8 +232,8 @@ pub(crate) fn is_probably_visible(node: &Node) -> bool {
 fn is_invisible_style(node: &Node) -> bool {
     if let Some(mut style) = node.attr("style") {
         style.make_ascii_lowercase();
-        return style_has_kv(&style, "display", "none") ||
-        style_has_kv(&style, "visibility", "hidden");
+        return style_has_kv(&style, "display", "none")
+            || style_has_kv(&style, "visibility", "hidden");
     }
     false
 }
@@ -242,8 +242,8 @@ fn style_has_kv(style: &str, key: &str, val: &str) -> bool {
     if let Some(pos) = style.find(key) {
         let mut rest = &style[pos..];
         if let Some(pos) = rest.find(':') {
-            rest = &rest[pos+1..];
-        }else {
+            rest = &rest[pos + 1..];
+        } else {
             return false;
         }
         if let Some(pos) = rest.find(';') {
@@ -299,25 +299,25 @@ mod tests {
     }
 
     #[test]
-fn test_strip_cdata() {
-    // Test valid CDATA
-    let content = StrTendril::from_slice("<![CDATA[test content]]>");
-    assert_eq!(strip_cdata(&content), "test content");
+    fn test_strip_cdata() {
+        // Test valid CDATA
+        let content = StrTendril::from_slice("<![CDATA[test content]]>");
+        assert_eq!(strip_cdata(&content), "test content");
 
-    // Test missing closing marker
-    let content = StrTendril::from_slice("<![CDATA[test content");
-    assert_eq!(strip_cdata(&content), "test content");
+        // Test missing closing marker
+        let content = StrTendril::from_slice("<![CDATA[test content");
+        assert_eq!(strip_cdata(&content), "test content");
 
-    // Test no CDATA
-    let content = StrTendril::from_slice("test content");
-    assert_eq!(strip_cdata(&content), "test content");
+        // Test no CDATA
+        let content = StrTendril::from_slice("test content");
+        assert_eq!(strip_cdata(&content), "test content");
 
-    // Test empty content
-    let content = StrTendril::from_slice("");
-    assert_eq!(strip_cdata(&content), "");
+        // Test empty content
+        let content = StrTendril::from_slice("");
+        assert_eq!(strip_cdata(&content), "");
 
-    // Test whitespace
-    let content = StrTendril::from_slice("  <![CDATA[test content]]>");
-    assert_eq!(strip_cdata(&content), "test content");
-}
+        // Test whitespace
+        let content = StrTendril::from_slice("  <![CDATA[test content]]>");
+        assert_eq!(strip_cdata(&content), "test content");
+    }
 }

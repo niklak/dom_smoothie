@@ -330,10 +330,8 @@ fn fix_lazy_images(n: &Node) {
                 }
                 // Here we assume if image is less than 100 bytes (or 133 after encoded to base64)
                 // it will be too small, therefore it might be placeholder image.
-                if src_could_be_removed {
-                    if base64_data.len() < 133 {
-                        node.remove_attr("src");
-                    }
+                if src_could_be_removed && base64_data.len() < 133 {
+                    node.remove_attr("src");
                 }
             }
         }
@@ -532,21 +530,19 @@ fn contains_share_elements(value: &str) -> bool {
         .any(|word| SHARE_WORDS.contains(word))
 }
 
-
 fn split_base64_url(src: &str) -> Option<(&str, &str)> {
     if let Some(rest) = src.strip_prefix("data:") {
         if let Some(pos) = rest.find(BASE64_MARKER) {
             let image_type = &rest[..pos];
-            let image_data = &rest[pos+BASE64_MARKER_LEN..];
+            let image_data = &rest[pos + BASE64_MARKER_LEN..];
             if image_data.is_empty() {
                 return None;
             }
             return Some((image_type, image_data));
-        }    
+        }
     }
     None
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -558,7 +554,10 @@ mod tests {
         let src = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
         let (image_type, image_data) = split_base64_url(src).unwrap();
         assert_eq!(image_type, "image/gif");
-        assert_eq!(image_data, "R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==");
+        assert_eq!(
+            image_data,
+            "R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+        );
 
         // Test empty base64 data
         let src = "data:image/gif;base64,";
