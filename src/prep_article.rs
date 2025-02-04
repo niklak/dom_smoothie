@@ -331,9 +331,7 @@ fn fix_lazy_images(n: &Node) {
                 // Here we assume if image is less than 100 bytes (or 133 after encoded to base64)
                 // it will be too small, therefore it might be placeholder image.
                 if src_could_be_removed {
-                    let base64_starts = base64_data.len();
-                    let base64_len = src.len() - base64_starts;
-                    if base64_len < 133 {
+                    if base64_data.len() < 133 {
                         node.remove_attr("src");
                     }
                 }
