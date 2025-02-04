@@ -14,6 +14,11 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 - **Breaking** Revised document filtering. Since most of the filtering is now separated from extracting elements for scoring, there is a higher chance of assigning `Metadata.title` if it was empty before grabbing the article. The same applies to `Metadata.byline`, which previously could incorrectly assign a commentator as the article's author or leave it missing altogether. In the `mozilla/readability` test pages, I've encountered cases where this happened because `Readability` failed to extract readable content on the first iteration.
 - If Metadata.byline was assigned while grabbing the article, it will be normalized (no new lines or trailing spaces).
 
+### Fixed
+- Corrected handling of manually created `p` elements for scores. Previously, these elements were sometimes omitted.
+- Skipped ancestor assignment for elements beyond the `body` element. Previously, these elements may have been incorrectly assigned to the root element, which has no parent, causing a runtime panic.
+
+
 ## [0.4.0] - 2025-01-21
 
 ### Added
