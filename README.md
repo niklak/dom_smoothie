@@ -197,6 +197,88 @@ if readability.is_probably_readable() {
 ```
 </details>
 
+
+<details>
+    <summary><b>Using an alternative approach to selecting the best candidate</b></summary>
+
+Unfortunately, the approach used in mozilla/readability does not always produce the desired 
+result when extracting meaningful content. Sometimes, this approach discards part of the 
+content simply because there were fewer than three alternative candidates to the best one. 
+While this method does a good job, it still relies on too many magic numbers.
+
+
+After @emschwartz discovered this issue, I decided to add an alternative implementation 
+for finding the common candidate. Currently, this implementation may produce a less 
+"clean" result compared to mozilla/readability, but in return, it can capture more of
+the meaningful content, whereas the original approach from mozilla/readability may fail in 
+some cases.
+
+That said, this approach is not necessarily superior to the original—there is still 
+room for improvement.
+
+```rust
+use std::error::Error;
+
+use dom_smoothie::{Article, Config, Readability, CandidateSelectMode};
+
+fn main() -> Result<(), Box<dyn Error>> {
+
+    let html = include_str!("../test-pages/alt/arstechnica/source.html");
+    // for more options check the documentation
+    let cfg = Config {
+        // activating alternative approach for candidate selection
+        candidate_select_mode: CandidateSelectMode::DomSmoothie,
+        ..Default::default()
+    };
+
+    let mut readability = Readability::new(html, None, Some(cfg))?;
+
+    let article: Article = readability.parse()?;
+    println!("Text Content: {}", article.text_content);
+    Ok(())
+}
+```
+</details>
+
+
+<details>
+    <summary><b>Formatted text content</b></summary>
+
+By default, the text content is output as-is, without formatting, 
+preserving whitespace from the original HTML document. 
+Depending on the document's initial markup, this can be quite verbose and inconvenient.
+
+In version 0.5.0, it will be possible to retrieve formatted text content. 
+To enable this, set `text_mode: TextMode::Formatted` in the config.
+This formatting is simple; for example, it does not account for table formatting.
+It is certainly nowhere near markdown-level, but the result is noticeably 
+cleaner than without formatting.
+
+
+
+```rust
+use std::error::Error;
+
+use dom_smoothie::{Article, Config, Readability, TextMode};
+
+fn main() -> Result<(), Box<dyn Error>> {
+    
+    let html = include_str!("../test-pages/hacker_news.html");
+    let cfg = Config {
+        // Enable formatted text output
+        text_mode: TextMode::Formatted,
+        ..Default::default()
+    };
+
+    let mut readability = Readability::new(html, None, Some(cfg))?;
+
+    let article: Article = readability.parse()?;
+    println!("Text Content: {}", article.text_content);
+    Ok(())
+}
+```
+</details>
+
 ## Crate Features
 
 - `serde`: Enables the `serde::Serialize` and `serde::Deserialize` traits for the `Article`, `Metadata`, and `Config` structures.
