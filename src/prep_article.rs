@@ -309,11 +309,8 @@ fn fix_lazy_images(n: &Node) {
         // In some sites (e.g. Kotaku), they put 1px square image as base64 data uri in the src attribute.
         // So, here we check if the data uri is too short, just might as well remove it.
         if let Some(src) = node.attr("src") {
-            if let Some(parts) = RX_BASE64_URL.captures(&src) {
-                if parts.len() != 2 {
-                    continue;
-                }
-                if &parts[1] == "image/svg+xml" {
+            if let Some((image_type, base64_data)) = split_base64_url(&src) {
+                if image_type == "image/svg+xml" {
                     continue;
                 }
 
@@ -333,12 +330,8 @@ fn fix_lazy_images(n: &Node) {
                 }
                 // Here we assume if image is less than 100 bytes (or 133 after encoded to base64)
                 // it will be too small, therefore it might be placeholder image.
-                if src_could_be_removed {
-                    let base64_starts = &parts[1].len();
-                    let base64_len = src.len() - base64_starts;
-                    if base64_len < 133 {
-                        node.remove_attr("src");
-                    }
+                if src_could_be_removed && base64_data.len() < 133 {
+                    node.remove_attr("src");
                 }
             }
         }
@@ -535,4 +528,47 @@ fn contains_share_elements(value: &str) -> bool {
     lower_value
         .split([' ', '_'])
         .any(|word| SHARE_WORDS.contains(word))
+}
+
+fn split_base64_url(src: &str) -> Option<(&str, &str)> {
+    if let Some(rest) = src.strip_prefix("data:") {
+        if let Some(pos) = rest.find(BASE64_MARKER) {
+            let image_type = &rest[..pos];
+            let image_data = &rest[pos + BASE64_MARKER_LEN..];
+            if image_data.is_empty() {
+                return None;
+            }
+            return Some((image_type, image_data));
+        }
+    }
+    None
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_split_base64_url() {
+        let src = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+        let (image_type, image_data) = split_base64_url(src).unwrap();
+        assert_eq!(image_type, "image/gif");
+        assert_eq!(
+            image_data,
+            "R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+        );
+
+        // Test empty base64 data
+        let src = "data:image/gif;base64,";
+        assert!(split_base64_url(src).is_none());
+
+        // Test invalid data URL format
+        let src = "invalid:image/gif;base64,data";
+        assert!(split_base64_url(src).is_none());
+
+        // Test missing base64 marker
+        let src = "data:image/gif,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+        assert!(split_base64_url(src).is_none());
+    }
 }

@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use tendril::StrTendril;
 use unicode_segmentation::UnicodeSegmentation;
 
 use dom_query::{Node, Selection};
@@ -231,8 +232,8 @@ pub(crate) fn is_probably_visible(node: &Node) -> bool {
 fn is_invisible_style(node: &Node) -> bool {
     if let Some(mut style) = node.attr("style") {
         style.make_ascii_lowercase();
-        return style_has_kv(&style, "display", "none") ||
-        style_has_kv(&style, "visibility", "hidden");
+        return style_has_kv(&style, "display", "none")
+            || style_has_kv(&style, "visibility", "hidden");
     }
     false
 }
@@ -241,8 +242,8 @@ fn style_has_kv(style: &str, key: &str, val: &str) -> bool {
     if let Some(pos) = style.find(key) {
         let mut rest = &style[pos..];
         if let Some(pos) = rest.find(':') {
-            rest = &rest[pos+1..];
-        }else {
+            rest = &rest[pos + 1..];
+        } else {
             return false;
         }
         if let Some(pos) = rest.find(';') {
@@ -255,6 +256,17 @@ fn style_has_kv(style: &str, key: &str, val: &str) -> bool {
         return rest.trim_end() == val;
     }
     false
+}
+
+pub(crate) fn strip_cdata(content: &StrTendril) -> &str {
+    let trimmed = content.trim_start();
+    if let Some(rest) = trimmed.strip_prefix("<![CDATA[") {
+        if let Some(pos) = rest.rfind("]]>") {
+            return &rest[..pos];
+        }
+        return rest;
+    }
+    content
 }
 
 #[cfg(test)]
@@ -284,5 +296,28 @@ mod tests {
         let text_b = "DeepMind新电脑已可利用记忆自学 人工智能迈上新台阶";
         let similarity = text_similarity(text_a, text_b);
         assert_eq!(similarity, 1.0);
+    }
+
+    #[test]
+    fn test_strip_cdata() {
+        // Test valid CDATA
+        let content = StrTendril::from_slice("<![CDATA[test content]]>");
+        assert_eq!(strip_cdata(&content), "test content");
+
+        // Test missing closing marker
+        let content = StrTendril::from_slice("<![CDATA[test content");
+        assert_eq!(strip_cdata(&content), "test content");
+
+        // Test no CDATA
+        let content = StrTendril::from_slice("test content");
+        assert_eq!(strip_cdata(&content), "test content");
+
+        // Test empty content
+        let content = StrTendril::from_slice("");
+        assert_eq!(strip_cdata(&content), "");
+
+        // Test whitespace
+        let content = StrTendril::from_slice("  <![CDATA[test content]]>");
+        assert_eq!(strip_cdata(&content), "test content");
     }
 }

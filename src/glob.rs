@@ -20,6 +20,9 @@ pub(crate) static SCORE_ATTR: &str = "data-readability-score";
 pub(crate) static MIN_SCORE: f32 = 20.0;
 pub(crate) static MIN_CONTENT_LENGTH: usize = 140;
 
+pub(crate) static BASE64_MARKER: &str = ";base64,";
+pub(crate) static BASE64_MARKER_LEN: usize = 8; // length of ";base64,"
+
 pub(crate) static MATCHER_CONTENT_ID: Lazy<Matcher> = lazy_matcher!(&format!("#{}", CONTENT_ID));
 pub(crate) static MATCHER_LI_P: Lazy<Matcher> = lazy_matcher!("li p");
 pub(crate) static MATCHER_TITLE: Lazy<Matcher> = lazy_matcher!("head title");
@@ -221,9 +224,7 @@ pub(crate) static LOADING_WORDS: phf::Set<&'static str> = phf_set!(
 
 pub(crate) static SHARE_WORDS: phf::Set<&'static str> = phf_set!("share", "sharedaddy");
 
-pub(crate) static RX_CDATA: Lazy<Regex> = lazy_re!(r#"^\s*<!\[CDATA\[|\]\]>\s*$"#);
 pub(crate) static RX_SCHEMA_ORG: Lazy<Regex> = lazy_re!(r#"^https?://schema\.org/?$"#);
-
 pub(crate) static RX_TITLE_W_LAST: Lazy<Regex> = lazy_re!(r#"(.*)[\|\-\\/>»] .*"#);
 pub(crate) static RX_TITLE_W_FIRST: Lazy<Regex> = lazy_re!(r#"[^\|\-\\/>»]*[\|\-\\/>»](.*)"#);
 
@@ -239,7 +240,6 @@ pub(crate) static RX_CLASSES_NEGATIVE: Lazy<Regex> = lazy_re!(r"\bhid\b");
 pub(crate) static RX_VIDEO_ATTRS: Lazy<Regex> = lazy_re!(
     r#"//(www\.)?((dailymotion|youtube|youtube-nocookie|player\.vimeo|v\.qq)\.com|(archive|upload\.wikimedia)\.org|player\.twitch\.tv)"#
 );
-pub(crate) static RX_BASE64_URL: Lazy<Regex> = lazy_re!(r#"^data:\s*([^\s;,]+)\s*;\s*base64\s*"#);
 pub(crate) static RX_IMG_ATTR: Lazy<Regex> = lazy_re!(r#".(jpg|jpeg|png|webp)"#);
 pub(crate) static RX_IMG_ATTR_TO_SRC: Lazy<Regex> =
     lazy_re!(r#"^\s*\S+\.(jpg|jpeg|png|webp)\S*\s*$"#);

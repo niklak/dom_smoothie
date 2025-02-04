@@ -540,7 +540,7 @@ impl Readability {
     pub fn parse_json_ld(&self) -> Option<Metadata> {
         for sel in self.doc.select_matcher(&MATCHER_JSONLD).iter() {
             let text = sel.text();
-            let content = RX_CDATA.replace_all(&text, "");
+            let content = strip_cdata(&text);
 
             /*
                Because of `gjson` reserved "@" symbol for its own modifiers,
