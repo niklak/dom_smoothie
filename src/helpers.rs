@@ -341,4 +341,45 @@ mod tests {
         let content = StrTendril::from_slice("  <![CDATA[test content]]>");
         assert_eq!(strip_cdata(&content), "test content");
     }
+
+    #[test]
+    fn test_is_schema_org_url() {
+        // Valid URLs
+        assert!(is_schema_org_url("http://schema.org"));
+        assert!(is_schema_org_url("https://schema.org"));
+        assert!(is_schema_org_url("http://schema.org/"));
+        assert!(is_schema_org_url("https://schema.org/"));
+        assert!(is_schema_org_url("http://schema.org////"));  // multiple trailing slashes
+
+        // Invalid URLs
+        assert!(!is_schema_org_url("ftp://schema.org"));
+        assert!(!is_schema_org_url("//schema.org"));
+        assert!(!is_schema_org_url("schema.org"));
+        assert!(!is_schema_org_url("http://schemaXorg"));
+        assert!(!is_schema_org_url(""));
+    }
+
+    #[test]
+    fn test_is_video_url() {
+        // Valid URLs with protocol prefix
+        assert!(is_video_url("//youtube.com/watch?v=123"));
+        assert!(is_video_url("//player.vimeo.com/video/123"));
+        assert!(is_video_url("//dailymotion.com/video/123"));
+        assert!(is_video_url("//youtube-nocookie.com/embed/123"));
+        assert!(is_video_url("//v.qq.com/video/123"));
+        assert!(is_video_url("//archive.org/video/123"));
+        assert!(is_video_url("//upload.wikimedia.org/video/123"));
+        assert!(is_video_url("//player.twitch.tv/video/123"));
+
+        // Valid URLs with www prefix
+        assert!(is_video_url("//www.youtube.com/watch?v=123"));
+        assert!(is_video_url("//www.dailymotion.com/video/123"));
+
+        // Invalid URLs
+        assert!(!is_video_url("youtube.com/watch?v=123")); // missing prefix
+        assert!(!is_video_url("http://notvideo.com/youtube.com")); // video domain in path
+        assert!(!is_video_url("//youtubeXcom/watch?v=123")); // invalid domain
+        assert!(!is_video_url("//www.notvideo.com")); // non-video domain
+        assert!(!is_video_url("")); // empty string
+    }
 }
