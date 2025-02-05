@@ -21,7 +21,16 @@ pub(crate) static MIN_SCORE: f32 = 20.0;
 pub(crate) static MIN_CONTENT_LENGTH: usize = 140;
 
 pub(crate) static BASE64_MARKER: &str = ";base64,";
-pub(crate) static BASE64_MARKER_LEN: usize = 8; // length of ";base64,"
+pub(crate) static BASE64_MARKER_LEN: usize = BASE64_MARKER.len();
+
+pub(crate) static SCHEMA_ORG_SFX: &str = "://schema.org";
+pub(crate) static HTTP_PFX: &str = "http://";
+pub(crate) static HTTPS_PFX: &str = "https://";
+
+pub(crate) static PROTOCOL_PFX: &str = "//";
+pub(crate) static PROTOCOL_PFX_LEN: usize = PROTOCOL_PFX.len();
+pub(crate) static WWW_PFX: &str = "//www.";
+pub(crate) static WWW_PFX_LEN: usize = WWW_PFX.len();
 
 pub(crate) static MATCHER_CONTENT_ID: Lazy<Matcher> = lazy_matcher!(&format!("#{}", CONTENT_ID));
 pub(crate) static MATCHER_LI_P: Lazy<Matcher> = lazy_matcher!("li p");
@@ -80,53 +89,19 @@ pub(crate) static META_EXCERPT_KEYS: &[&str] = &[
 
 pub(crate) static TEXTISH_TAGS: &str = "blockquote,dl,div,img,ol,p,pre,table,ul,span,li,td";
 
+#[rustfmt::skip]
 pub(crate) static PRESENTATIONAL_ATTRIBUTES: &[&str] = &[
-    "align",
-    "background",
-    "bgcolor",
-    "border",
-    "cellpadding",
-    "cellspacing",
-    "frame",
-    "hspace",
-    "rules",
-    "style",
-    "valign",
-    "vspace",
+    "align", "background", "bgcolor", "border", "cellpadding", "cellspacing", 
+    "frame", "hspace", "rules", "style", "valign", "vspace",
 ];
 
+#[rustfmt::skip]
 pub(crate) static UNLIKELY_CANDIDATES: &[&str] = &[
-    "-ad-",
-    "ai2html",
-    "banner",
-    "breadcrumbs",
-    "combx",
-    "comment",
-    "community",
-    "cover-wrap",
-    "disqus",
-    "extra",
-    "footer",
-    "gdpr",
-    "header",
-    "legends",
-    "menu",
-    "related",
-    "remark",
-    "replies",
-    "rss",
-    "shoutbox",
-    "sidebar",
-    "skyscraper",
-    "social",
-    "sponsor",
-    "supplemental",
-    "ad-break",
-    "agegate",
-    "pagination",
-    "pager",
-    "popup",
-    "yom-remote",
+    "-ad-", "ai2html", "banner", "breadcrumbs", "combx", "comment", "community",
+    "cover-wrap", "disqus", "extra", "footer", "gdpr", "header", "legends", "menu",
+    "related", "remark", "replies", "rss", "shoutbox", "sidebar", "skyscraper",
+    "social", "sponsor", "supplemental", "ad-break", "agegate", "pagination", 
+    "pager", "popup","yom-remote",
 ];
 
 pub(crate) static MAYBE_CANDIDATES: &[&str] = &[
@@ -158,6 +133,17 @@ pub(crate) static JSONLD_ARTICLE_TYPES: &[&str] = &[
     "APIReference",
 ];
 
+pub(crate) static VIDEO_DOMAINS: &[&str] = &[
+    "dailymotion.com",
+    "youtube.com",
+    "youtube-nocookie.com",
+    "player.vimeo.com",
+    "v.qq.com",
+    "archive.org",
+    "upload.wikimedia.org",
+    "player.twitch.tv",
+];
+
 pub(crate) static COMMAS: &[char] = &[
     '\u{002C}', '\u{060C}', '\u{FE50}', '\u{FE10}', '\u{FE11}', '\u{2E41}', '\u{2E34}', '\u{2E32}',
     '\u{FF0C}',
@@ -165,7 +151,7 @@ pub(crate) static COMMAS: &[char] = &[
 
 pub(crate) static TITLE_SEPARATORS: &[char] = &['|', '-', '\\', '/', '>', '»'];
 pub(crate) static TITLE_HIERARCHY_SEP: &[char] = &['\\', '/', '>', '»'];
-pub(crate) static IMG_EXT: &[&str] = &[".jpg", ".jpeg", ".png", ".webp"];
+pub(crate) static IMG_EXT: &[&str] = &[".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif"];
 
 #[rustfmt::skip]
 pub(crate) static BLOCK_ELEMS: phf::Set<&'static str> = phf_set!(
@@ -239,13 +225,3 @@ pub(crate) static RX_IMG_ATTR_TO_SRC: Lazy<Regex> =
     lazy_re!(r#"^\s*\S+\.(jpg|jpeg|png|webp)\S*\s*$"#);
 pub(crate) static RX_IMG_ATTR_TO_SRCSET: Lazy<Regex> = lazy_re!(r#".(jpg|jpeg|png|webp)\s+\d"#);
 
-pub(crate) static VIDEO_DOMAINS: &[&str] = &[
-    "dailymotion.com",
-    "youtube.com",
-    "youtube-nocookie.com",
-    "player.vimeo.com",
-    "v.qq.com",
-    "archive.org",
-    "upload.wikimedia.org",
-    "player.twitch.tv",
-];

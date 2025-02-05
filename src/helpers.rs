@@ -238,7 +238,8 @@ fn is_invisible_style(node: &Node) -> bool {
     false
 }
 
-// Regex replacements
+// Functions below replace regex-based URL validation with explicit string matching
+// for better maintainability and performance
 
 fn style_has_kv(style: &str, key: &str, val: &str) -> bool {
     if let Some(pos) = style.find(key) {
@@ -273,15 +274,15 @@ pub(crate) fn strip_cdata(content: &StrTendril) -> &str {
 
 pub(crate) fn is_schema_org_url(url: &str) -> bool {
     let trimmed_url = url.trim_end_matches('/');
-    trimmed_url.ends_with("://schema.org")
-        && (trimmed_url.starts_with("http://") || trimmed_url.starts_with("https://"))
+    trimmed_url.ends_with(SCHEMA_ORG_SFX)
+        && (trimmed_url.starts_with(HTTP_PFX) || trimmed_url.starts_with(HTTPS_PFX))
 }
 
 pub(crate) fn is_video_url(haystack: &str) -> bool {
     VIDEO_DOMAINS.iter().any(|&p| {
         if let Some(pos) = haystack.find(p) {
-            if pos > 1 && &haystack[pos - 2..pos] == "//"
-                || pos > 5 && &haystack[pos - 6..pos] == "//www."
+            if pos > 1 && &haystack[pos - PROTOCOL_PFX_LEN..pos] == PROTOCOL_PFX
+                || pos > 5 && &haystack[pos - WWW_PFX_LEN..pos] == WWW_PFX
             {
                 return true;
             }
