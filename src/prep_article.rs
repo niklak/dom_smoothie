@@ -17,16 +17,17 @@ fn clean(n: &Node, tag: &str) {
         let mut should_remove = true;
         if is_embed {
             for attr in node.attrs().iter() {
-                if RX_VIDEO_ATTRS.is_match(&attr.value) {
+                if is_video_url(&attr.value) {
                     should_remove = false;
                     break;
                 }
             }
 
+            // For embed with <object> tag, check inner HTML as well.
             if node
                 .node_name()
-                .map_or(false, |name| name.as_ref() == "embed")
-                && RX_VIDEO_ATTRS.is_match(&node.inner_html())
+                .map_or(false, |name| name.as_ref() == "object")
+                && is_video_url(&node.inner_html())
             {
                 should_remove = false;
             }
@@ -104,14 +105,14 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
 
         for embed in embeds_sel.nodes().iter() {
             for attr in embed.attrs().iter() {
-                if RX_VIDEO_ATTRS.is_match(&attr.value) {
+                if is_video_url(&attr.value) {
                     return false;
                 }
             }
             if embed
                 .node_name()
-                .map_or(false, |name| name.as_ref() == "embed")
-                && RX_VIDEO_ATTRS.is_match(&embed.inner_html())
+                .map_or(false, |name| name.as_ref() == "object")
+                && is_video_url(&embed.inner_html())
             {
                 return false;
             }
@@ -323,7 +324,7 @@ fn fix_lazy_images(n: &Node) {
                         continue;
                     }
 
-                    if RX_IMG_ATTR.is_match(&attr.value) {
+                    if IMG_EXT.iter().any(|p| attr.value.contains(p)) {
                         src_could_be_removed = true;
                         break;
                     }

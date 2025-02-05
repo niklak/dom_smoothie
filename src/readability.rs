@@ -397,7 +397,10 @@ impl Readability {
             {
                 continue;
             }
-            if attrs.iter().any(|a| RX_IMG_ATTR.is_match(&a.value)) {
+            if attrs
+                .iter()
+                .any(|a| IMG_EXT.iter().any(|p| a.value.contains(p)))
+            {
                 continue;
             }
 
@@ -431,7 +434,7 @@ impl Readability {
                 }
 
                 if matches!(attr.name.local.as_ref(), "src" | "srcset")
-                    || RX_IMG_ATTR.is_match(&attr.value)
+                    || IMG_EXT.iter().any(|p| attr.value.contains(p))
                 {
                     if new_img.attr_or(&attr.name.local, "") == attr.value {
                         continue;
@@ -570,16 +573,13 @@ impl Readability {
             let mut context_matched = false;
 
             let context_val = parsed.get("^context");
-            if context_val.kind() == gjson::Kind::String
-                && RX_SCHEMA_ORG.is_match(context_val.str())
-            {
+            if context_val.kind() == gjson::Kind::String && is_schema_org_url(context_val.str()) {
                 // validating @context
                 context_matched = true;
             }
 
             let context_vocab = parsed.get("^context.^vocab");
-            if context_vocab.kind() == gjson::Kind::String
-                && RX_SCHEMA_ORG.is_match(context_vocab.str())
+            if context_vocab.kind() == gjson::Kind::String && is_schema_org_url(context_vocab.str())
             {
                 // validating @context
                 context_matched = true;
