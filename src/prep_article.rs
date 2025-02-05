@@ -23,9 +23,10 @@ fn clean(n: &Node, tag: &str) {
                 }
             }
 
+            // For embed with <object> tag, check inner HTML as well.
             if node
                 .node_name()
-                .map_or(false, |name| name.as_ref() == "embed")
+                .map_or(false, |name| name.as_ref() == "object")
                 && is_video_url(&node.inner_html())
             {
                 should_remove = false;
@@ -110,8 +111,8 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
             }
             if embed
                 .node_name()
-                .map_or(false, |name| name.as_ref() == "embed")
-                && is_video_url(&node.inner_html())
+                .map_or(false, |name| name.as_ref() == "object")
+                && is_video_url(&embed.inner_html())
             {
                 return false;
             }
