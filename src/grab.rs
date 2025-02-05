@@ -545,8 +545,10 @@ fn find_common_candidate_alt<'a>(
 
     for alt in top_candidates.iter().skip(1) {
         if get_node_score(alt) / tc_score >= 0.75 {
-            // TODO: what if other candidate is an ancestor of top candidate?
             let alt_ancestors = get_node_ancestors(alt);
+            if alt_ancestors.contains(&tc.id) {
+                continue;
+            }
             let intersect = tc_ancestors.intersection(&alt_ancestors);
             for item in intersect {
                 *ancestor_match_counter.entry(*item).or_insert(0) += 1;
