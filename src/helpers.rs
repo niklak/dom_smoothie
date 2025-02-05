@@ -238,6 +238,8 @@ fn is_invisible_style(node: &Node) -> bool {
     false
 }
 
+// Regex replacements
+
 fn style_has_kv(style: &str, key: &str, val: &str) -> bool {
     if let Some(pos) = style.find(key) {
         let mut rest = &style[pos..];
@@ -275,6 +277,18 @@ pub(crate) fn is_schema_org_url(url: &str) -> bool {
         && (trimmed_url.starts_with("http://") || trimmed_url.starts_with("https://"))
 }
 
+pub(crate) fn is_video_url(haystack: &str) -> bool {
+    VIDEO_DOMAINS.iter().any(|&p| {
+        if let Some(pos) = haystack.find(p) {
+            if pos > 1 && &haystack[pos - 2..pos] == "//"
+                || pos > 5 && &haystack[pos - 6..pos] == "//www."
+            {
+                return true;
+            }
+        }
+        false
+    })
+}
 #[cfg(test)]
 mod tests {
 

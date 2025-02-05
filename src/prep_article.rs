@@ -17,7 +17,7 @@ fn clean(n: &Node, tag: &str) {
         let mut should_remove = true;
         if is_embed {
             for attr in node.attrs().iter() {
-                if RX_VIDEO_ATTRS.is_match(&attr.value) {
+                if is_video_url(&attr.value) {
                     should_remove = false;
                     break;
                 }
@@ -26,7 +26,7 @@ fn clean(n: &Node, tag: &str) {
             if node
                 .node_name()
                 .map_or(false, |name| name.as_ref() == "embed")
-                && RX_VIDEO_ATTRS.is_match(&node.inner_html())
+                && is_video_url(&node.inner_html())
             {
                 should_remove = false;
             }
@@ -104,14 +104,14 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
 
         for embed in embeds_sel.nodes().iter() {
             for attr in embed.attrs().iter() {
-                if RX_VIDEO_ATTRS.is_match(&attr.value) {
+                if is_video_url(&attr.value) {
                     return false;
                 }
             }
             if embed
                 .node_name()
                 .map_or(false, |name| name.as_ref() == "embed")
-                && RX_VIDEO_ATTRS.is_match(&embed.inner_html())
+                && is_video_url(&node.inner_html())
             {
                 return false;
             }

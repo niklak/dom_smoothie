@@ -397,7 +397,10 @@ impl Readability {
             {
                 continue;
             }
-            if attrs.iter().any(|a| IMG_EXT.iter().any(|p| a.value.contains(p))) {
+            if attrs
+                .iter()
+                .any(|a| IMG_EXT.iter().any(|p| a.value.contains(p)))
+            {
                 continue;
             }
 
@@ -570,16 +573,13 @@ impl Readability {
             let mut context_matched = false;
 
             let context_val = parsed.get("^context");
-            if context_val.kind() == gjson::Kind::String
-                && is_schema_org_url(context_val.str())
-            {
+            if context_val.kind() == gjson::Kind::String && is_schema_org_url(context_val.str()) {
                 // validating @context
                 context_matched = true;
             }
 
             let context_vocab = parsed.get("^context.^vocab");
-            if context_vocab.kind() == gjson::Kind::String
-                && is_schema_org_url(context_vocab.str())
+            if context_vocab.kind() == gjson::Kind::String && is_schema_org_url(context_vocab.str())
             {
                 // validating @context
                 context_matched = true;
