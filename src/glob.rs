@@ -159,8 +159,8 @@ pub(crate) static JSONLD_ARTICLE_TYPES: &[&str] = &[
 ];
 
 pub(crate) static COMMAS: &[char] = &[
-    '\u{002C}', '\u{060C}', '\u{FE50}', '\u{FE10}', '\u{FE11}', '\u{2E41}', '\u{2E34}', '\u{2E32}',
-    '\u{FF0C}',
+    '\u{002C}', '\u{060C}', '\u{FE50}', '\u{FE10}', '\u{FE11}',
+     '\u{2E41}', '\u{2E34}', '\u{2E32}','\u{FF0C}',
 ];
 
 pub(crate) static TITLE_SEPARATORS: &[char] = &['|', '-', '\\', '/', '>', '»'];
@@ -224,6 +224,10 @@ pub(crate) static LOADING_WORDS: phf::Set<&'static str> = phf_set!(
 
 pub(crate) static SHARE_WORDS: phf::Set<&'static str> = phf_set!("share", "sharedaddy");
 
+pub(crate) static IMG_EXT: phf::Set<&'static str> = phf_set!(
+    ".jpg", ".jpeg", ".png", ".webp",
+);
+
 pub(crate) static RX_TITLE_W_LAST: Lazy<Regex> = lazy_re!(r#"(.*)[\|\-\\/>»] .*"#);
 pub(crate) static RX_TITLE_W_FIRST: Lazy<Regex> = lazy_re!(r#"[^\|\-\\/>»]*[\|\-\\/>»](.*)"#);
 pub(crate) static RX_META_NAME: Lazy<Regex> = lazy_re!(
@@ -236,7 +240,6 @@ pub(crate) static RX_CLASSES_NEGATIVE: Lazy<Regex> = lazy_re!(r"\bhid\b");
 pub(crate) static RX_VIDEO_ATTRS: Lazy<Regex> = lazy_re!(
     r#"//(www\.)?((dailymotion|youtube|youtube-nocookie|player\.vimeo|v\.qq)\.com|(archive|upload\.wikimedia)\.org|player\.twitch\.tv)"#
 );
-pub(crate) static RX_IMG_ATTR: Lazy<Regex> = lazy_re!(r#".(jpg|jpeg|png|webp)"#);
 pub(crate) static RX_IMG_ATTR_TO_SRC: Lazy<Regex> =
     lazy_re!(r#"^\s*\S+\.(jpg|jpeg|png|webp)\S*\s*$"#);
 pub(crate) static RX_IMG_ATTR_TO_SRCSET: Lazy<Regex> = lazy_re!(r#".(jpg|jpeg|png|webp)\s+\d"#);

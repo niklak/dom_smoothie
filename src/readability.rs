@@ -397,7 +397,7 @@ impl Readability {
             {
                 continue;
             }
-            if attrs.iter().any(|a| RX_IMG_ATTR.is_match(&a.value)) {
+            if attrs.iter().any(|a| IMG_EXT.iter().any(|p| a.value.contains(p))) {
                 continue;
             }
 
@@ -431,7 +431,7 @@ impl Readability {
                 }
 
                 if matches!(attr.name.local.as_ref(), "src" | "srcset")
-                    || RX_IMG_ATTR.is_match(&attr.value)
+                    || IMG_EXT.iter().any(|p| attr.value.contains(p))
                 {
                     if new_img.attr_or(&attr.name.local, "") == attr.value {
                         continue;

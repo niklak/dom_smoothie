@@ -323,7 +323,7 @@ fn fix_lazy_images(n: &Node) {
                         continue;
                     }
 
-                    if RX_IMG_ATTR.is_match(&attr.value) {
+                    if IMG_EXT.iter().any(|p| attr.value.contains(p)) {
                         src_could_be_removed = true;
                         break;
                     }
