@@ -2,7 +2,7 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
-## [Unreleased]
+## [0.5.0] - 2025-02-06
 
 ### Added
 - Introducing the `Config::candidate_select_mode`: this mode determines whether the top candidate is adjusted in the [Readability.js](https://github.com/mozilla/readability)  order or using the crate's exclusive implementation.
