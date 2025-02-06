@@ -290,6 +290,10 @@ pub(crate) fn is_video_url(haystack: &str) -> bool {
         false
     })
 }
+
+pub(crate) fn is_sentence(text: &str) -> bool {
+    text.ends_with('.') || text.contains(". ")
+}
 #[cfg(test)]
 mod tests {
 

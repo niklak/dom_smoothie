@@ -105,7 +105,7 @@ impl Readability {
                 self.config.candidate_select_mode,
                 CandidateSelectMode::DomSmoothie
             ) {
-                top_candidate = find_common_candidate_alt(top_candidate, &top_candidates);
+                top_candidate = find_common_candidate_alt(top_candidate, &top_candidates, weigh_class);
             } else {
                 // Find a better top candidate node if it contains (at least three) nodes which belong to `topCandidates` array
                 // and whose scores are quite closed with current `topCandidate` node.
@@ -140,7 +140,7 @@ impl Readability {
 
             let article_content = doc.tree.new_element("div");
 
-            handle_top_candidate(tc, &article_content);
+            assign_article_node(tc, &article_content);
 
             //prepare the article
             prep_article(&article_content, flags, &self.config);
@@ -372,7 +372,7 @@ fn score_elements<'a>(
     candidates
 }
 
-fn handle_top_candidate(tc: &NodeRef, article_content: &NodeRef) {
+fn assign_article_node(tc: &NodeRef, article_content: &NodeRef) {
     let tc_node_score = get_node_score(tc);
     let mut sibling_score_threshold = tc_node_score * 0.2;
     if sibling_score_threshold < 10.0 {
@@ -486,6 +486,80 @@ fn find_common_candidate<'a>(
         }
     }
 
+    top_candidate = adjust_top_candidate_by_parent(top_candidate, weigh_class);
+
+    
+    top_candidate
+}
+
+/// Find a better top candidate across other candidates (alternative approach).
+fn find_common_candidate_alt<'a>(
+    mut top_candidate: Option<NodeRef<'a>>,
+    top_candidates: &Vec<NodeRef<'a>>,
+    weigh_class: bool,
+) -> Option<NodeRef<'a>> {
+    let Some(ref tc) = top_candidate else {
+        return top_candidate;
+    };
+
+    if top_candidates.len() < 2 {
+        return top_candidate;
+    }
+
+    let tc_ancestors = get_node_ancestors(tc);
+    let tc_score = get_node_score(tc);
+
+    let mut ancestor_match_counter: HashMap<NodeId, usize> = HashMap::default();
+
+    for alt in top_candidates.iter().skip(1) {
+        if get_node_score(alt) / tc_score >= 0.75 {
+            let alt_ancestors = get_node_ancestors(alt);
+            if alt_ancestors.contains(&tc.id) {
+                continue;
+            }
+            let intersect = tc_ancestors.intersection(&alt_ancestors);
+            for item in intersect {
+                *ancestor_match_counter.entry(*item).or_insert(0) += 1;
+            }
+        }
+    }
+
+    let mut require_adjustment = true;
+    // choosing the best candidate by how close it to the top candidate, 
+    // and then by how many common ancestors it has across all other candidates
+    if let Some(best_candidate_id) = ancestor_match_counter
+        .into_iter()
+        .max_by(|x, y| x.0.cmp(&y.0).then(x.1.cmp(&y.1)))
+        .map(|n| n.0)
+    {
+        let threshold = get_node_score(&tc) / 3.0;
+        let best_candidate = NodeRef::new(best_candidate_id, tc.tree);
+        if get_node_score(&best_candidate) > threshold {
+            top_candidate = Some(best_candidate);
+            require_adjustment = false;
+        }
+    }
+
+    if require_adjustment {
+        top_candidate = adjust_top_candidate_by_parent(top_candidate, weigh_class);
+    }
+    top_candidate
+}
+
+fn get_node_ancestors(node: &NodeRef) -> HashSet<NodeId> {
+    // only elements, no html or body, and have a score
+    node.ancestors(Some(0))
+        .iter()
+        .filter(|n| {
+            n.is_element()
+                && !matches!(n.node_name().as_deref(), Some("html") | Some("body"))
+                && has_node_score(n)
+        })
+        .map(|n| n.id)
+        .collect::<HashSet<_>>()
+}
+
+fn adjust_top_candidate_by_parent<'a>(mut top_candidate: Option<NodeRef<'a>>, weigh_class: bool) -> Option<NodeRef<'a>> {
     if let Some(ref tc) = top_candidate {
         if !has_node_score(tc) {
             init_node_score(tc, weigh_class);
@@ -521,66 +595,9 @@ fn find_common_candidate<'a>(
             last_score = parent_score;
             parent_of_top_candidate = tc_parent.parent();
         }
+
     }
     top_candidate
-}
-
-/// Find a better top candidate across other candidates (alternative approach).
-fn find_common_candidate_alt<'a>(
-    mut top_candidate: Option<NodeRef<'a>>,
-    top_candidates: &Vec<NodeRef<'a>>,
-) -> Option<NodeRef<'a>> {
-    let Some(ref tc) = top_candidate else {
-        return top_candidate;
-    };
-
-    if top_candidates.len() < 2 {
-        return top_candidate;
-    }
-
-    let tc_ancestors = get_node_ancestors(tc);
-    let tc_score = get_node_score(tc);
-
-    let mut ancestor_match_counter: HashMap<NodeId, usize> = HashMap::default();
-
-    for alt in top_candidates.iter().skip(1) {
-        if get_node_score(alt) / tc_score >= 0.75 {
-            let alt_ancestors = get_node_ancestors(alt);
-            if alt_ancestors.contains(&tc.id) {
-                continue;
-            }
-            let intersect = tc_ancestors.intersection(&alt_ancestors);
-            for item in intersect {
-                *ancestor_match_counter.entry(*item).or_insert(0) += 1;
-            }
-        }
-    }
-
-    if let Some(best_candidate_id) = ancestor_match_counter
-        .into_iter()
-        .max_by(|x, y| x.0.cmp(&y.0).then(x.1.cmp(&y.1)))
-        .map(|n| n.0)
-    {
-        top_candidate = Some(NodeRef::new(best_candidate_id, tc.tree));
-    }
-    top_candidate
-}
-
-fn get_node_ancestors(node: &NodeRef) -> HashSet<NodeId> {
-    // only elements, no html or body, and have a score
-    node.ancestors(Some(0))
-        .iter()
-        .filter(|n| {
-            n.is_element()
-                && !matches!(n.node_name().as_deref(), Some("html") | Some("body"))
-                && has_node_score(n)
-        })
-        .map(|n| n.id)
-        .collect::<HashSet<_>>()
-}
-
-fn is_sentence(text: &str) -> bool {
-    text.ends_with('.') || text.contains(". ")
 }
 
 fn get_child_or_sibling_id<'a>(node: &'a NodeRef<'a>, ignore_self: bool) -> Option<NodeId> {
