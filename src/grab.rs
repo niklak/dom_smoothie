@@ -532,7 +532,7 @@ fn find_common_candidate_alt<'a>(
         .max_by(|x, y| x.0.cmp(&y.0).then(x.1.cmp(&y.1)))
         .map(|n| n.0)
     {
-        let threshold = get_node_score(&tc) / 3.0;
+        let threshold = get_node_score(tc) / 3.0;
         let best_candidate = NodeRef::new(best_candidate_id, tc.tree);
         if get_node_score(&best_candidate) > threshold {
             top_candidate = Some(best_candidate);
@@ -559,7 +559,7 @@ fn get_node_ancestors(node: &NodeRef) -> HashSet<NodeId> {
         .collect::<HashSet<_>>()
 }
 
-fn adjust_top_candidate_by_parent<'a>(mut top_candidate: Option<NodeRef<'a>>, weigh_class: bool) -> Option<NodeRef<'a>> {
+fn adjust_top_candidate_by_parent(mut top_candidate: Option<NodeRef<'_>>, weigh_class: bool) -> Option<NodeRef<'_>> {
     if let Some(ref tc) = top_candidate {
         if !has_node_score(tc) {
             init_node_score(tc, weigh_class);
