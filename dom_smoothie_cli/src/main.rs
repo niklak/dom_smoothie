@@ -17,7 +17,7 @@ use std::error::Error;
 use std::{fs, path::PathBuf};
 
 use clap::Parser;
-use dom_smoothie::{Article, Config, Readability};
+use dom_smoothie::{Article, CandidateSelectMode, Config, Readability, TextMode};
 
 #[derive(Parser)]
 #[clap(version, about, long_about = None)]
@@ -51,6 +51,12 @@ struct Cli {
     /// Sets a number of top candidates for content extraction
     #[clap(long, value_parser, default_value = "5")]
     n_top_candidates: usize,
+    // Produce formatted text output
+    #[clap(long, value_parser, default_value = "false")]
+    formatted_text: bool,
+    // Use alternative (dom_smoothie) mode for finding common top candidate.
+    #[clap(long, value_parser, default_value = "false")]
+    alt_mode: bool,
 }
 
 /// This struct represents the metadata from the [`dom_smoothie::Article`]
@@ -98,6 +104,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(cli.input)?;
     let document_url = cli.document_url.as_deref();
 
+    let text_mode = if cli.formatted_text {
+        TextMode::Formatted
+    }else {
+        TextMode::Raw
+    };
+
+    let candidate_select_mode = if cli.alt_mode {
+        CandidateSelectMode::DomSmoothie
+    }else {
+        CandidateSelectMode::Readability
+    };
+
     let cfg = Config {
         keep_classes: cli.keep_classes,
         classes_to_preserve: cli.preserved_classes,
@@ -105,6 +123,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         disable_json_ld: cli.disable_json_ld,
         n_top_candidates: cli.n_top_candidates,
         char_threshold: cli.char_threshold,
+        candidate_select_mode,
+        text_mode,
         ..Default::default()
     };
 
