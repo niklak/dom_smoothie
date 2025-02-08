@@ -2,10 +2,10 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
-## [Unreleased]
+## [0.5.1] - 2025-02-08
 
 ### Changed
-- Updated `dom_query` version to `0.13.3`, which improving the accuracy of the `NodeRef::formatted_text` method.
+- Updated `dom_query` version to `0.13.3`, which improves the accuracy of the `NodeRef::formatted_text` method.
 
 ### Fixed
 - `Config` now implements `#[serde(default)]`. This change makes it more convenient to work with serde by removing the need to explicitly set every value in `Config`.
