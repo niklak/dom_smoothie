@@ -1,8 +1,8 @@
-Ownership, now that's a tricky word 
+Ownership, now that's a tricky word
 
-Just because it's a good rig doesn't mean you can use it on Zoom. 
+Just because it's a good rig doesn't mean you can use it on Zoom.
 
-The Canon PowerShot G5 X II, which is either less valuable than a $50 USB webcam or far better, depending on your Canon subscription software.  Credit: Canon 
+The Canon PowerShot G5 X II, which is either less valuable than a $50 USB webcam or far better, depending on your Canon subscription software.  Credit: Canon
 
 Photography enthusiasts pay a lot for their very powerful cameras. How much more should they pay to put them to much, much easier work as a webcam? However many hundreds of dollars you paid, Canon thinks you should pay $5 per month—or, heck, just $50 per year—to do that.
 
@@ -10,11 +10,11 @@ Roman Zipp detailed his journey from incredulousness to grim resignation in a bl
 
 Ah, but that's because Zipp did not pay. If you head to Canon's site, provide a name and email, and manage to grab the EOS Webcam utility when Canon's servers are not failing, you can connect one camera, with one default scene, at 720p, 30 frames per second and adjust everything on the camera itself if you need to. Should you pay $5 per month, or $50 per year, you can unlock EOS Webcam Utility Pro (PDF link), which provides full 60 fps video and most of the features you'd expect out of a webcam that cost hundreds fewer dollars.
 
-Comparison of webcam software features available to Canon's "PRO" and "Free" users. 
+Comparison of webcam software features available to Canon's "PRO" and "Free" users.
 
-Credit: Roman Zipp/Canon 
+Credit: Roman Zipp/Canon
 
-Comparison of webcam software features available to Canon's "PRO" and "Free" users.  Credit: Roman Zipp/Canon 
+Comparison of webcam software features available to Canon's "PRO" and "Free" users.  Credit: Roman Zipp/Canon
 
 "Software development isn’t free, and I’m happy to pay for software I use regularly," Zipp writes. "However, Canon is a hardware company, not a software company, and they should—due to the lack of standards—provide software that allows you to use their cameras as intended. Aside from development costs, there’s no justification for a subscription model, particularly from a company earning nearly $3 billion in profit."
 
@@ -24,6 +24,6 @@ Many higher-end (or at least better-than-smartphone) cameras output video in for
 
 Ars has reached out to Canon for comment and will update this post if the company responds.
 
-Kevin is a senior technology reporter at Ars Technica, covering open-source software, PC gaming, home automation, repairability, e-bikes, and tech history. He has previously worked at Lifehacker, Wirecutter, iFixit, and Carbon Switch. 
+Kevin is a senior technology reporter at Ars Technica, covering open-source software, PC gaming, home automation, repairability, e-bikes, and tech history. He has previously worked at Lifehacker, Wirecutter, iFixit, and Carbon Switch.
 
 285 Comments
