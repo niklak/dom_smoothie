@@ -178,9 +178,9 @@ dependencies = [
 
 [[package]]
 name = "dom_query"
-version = "0.13.2"
+version = "0.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f0d691c8df4210d61a3086988262c7a349ad23d067443c09f8f9a2780182901"
+checksum = "30ba21700266836a963f31c062bf5ea74ace3f9402089d13f17f090b118d3336"
 dependencies = [
  "cssparser",
  "foldhash",
@@ -533,9 +533,9 @@ checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
 
 [[package]]
 name = "once_cell"
-version = "1.20.2"
+version = "1.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1261fe7e33c73b354eab43b1273a57c8f967d0391e80353e51f764ac02cf6775"
+checksum = "945462a4b81e43c4e3ba96bd7b49d834c6f61198356aa858733bc4acf3cbe62e"
 
 [[package]]
 name = "parking_lot"
