@@ -22,6 +22,7 @@ pub enum TextMode {
 /// Configuration options for [`crate::Readability`]
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(default))]
 pub struct Config {
     /// Set to `true` to keep all classes in the document
     pub keep_classes: bool,

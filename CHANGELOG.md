@@ -2,6 +2,11 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- `Config` now implements `#[serde(default)]`. This change makes it more convenient to work with serde by removing the need to explicitly set every value in `Config`.
+
 ## [0.5.0] - 2025-02-06
 
 ### Added
