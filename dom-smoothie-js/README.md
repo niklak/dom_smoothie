@@ -1,2 +1,2 @@
 # DOM-SMOOTHIE-JS
-> A is a wrapper around the rust `DOM_SMOOTHIE` crate.
+> `dom-smoothie-js` is a wrapper around the rust `DOM_SMOOTHIE` crate.

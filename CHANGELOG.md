@@ -2,6 +2,9 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
+## [Unreleased]
+- Add `dom-smoothie-js` a sub-crate that wraps the `dom_smoothie` for use in a JS environment.
+
 ## [0.5.1] - 2025-02-08
 
 ### Changed
