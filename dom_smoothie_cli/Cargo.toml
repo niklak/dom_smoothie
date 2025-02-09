@@ -1,9 +1,11 @@
 [package]
 name = "dom_smoothie_cli"
-version = "0.5.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
 description = "A reference implementation of a CLI tool for the `dom_smoothie`"
-authors = ["niklak <morgenpurple@gmail.com>"]
 
 
 [dependencies]
