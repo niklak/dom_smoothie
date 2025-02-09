@@ -1,15 +1,25 @@
+
+[workspace.package]
+version = "0.5.1"
+edition = "2021"
+license = "MIT"
+rust-version = "1.65"
+repository = "https://github.com/niklak/dom_smoothie"
+authors = ["niklak <morgenpurple@gmail.com>"]
+
+
 [package]
 name = "dom_smoothie"
-version = "0.5.1"
+version.workspace = true
+license.workspace = true
+repository.workspace = true
+edition.workspace = true
+authors.workspace = true
+rust-version.workspace = true
 description = "A Rust crate for extracting relevant content from web pages"
-license = "MIT"
-repository = "https://github.com/niklak/dom_smoothie"
 documentation = "https://docs.rs/dom_smoothie/latest"
 keywords = ["html", "readability"]
-authors = ["niklak <morgenpurple@gmail.com>"]
-edition = "2021"
 readme = "README.md"
-rust-version = "1.65"
 exclude = [".*", "test-pages"]
 
 [dependencies]
