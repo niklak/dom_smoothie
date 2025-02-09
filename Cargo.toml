@@ -47,5 +47,6 @@ serde = ["dep:serde"]
 
 [workspace]
 members = [
-    "dom_smoothie_cli"
+    "dom_smoothie_cli",
+    "dom-smoothie-js"
 ]
