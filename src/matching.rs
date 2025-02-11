@@ -100,10 +100,37 @@ pub(crate) fn is_img_attr_to_src(s: &str) -> bool {
         .any(|part| IMG_EXT.iter().any(|ext| part.starts_with(&ext[1..])))
 }
 
+pub(crate) fn truncate_title_last(orig_title: &str) -> Option<&str> {
+    if let Some(last_delimiter_pos) = orig_title.rfind(|c| TITLE_SEPARATORS.contains(&c)) {
+        let next_char = &orig_title
+            .get(last_delimiter_pos + 1..)
+            .and_then(|s| s.chars().next());
+        if Some(' ') == next_char.clone() {
+            return Some(&orig_title[..last_delimiter_pos].trim());
+        }
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
 
     use super::*;
+
+    #[test]
+    fn test_truncate_title_last() {
+        let orig_title = "Lazy Load with Alt includes jpg/png/webp extensions";
+        assert_eq!(
+            truncate_title_last(orig_title),
+            None,
+        );
+
+        let orig_title = "Lazy Load with Alt includes jpg / png / webp extensions";
+        assert_eq!(
+            truncate_title_last(orig_title),
+            Some("Lazy Load with Alt includes jpg / png")
+        );
+    }
 
     #[test]
     fn test_is_img_attr_to_src() {

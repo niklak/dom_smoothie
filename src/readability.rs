@@ -260,7 +260,9 @@ impl Readability {
         //TODO: handle `—` or not?
         if orig_title.chars().any(|c| TITLE_SEPARATORS.contains(&c)) {
             has_hierarchy_sep = orig_title.chars().any(|c| TITLE_HIERARCHY_SEP.contains(&c));
-            cur_title = RX_TITLE_W_LAST.replace(&orig_title, "$1").to_string();
+            if let Some(title_part) = truncate_title_last(&orig_title) {
+                cur_title = title_part.to_string();
+            }
 
             if cur_title.split_whitespace().count() < 3 {
                 cur_title = RX_TITLE_W_FIRST.replace(&orig_title, "$1").to_string();
