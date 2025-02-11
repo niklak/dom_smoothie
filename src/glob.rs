@@ -191,6 +191,9 @@ pub(crate) static CLASSES_NEGATIVE: phf::Set<&'static str> = phf_set!(
 );
 
 #[rustfmt::skip]
+pub(crate) static CLASSES_NEGATIVE_WORDS: phf::Set<&'static str> = phf_set!("hid");
+
+#[rustfmt::skip]
 pub(crate) static CLASSES_POSITIVE: phf::Set<&'static str> = phf_set!(
     "article", "body", "content", "entry", "hentry", "h-entry", "main", "page",
     "pagination", "post", "text", "blog", "story",
@@ -219,7 +222,6 @@ pub(crate) static RX_META_NAME: Lazy<Regex> = lazy_re!(
 pub(crate) static RX_META_PROPERTY: Lazy<Regex> = lazy_re!(
     r#"\s*(article|dc|dcterm|og|twitter)\s*:\s*(author|creator|description|published_time|title|site_name)\s*"#
 );
-pub(crate) static RX_CLASSES_NEGATIVE: Lazy<Regex> = lazy_re!(r"\bhid\b");
 
 pub(crate) static RX_IMG_ATTR_TO_SRC: Lazy<Regex> =
     lazy_re!(r#"^\s*\S+\.(jpg|jpeg|png|webp)\S*\s*$"#);
