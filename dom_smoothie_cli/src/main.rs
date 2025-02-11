@@ -106,13 +106,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let text_mode = if cli.formatted_text {
         TextMode::Formatted
-    }else {
+    } else {
         TextMode::Raw
     };
 
     let candidate_select_mode = if cli.alt_mode {
         CandidateSelectMode::DomSmoothie
-    }else {
+    } else {
         CandidateSelectMode::Readability
     };
 
