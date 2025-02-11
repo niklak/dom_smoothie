@@ -8,10 +8,10 @@ use tendril::StrTendril;
 use crate::config::CandidateSelectMode;
 use crate::glob::*;
 use crate::grab_flags::GrabFlags;
-use crate::score::*;
-
 use crate::helpers::*;
+use crate::matching::*;
 use crate::prep_article::prep_article;
+use crate::score::*;
 use crate::Metadata;
 use crate::Readability;
 
@@ -105,7 +105,8 @@ impl Readability {
                 self.config.candidate_select_mode,
                 CandidateSelectMode::DomSmoothie
             ) {
-                top_candidate = find_common_candidate_alt(top_candidate, &top_candidates, weigh_class);
+                top_candidate =
+                    find_common_candidate_alt(top_candidate, &top_candidates, weigh_class);
             } else {
                 // Find a better top candidate node if it contains (at least three) nodes which belong to `topCandidates` array
                 // and whose scores are quite closed with current `topCandidate` node.
@@ -243,7 +244,7 @@ fn is_valid_byline(node: &NodeRef, match_string: &str) -> bool {
 
 fn is_unlikely_candidate(node: &NodeRef, match_string: &str) -> bool {
     // Assuming that `<body>` node can't can't reach this function
-    if node.node_name().as_deref() == Some("a") {
+    if node_name_is(node, "a") {
         return false;
     }
 
@@ -352,7 +353,7 @@ fn score_elements<'a>(
             ancestor_score += content_score as f32 / score_divider;
             set_node_score(ancestor, ancestor_score);
 
-            if ancestor.is("body") {
+            if node_name_is(ancestor, "body") {
                 break;
             }
         }
@@ -488,7 +489,6 @@ fn find_common_candidate<'a>(
 
     top_candidate = adjust_top_candidate_by_parent(top_candidate, weigh_class);
 
-    
     top_candidate
 }
 
@@ -506,14 +506,14 @@ fn find_common_candidate_alt<'a>(
         return top_candidate;
     }
 
-    let tc_ancestors = get_node_ancestors(tc);
+    let tc_ancestors = get_node_ancestors_set(tc);
     let tc_score = get_node_score(tc);
 
     let mut ancestor_match_counter: HashMap<NodeId, usize> = HashMap::default();
 
     for alt in top_candidates.iter().skip(1) {
         if get_node_score(alt) / tc_score >= 0.75 {
-            let alt_ancestors = get_node_ancestors(alt);
+            let alt_ancestors = get_node_ancestors_set(alt);
             if alt_ancestors.contains(&tc.id) {
                 continue;
             }
@@ -525,7 +525,7 @@ fn find_common_candidate_alt<'a>(
     }
 
     let mut require_adjustment = true;
-    // choosing the best candidate by how close it to the top candidate, 
+    // choosing the best candidate by how close it to the top candidate,
     // and then by how many common ancestors it has across all other candidates
     if let Some(best_candidate_id) = ancestor_match_counter
         .into_iter()
@@ -546,7 +546,7 @@ fn find_common_candidate_alt<'a>(
     top_candidate
 }
 
-fn get_node_ancestors(node: &NodeRef) -> HashSet<NodeId> {
+fn get_node_ancestors_set(node: &NodeRef) -> HashSet<NodeId> {
     // only elements, no html or body, and have a score
     node.ancestors(Some(0))
         .iter()
@@ -559,7 +559,10 @@ fn get_node_ancestors(node: &NodeRef) -> HashSet<NodeId> {
         .collect::<HashSet<_>>()
 }
 
-fn adjust_top_candidate_by_parent(mut top_candidate: Option<NodeRef<'_>>, weigh_class: bool) -> Option<NodeRef<'_>> {
+fn adjust_top_candidate_by_parent(
+    mut top_candidate: Option<NodeRef<'_>>,
+    weigh_class: bool,
+) -> Option<NodeRef<'_>> {
     if let Some(ref tc) = top_candidate {
         if !has_node_score(tc) {
             init_node_score(tc, weigh_class);
@@ -595,7 +598,6 @@ fn adjust_top_candidate_by_parent(mut top_candidate: Option<NodeRef<'_>>, weigh_
             last_score = parent_score;
             parent_of_top_candidate = tc_parent.parent();
         }
-
     }
     top_candidate
 }

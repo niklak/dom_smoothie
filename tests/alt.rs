@@ -5,7 +5,7 @@ use std::fs;
 use common::test_alt_formatted_text;
 
 #[test]
-fn test_alt_formattedd_last_fail() {
+fn test_alt_formatted_last_fail() {
     test_alt_formatted_text("./test-pages/alt/arxiv");
 }
 

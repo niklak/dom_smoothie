@@ -8,6 +8,7 @@ use crate::config::TextMode;
 use crate::glob::*;
 use crate::helpers::*;
 use crate::is_probably_readable;
+use crate::matching::*;
 use crate::Config;
 use crate::ReadabilityError;
 
@@ -259,10 +260,14 @@ impl Readability {
         //TODO: handle `—` or not?
         if orig_title.chars().any(|c| TITLE_SEPARATORS.contains(&c)) {
             has_hierarchy_sep = orig_title.chars().any(|c| TITLE_HIERARCHY_SEP.contains(&c));
-            cur_title = RX_TITLE_W_LAST.replace(&orig_title, "$1").to_string();
+            if let Some(title_part) = truncate_title_last(&orig_title) {
+                cur_title = title_part.to_string();
+            }
 
             if cur_title.split_whitespace().count() < 3 {
-                cur_title = RX_TITLE_W_FIRST.replace(&orig_title, "$1").to_string();
+                if let Some(title_part) = truncate_title_first(&orig_title) {
+                    cur_title = title_part.to_string();
+                }
             }
             // Everything below is such a mess
         } else if cur_title.contains(": ") {
@@ -728,15 +733,15 @@ impl Readability {
                 }
                 if let Some(mut property) = node.attr("property") {
                     property.make_ascii_lowercase();
-                    if let Some(caps) = RX_META_PROPERTY.captures(&property) {
-                        let k = caps[0].trim().to_string();
+                    if let Some(property_name) = meta_property_name(&property) {
+                        let k = property_name.trim().to_string();
                         values.insert(k, content.into());
                     }
                     continue;
                 }
                 if let Some(mut name) = node.attr("name") {
                     name.make_ascii_lowercase();
-                    if RX_META_NAME.is_match(&name) {
+                    if is_meta_name(&name) {
                         values.insert(normalize_meta_key(&name), content.into());
                     }
                 }

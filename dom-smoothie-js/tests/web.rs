@@ -19,7 +19,8 @@ fn test_parse() {
 fn test_parse_constructor() {
     let contents = include_str!("../../test-pages/rustwiki_2024.html");
 
-    let mut ra = dom_smoothie_js::Readability::new(contents.to_string(), None, JsValue::null()).unwrap();
+    let mut ra =
+        dom_smoothie_js::Readability::new(contents.to_string(), None, JsValue::null()).unwrap();
 
     let article = ra.parse();
     assert!(article.is_ok());

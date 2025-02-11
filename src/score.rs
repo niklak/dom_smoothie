@@ -1,7 +1,7 @@
 use dom_query::{Node, NodeData};
 use html5ever::local_name;
 
-use crate::glob::*;
+use crate::{glob::*, matching::contains_one_of_words};
 
 pub(crate) fn get_node_score(node: &Node) -> f32 {
     let score = node.attr(SCORE_ATTR);
@@ -56,31 +56,30 @@ pub(crate) fn get_class_weight(node: &Node, weigh_classes: bool) -> f32 {
                 .find(|a| a.name.local == local_name!("class"))
             {
                 let class_name = &a.value.to_ascii_lowercase();
-                if RX_CLASSES_NEGATIVE.is_match(class_name) {
-                    weight -= 25.0;
-                }
-                if CLASSES_NEGATIVE.iter().any(|pat| class_name.contains(pat)) {
-                    weight -= 25.0;
-                }
-                if CLASSES_POSITIVE.iter().any(|pat| class_name.contains(pat)) {
-                    weight += 25.0;
-                }
+
+                weight += determine_attr_weight(class_name);
             };
 
             if let Some(a) = el.attrs.iter().find(|a| a.name.local == local_name!("id")) {
                 let id = &a.value.to_ascii_lowercase();
-                if RX_CLASSES_NEGATIVE.is_match(id) {
-                    weight -= 25.0;
-                }
-                if CLASSES_NEGATIVE.iter().any(|pat| id.contains(pat)) {
-                    weight -= 25.0;
-                }
-                if CLASSES_POSITIVE.iter().any(|pat| id.contains(pat)) {
-                    weight += 25.0;
-                }
+
+                weight += determine_attr_weight(id);
             }
         }
     });
 
+    weight
+}
+
+fn determine_attr_weight(attr: &str) -> f32 {
+    let mut weight: f32 = 0.0;
+    if CLASSES_NEGATIVE.iter().any(|pat| attr.contains(pat))
+        || contains_one_of_words(attr, &CLASSES_NEGATIVE_WORDS)
+    {
+        weight -= 25.0;
+    }
+    if CLASSES_POSITIVE.iter().any(|pat| attr.contains(pat)) {
+        weight += 25.0;
+    }
     weight
 }

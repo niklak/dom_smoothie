@@ -10,7 +10,6 @@ cfg_if! {
     }
 }
 
-
 #[wasm_bindgen]
 /// A struct that provides readability functionality
 pub struct Readability(dom_smoothie::Readability);
@@ -42,7 +41,6 @@ impl Readability {
         document_url: Option<String>,
         cfg: JsValue,
     ) -> Result<Readability, JsError> {
-
         let cfg = if cfg.is_null() {
             None
         } else {
@@ -51,7 +49,7 @@ impl Readability {
                 Err(e) => return Err(JsError::new(&e.to_string())),
             }
         };
-        
+
         let doc_url = document_url.as_ref().map(|s| s.as_str());
         let ra = dom_smoothie::Readability::new(content, doc_url, cfg)
             .map_err(|e| JsError::new(&e.to_string()))?;
@@ -80,7 +78,9 @@ impl Readability {
     #[wasm_bindgen]
     pub fn parse(&mut self) -> Result<JsValue, JsError> {
         match self.0.parse() {
-            Ok(article) => serde_wasm_bindgen::to_value(&article).map_err(|e| JsError::new(&e.to_string())),
+            Ok(article) => {
+                serde_wasm_bindgen::to_value(&article).map_err(|e| JsError::new(&e.to_string()))
+            }
             Err(e) => Err(JsError::new(&e.to_string())),
         }
     }
@@ -100,7 +100,9 @@ impl Readability {
     #[wasm_bindgen]
     pub fn parse_json_ld(&mut self) -> JsValue {
         let json_ld = self.0.parse_json_ld();
-        serde_wasm_bindgen::to_value(&json_ld).ok().unwrap_or(JsValue::null())
+        serde_wasm_bindgen::to_value(&json_ld)
+            .ok()
+            .unwrap_or(JsValue::null())
     }
 
     /// Extracts the metadata from the article.
@@ -127,7 +129,9 @@ impl Readability {
     pub fn get_article_metadata(&mut self, json_ld: JsValue) -> JsValue {
         let json_ld: Option<dom_smoothie::Metadata> = serde_wasm_bindgen::from_value(json_ld).ok();
         let metadata = self.0.get_article_metadata(json_ld);
-        serde_wasm_bindgen::to_value(&metadata).ok().unwrap_or(JsValue::null())
+        serde_wasm_bindgen::to_value(&metadata)
+            .ok()
+            .unwrap_or(JsValue::null())
     }
 
     /// Returns true if the content is probably readable, false otherwise.
@@ -140,18 +144,18 @@ impl Readability {
     }
 }
 
-    /// Parse the content of a document.
-    ///
-    /// This is a convenience method that is equivalent to creating a new
-    /// `Readability` instance and calling its `parse` method.
-    ///
-    /// # Returns
-    ///
-    /// An object containing the content and the metadata.
-    ///
-    /// # Errors
-    ///
-    /// Returns a `JsError` if the document fails to parse.
+/// Parse the content of a document.
+///
+/// This is a convenience method that is equivalent to creating a new
+/// `Readability` instance and calling its `parse` method.
+///
+/// # Returns
+///
+/// An object containing the content and the metadata.
+///
+/// # Errors
+///
+/// Returns a `JsError` if the document fails to parse.
 #[wasm_bindgen]
 pub fn parse(content: &str) -> Result<JsValue, JsValue> {
     let mut ra = dom_smoothie::Readability::new(content, None, None)

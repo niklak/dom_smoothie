@@ -6,6 +6,7 @@ use html5ever::local_name;
 use crate::glob::*;
 use crate::grab_flags::GrabFlags;
 use crate::helpers::*;
+use crate::matching::*;
 use crate::score::*;
 use crate::Config;
 
@@ -347,10 +348,10 @@ fn fix_lazy_images(n: &Node) {
             }
 
             let mut copy_to: Option<&str> = None;
-
-            if RX_IMG_ATTR_TO_SRCSET.is_match(&attr.value) {
+            let val = attr.value.to_ascii_lowercase();
+            if is_img_attr_to_srcset(&val) {
                 copy_to = Some("srcset");
-            } else if RX_IMG_ATTR_TO_SRC.is_match(&attr.value) {
+            } else if is_img_attr_to_src(&val) {
                 copy_to = Some("src");
             }
 
