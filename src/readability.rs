@@ -8,6 +8,7 @@ use crate::config::TextMode;
 use crate::glob::*;
 use crate::helpers::*;
 use crate::is_probably_readable;
+use crate::matching::*;
 use crate::Config;
 use crate::ReadabilityError;
 

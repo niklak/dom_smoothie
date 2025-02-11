@@ -6,6 +6,7 @@ use html5ever::local_name;
 use crate::glob::*;
 use crate::grab_flags::GrabFlags;
 use crate::helpers::*;
+use crate::matching::*;
 use crate::score::*;
 use crate::Config;
 

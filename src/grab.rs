@@ -8,10 +8,10 @@ use tendril::StrTendril;
 use crate::config::CandidateSelectMode;
 use crate::glob::*;
 use crate::grab_flags::GrabFlags;
-use crate::score::*;
-
 use crate::helpers::*;
+use crate::matching::*;
 use crate::prep_article::prep_article;
+use crate::score::*;
 use crate::Metadata;
 use crate::Readability;
 

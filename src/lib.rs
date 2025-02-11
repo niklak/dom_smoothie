@@ -3,6 +3,7 @@ mod glob;
 mod grab;
 mod grab_flags;
 mod helpers;
+mod matching;
 mod prep_article;
 mod readability;
 mod readable;
