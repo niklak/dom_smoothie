@@ -2,7 +2,6 @@ use dom_query::Matcher;
 use once_cell::sync::Lazy;
 use phf::phf_set;
 
-
 macro_rules! lazy_matcher {
     ($pattern:expr) => {
         Lazy::new(|| Matcher::new($pattern).unwrap())
@@ -158,7 +157,6 @@ pub(crate) static META_NAME_KEYS: &[&str] = &[
 ];
 
 pub(crate) static META_NAME_SEP: &[char] = &['-', '.', ':'];
-
 
 pub(crate) static META_PROPERTY_PREFIXES: &[&str] = &["article", "dc", "dcterm", "og", "twitter"];
 #[rustfmt::skip]
