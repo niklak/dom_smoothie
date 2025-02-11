@@ -71,9 +71,7 @@ pub(crate) fn is_sentence(text: &str) -> bool {
 }
 
 pub(crate) fn contains_one_of_words(haystack: &str, words: &phf::Set<&str>) -> bool {
-    haystack
-        .split_whitespace()
-        .any(|word| words.contains(word))
+    haystack.split_whitespace().any(|word| words.contains(word))
 }
 
 #[inline]
@@ -94,10 +92,26 @@ pub(crate) fn is_img_attr_to_srcset(s: &str) -> bool {
     false
 }
 
+#[inline]
+pub(crate) fn is_img_attr_to_src(s: &str) -> bool {
+    s.trim()
+        .split('.')
+        .skip(1)
+        .any(|part| IMG_EXT.iter().any(|ext| part.starts_with(&ext[1..])))
+}
+
 #[cfg(test)]
 mod tests {
 
     use super::*;
+
+    #[test]
+    fn test_is_img_attr_to_src() {
+        let val = "https://static01.nyt.com/images/2019/02/15/nyregion/
+        00winterutilitiesOAK11/merlin_94083158_9e622a52-ec2f-4fbd-845c-
+        5d530e94bc82-articleLarge.jpg?quality=90&amp;auto=webp";
+        assert!(is_img_attr_to_src(val));
+    }
 
     #[test]
     fn test_contains_one_of_words() {

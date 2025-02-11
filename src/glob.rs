@@ -222,6 +222,3 @@ pub(crate) static RX_META_NAME: Lazy<Regex> = lazy_re!(
 pub(crate) static RX_META_PROPERTY: Lazy<Regex> = lazy_re!(
     r#"\s*(article|dc|dcterm|og|twitter)\s*:\s*(author|creator|description|published_time|title|site_name)\s*"#
 );
-
-pub(crate) static RX_IMG_ATTR_TO_SRC: Lazy<Regex> =
-    lazy_re!(r#"^\s*\S+\.(jpg|jpeg|png|webp)\S*\s*$"#);
