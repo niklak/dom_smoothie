@@ -741,7 +741,7 @@ impl Readability {
                 }
                 if let Some(mut name) = node.attr("name") {
                     name.make_ascii_lowercase();
-                    if RX_META_NAME.is_match(&name) {
+                    if is_meta_name(&name) {
                         values.insert(normalize_meta_key(&name), content.into());
                     }
                 }

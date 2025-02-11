@@ -126,10 +126,29 @@ pub(crate) fn truncate_title_first(orig_title: &str) -> Option<&str> {
     None
 }
 
+pub(crate) fn is_meta_name(name: &str) -> bool {
+
+    if let Some((prefix, key)) = name.split_once(META_NAME_SEP) {
+        return META_NAME_PREFIXES.contains(&prefix) && META_NAME_KEYS.contains(&key);
+    }
+    META_NAME_KEYS.contains(&name)
+    
+}
+
 #[cfg(test)]
 mod tests {
 
     use super::*;
+
+    #[test]
+    fn test_is_meta_name() {
+        assert!(is_meta_name("author"));
+        assert!(is_meta_name("dc:title"));
+        assert!(is_meta_name("dc:title"));
+        assert!(!is_meta_name("dc:mod-date"));
+        assert!(is_meta_name("dc:pub-date"));
+        
+    }
 
     #[test]
     fn test_truncate_title_first() {
