@@ -1,13 +1,7 @@
 use dom_query::Matcher;
 use once_cell::sync::Lazy;
 use phf::phf_set;
-use regex::Regex;
 
-macro_rules! lazy_re {
-    ($pattern:expr) => {
-        Lazy::new(|| Regex::new($pattern).unwrap())
-    };
-}
 
 macro_rules! lazy_matcher {
     ($pattern:expr) => {
@@ -154,6 +148,25 @@ pub(crate) static TITLE_HIERARCHY_SEP: &[char] = &['\\', '/', '>', '»'];
 pub(crate) static IMG_EXT: &[&str] = &[".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif"];
 
 #[rustfmt::skip]
+pub(crate) static META_NAME_PREFIXES: &[&str] = &[
+    "article", "dc", "dcterm", "og", "twitter","parsely", "weibo:article","weibo:webpage",
+];
+
+#[rustfmt::skip]
+pub(crate) static META_NAME_KEYS: &[&str] = &[
+    "author", "creator", "pub-date", "description", "title", "site_name",
+];
+
+pub(crate) static META_NAME_SEP: &[char] = &['-', '.', ':'];
+
+
+pub(crate) static META_PROPERTY_PREFIXES: &[&str] = &["article", "dc", "dcterm", "og", "twitter"];
+#[rustfmt::skip]
+pub(crate) static META_PROPERTY_KEYS: &[&str] = &[
+    "author", "creator", "description", "published_time", "title","site_name",
+];
+
+#[rustfmt::skip]
 pub(crate) static BLOCK_ELEMS: phf::Set<&'static str> = phf_set!(
     "blockquote", "dl", "div", "img", "ol", "p", "pre", "table", "ul",
 );
@@ -213,16 +226,3 @@ pub(crate) static LOADING_WORDS: phf::Set<&'static str> = phf_set!(
 );
 
 pub(crate) static SHARE_WORDS: phf::Set<&'static str> = phf_set!("share", "sharedaddy");
-
-pub(crate) static RX_META_PROPERTY: Lazy<Regex> = lazy_re!(
-    r#"\s*(article|dc|dcterm|og|twitter)\s*:\s*(author|creator|description|published_time|title|site_name)\s*"#
-);
-pub(crate) static META_NAME_PREFIXES: &[&str] = &[
-    "article", "dc", "dcterm", "og", "twitter", "parsely", "weibo:article", "weibo:webpage",
-];
-
-pub(crate) static META_NAME_KEYS: &[&str] = &[
-    "author", "creator", "pub-date", "description", "title", "site_name"
-];
-
-pub(crate) static META_NAME_SEP: &[char] = &['-', '.', ':'];

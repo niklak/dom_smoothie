@@ -127,12 +127,31 @@ pub(crate) fn truncate_title_first(orig_title: &str) -> Option<&str> {
 }
 
 pub(crate) fn is_meta_name(name: &str) -> bool {
-
     if let Some((prefix, key)) = name.split_once(META_NAME_SEP) {
         return META_NAME_PREFIXES.contains(&prefix) && META_NAME_KEYS.contains(&key);
     }
     META_NAME_KEYS.contains(&name)
-    
+}
+
+pub(crate) fn meta_property_name(property: &str) -> Option<&str> {
+    for part in property.split_whitespace() {
+        if let Some(pos_r) = part.rfind(':') {
+            let key = &part[pos_r + 1..];
+            if !META_PROPERTY_KEYS.contains(&key) {
+                continue;
+            }
+            let pre_pos = if let Some(pos_l) = part[..pos_r].find(':') {
+                pos_l + 1
+            } else {
+                0
+            };
+            let pre = &part[pre_pos..pos_r];
+            if META_PROPERTY_PREFIXES.contains(&pre) {
+                return Some(&part[pre_pos..]);
+            }
+        }
+    }
+    None
 }
 
 #[cfg(test)]
@@ -141,13 +160,21 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_meta_property_name() {
+        assert_eq!(
+            meta_property_name("og:article:author"),
+            Some("article:author")
+        );
+        assert_eq!(meta_property_name("x:title og:title"), Some("og:title"));
+    }
+
+    #[test]
     fn test_is_meta_name() {
         assert!(is_meta_name("author"));
         assert!(is_meta_name("dc:title"));
         assert!(is_meta_name("dc:title"));
         assert!(!is_meta_name("dc:mod-date"));
         assert!(is_meta_name("dc:pub-date"));
-        
     }
 
     #[test]

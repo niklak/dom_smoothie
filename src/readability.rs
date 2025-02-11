@@ -733,8 +733,8 @@ impl Readability {
                 }
                 if let Some(mut property) = node.attr("property") {
                     property.make_ascii_lowercase();
-                    if let Some(caps) = RX_META_PROPERTY.captures(&property) {
-                        let k = caps[0].trim().to_string();
+                    if let Some(property_name) = meta_property_name(&property) {
+                        let k = property_name.trim().to_string();
                         values.insert(k, content.into());
                     }
                     continue;
