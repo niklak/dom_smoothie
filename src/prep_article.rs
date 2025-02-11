@@ -349,7 +349,7 @@ fn fix_lazy_images(n: &Node) {
 
             let mut copy_to: Option<&str> = None;
 
-            if RX_IMG_ATTR_TO_SRCSET.is_match(&attr.value) {
+            if is_img_attr_to_srcset(&attr.value) {
                 copy_to = Some("srcset");
             } else if RX_IMG_ATTR_TO_SRC.is_match(&attr.value) {
                 copy_to = Some("src");

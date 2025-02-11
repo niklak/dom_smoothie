@@ -73,7 +73,25 @@ pub(crate) fn is_sentence(text: &str) -> bool {
 pub(crate) fn contains_one_of_words(haystack: &str, words: &phf::Set<&str>) -> bool {
     haystack
         .split_whitespace()
-        .any(|word| words.contains(&word))
+        .any(|word| words.contains(word))
+}
+
+#[inline]
+pub(crate) fn is_img_attr_to_srcset(s: &str) -> bool {
+    for ext in IMG_EXT {
+        let mut start = 0;
+        while let Some(pos) = s[start..].find(ext) {
+            let idx = start + pos + ext.len();
+            if idx < s.len() - 1 {
+                let bytes = s.as_bytes();
+                if bytes[idx].is_ascii_whitespace() && bytes[idx + 1].is_ascii_digit() {
+                    return true;
+                }
+            }
+            start = idx;
+        }
+    }
+    false
 }
 
 #[cfg(test)]
