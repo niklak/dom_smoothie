@@ -203,7 +203,7 @@ pub(crate) fn get_dir_attr(node: &Node) -> Option<String> {
 }
 
 pub(crate) fn node_name_is(node: &Node, name: &str) -> bool {
-    node.node_name().map_or(false, |n| n.as_ref() == name)
+    node.node_name().as_deref() == Some(name)
 }
 
 pub(crate) fn is_probably_visible(node: &Node) -> bool {
@@ -353,7 +353,7 @@ mod tests {
         assert!(is_schema_org_url("https://schema.org"));
         assert!(is_schema_org_url("http://schema.org/"));
         assert!(is_schema_org_url("https://schema.org/"));
-        assert!(is_schema_org_url("http://schema.org////"));  // multiple trailing slashes
+        assert!(is_schema_org_url("http://schema.org////")); // multiple trailing slashes
 
         // Invalid URLs
         assert!(!is_schema_org_url("ftp://schema.org"));

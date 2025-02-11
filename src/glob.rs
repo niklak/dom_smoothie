@@ -224,4 +224,3 @@ pub(crate) static RX_CLASSES_NEGATIVE: Lazy<Regex> = lazy_re!(r"\bhid\b");
 pub(crate) static RX_IMG_ATTR_TO_SRC: Lazy<Regex> =
     lazy_re!(r#"^\s*\S+\.(jpg|jpeg|png|webp)\S*\s*$"#);
 pub(crate) static RX_IMG_ATTR_TO_SRCSET: Lazy<Regex> = lazy_re!(r#".(jpg|jpeg|png|webp)\s+\d"#);
-
