@@ -101,12 +101,26 @@ pub(crate) fn is_img_attr_to_src(s: &str) -> bool {
 }
 
 pub(crate) fn truncate_title_last(orig_title: &str) -> Option<&str> {
+    // This is not a perfect, but behaves as like RX_TITLE_W_LAST
     if let Some(last_delimiter_pos) = orig_title.rfind(|c| TITLE_SEPARATORS.contains(&c)) {
         let next_char = &orig_title
             .get(last_delimiter_pos + 1..)
             .and_then(|s| s.chars().next());
-        if Some(' ') == next_char.clone() {
-            return Some(&orig_title[..last_delimiter_pos].trim());
+        if &Some(' ') == next_char {
+            return orig_title.get(..last_delimiter_pos).map(|s| s.trim());
+        }
+    }
+    None
+}
+
+pub(crate) fn truncate_title_first(orig_title: &str) -> Option<&str> {
+    // This is not a perfect, but behaves as like RX_TITLE_W_FIRST
+    if let Some(delimiter_pos) = orig_title.find(|c| TITLE_SEPARATORS.contains(&c)) {
+        let next_char = &orig_title
+            .get(delimiter_pos + 1..)
+            .and_then(|s| s.chars().next());
+        if &Some(' ') == next_char {
+            return orig_title.get(delimiter_pos + 1..).map(|s| s.trim());
         }
     }
     None
@@ -118,12 +132,17 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_truncate_title_first() {
+        let title1 = "Lazy Load with Alt includes jpg/png/webp extensions";
+        assert_eq!(truncate_title_first(title1), None);
+        let title2 = "Some Title | Some Extra Info ";
+        assert_eq!(truncate_title_first(title2), Some("Some Extra Info"));
+    }
+
+    #[test]
     fn test_truncate_title_last() {
         let orig_title = "Lazy Load with Alt includes jpg/png/webp extensions";
-        assert_eq!(
-            truncate_title_last(orig_title),
-            None,
-        );
+        assert_eq!(truncate_title_last(orig_title), None,);
 
         let orig_title = "Lazy Load with Alt includes jpg / png / webp extensions";
         assert_eq!(

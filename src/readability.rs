@@ -265,7 +265,9 @@ impl Readability {
             }
 
             if cur_title.split_whitespace().count() < 3 {
-                cur_title = RX_TITLE_W_FIRST.replace(&orig_title, "$1").to_string();
+                if let Some(title_part) = truncate_title_first(&orig_title) {
+                    cur_title = title_part.to_string();
+                }
             }
             // Everything below is such a mess
         } else if cur_title.contains(": ") {
