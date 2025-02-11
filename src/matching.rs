@@ -37,14 +37,11 @@ fn style_has_kv(style: &str, key: &str, val: &str) -> bool {
 }
 
 pub(crate) fn strip_cdata(content: &StrTendril) -> &str {
-    let trimmed = content.trim_start();
-    if let Some(rest) = trimmed.strip_prefix("<![CDATA[") {
-        if let Some(pos) = rest.rfind("]]>") {
-            return &rest[..pos];
-        }
-        return rest;
+    if let Some(rest) = content.trim_start().strip_prefix("<![CDATA[") {
+        rest.split("]]>").next().unwrap_or(rest)
+    } else {
+        content
     }
-    content
 }
 
 pub(crate) fn is_schema_org_url(url: &str) -> bool {
@@ -102,12 +99,12 @@ pub(crate) fn is_img_attr_to_src(s: &str) -> bool {
 
 pub(crate) fn truncate_title_last(orig_title: &str) -> Option<&str> {
     // This is not a perfect, but behaves as like RX_TITLE_W_LAST
-    if let Some(last_delimiter_pos) = orig_title.rfind(|c| TITLE_SEPARATORS.contains(&c)) {
+    if let Some(delimiter_pos) = orig_title.rfind(|c| TITLE_SEPARATORS.contains(&c)) {
         let next_char = &orig_title
-            .get(last_delimiter_pos + 1..)
+            .get(delimiter_pos + 1..)
             .and_then(|s| s.chars().next());
         if &Some(' ') == next_char {
-            return orig_title.get(..last_delimiter_pos).map(|s| s.trim());
+            return orig_title.get(..delimiter_pos).map(|s| s.trim());
         }
     }
     None
