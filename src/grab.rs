@@ -33,7 +33,7 @@ impl Readability {
             let strip_unlikely = flags.contains(GrabFlags::StripUnlikelys);
 
             let mut elements_to_score = collect_elements_to_score(body_node, strip_unlikely);
-            let article_node = self.handle_candidates(&mut elements_to_score, &doc, &flags);
+            let article_node = self.handle_candidates(&mut elements_to_score, body_node, &flags);
             // Now that we've gone through the full algorithm, check to see if
             // we got any meaningful content. If we didn't, we may need to re-run
             // grabArticle with different flags set. This gives us a higher likelihood of
@@ -73,9 +73,10 @@ impl Readability {
     fn handle_candidates<'a>(
         &self,
         elements_to_score: &mut Vec<NodeRef<'a>>,
-        doc: &'a Document,
+        body_node: &'a NodeRef,
         flags: &FlagSet<GrabFlags>,
     ) -> Option<NodeRef<'a>> {
+        let tree = body_node.tree;
         let weigh_class = flags.contains(GrabFlags::WeightClasses);
         let mut top_candidates = score_elements(elements_to_score, flags);
 
@@ -92,11 +93,9 @@ impl Readability {
 
         if top_candidate.is_none() || tc_name.as_ref() == "body" {
             needed_to_create_top_candidate = true;
-            let body_sel = doc.select_single("body");
-            let body_node = body_sel.nodes().first().unwrap();
-            let tc = doc.tree.new_element("div");
+            let tc = tree.new_element("div");
 
-            doc.tree.reparent_children_of(&body_node.id, Some(tc.id));
+            tree.reparent_children_of(&body_node.id, Some(tc.id));
             body_node.append_child(&tc);
             init_node_score(&tc, flags.contains(GrabFlags::WeightClasses));
             top_candidate = Some(tc);
@@ -139,7 +138,7 @@ impl Readability {
             // that might also be related. Things like preambles, content split by ads
             // that we removed, etc.
 
-            let article_content = doc.tree.new_element("div");
+            let article_content = tree.new_element("div");
 
             assign_article_node(tc, &article_content);
 
