@@ -257,12 +257,12 @@ impl Readability {
         //TODO: handle `—` or not?
         if orig_title.chars().any(|c| TITLE_SEPARATORS.contains(&c)) {
             has_hierarchy_sep = orig_title.chars().any(|c| TITLE_HIERARCHY_SEP.contains(&c));
-            if let Some(title_part) = truncate_title_last(&orig_title) {
+            if let Some(title_part) = truncate_title_last(orig_title) {
                 cur_title = title_part;
             }
 
             if cur_title.split_whitespace().count() < 3 {
-                if let Some(title_part) = truncate_title_first(&orig_title) {
+                if let Some(title_part) = truncate_title_first(orig_title) {
                     cur_title = title_part;
                 }
             }
@@ -303,7 +303,7 @@ impl Readability {
         if let Some(ref h1) = h1 {
             cur_title = h1;
         }
-        let normalized_title = normalize_spaces(&cur_title);
+        let normalized_title = normalize_spaces(cur_title);
         cur_title = &normalized_title;
 
         // If we now have 4 words or fewer as our title, and either no
