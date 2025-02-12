@@ -248,8 +248,7 @@ fn mark_data_tables(n: &Node) {
             continue;
         }
 
-        let data_table = node.attr_or("datatable", "");
-        if data_table.as_ref() == "0" {
+        if node.attr("datatable").filter(|s| s.as_ref() == "0").is_some() {
             set_data_readability_table(node, false);
             continue;
         }
@@ -437,10 +436,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
 
     for br_node in article_node.find(&["br"]).iter() {
         if let Some(next_node) = br_node.next_element_sibling() {
-            if next_node
-                .node_name()
-                .map_or(false, |name| name.as_ref() == "p")
-            {
+            if node_name_is(&next_node, "p"){
                 br_node.remove_from_parent();
             }
         }
@@ -459,13 +455,13 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
             if has_single_tag_inside_element(&row, "td") {
                 let cell = row.first_element_child().unwrap();
 
-                let new_tag = if cell.children().iter().all(|c| is_phrasing_content(c)) {
+                let new_name = if cell.children().iter().all(|c| is_phrasing_content(c)) {
                     "p"
                 } else {
                     "div"
                 };
 
-                cell.rename(new_tag);
+                cell.rename(new_name);
                 table_node.insert_before(&cell.id);
                 table_node.remove_from_parent();
             }
