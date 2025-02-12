@@ -280,9 +280,8 @@ impl Readability {
                 {
                     cur_title = tmp_title;
                     if cur_title.split_whitespace().count() < 3 {
-                        if let Some(tmp_title) = orig_title
-                            .find(":")
-                            .map(|idx| orig_title[idx + 1..].trim())
+                        if let Some(tmp_title) =
+                            orig_title.find(":").map(|idx| orig_title[idx + 1..].trim())
                         {
                             cur_title = tmp_title
                         }
@@ -723,7 +722,7 @@ impl Readability {
     ///
     /// A [`Metadata`] object containing the extracted metadata.
     pub fn get_article_metadata(&self, json_ld: Option<Metadata>) -> Metadata {
-        let mut values: HashMap<String, StrTendril> = HashMap::default();
+        let mut values: HashMap<String, String> = HashMap::default();
         let mut metadata = json_ld.unwrap_or_default();
 
         let selection = self.doc.select_matcher(&MATCHER_META);
@@ -754,7 +753,7 @@ impl Readability {
         // title
         if metadata.title.is_empty() {
             if let Some(val) = get_map_any_value(&values, META_TITLE_KEYS) {
-                metadata.title = val.to_string();
+                metadata.title = val;
             }
         }
 
@@ -764,9 +763,7 @@ impl Readability {
 
         // author
         if metadata.byline.is_none() {
-            if let Some(val) = get_map_any_value(&values, META_BYLINE_KEYS) {
-                metadata.byline = Some(val.to_string());
-            }
+            metadata.byline = get_map_any_value(&values, META_BYLINE_KEYS);
             // if metadata is still none
             if metadata.byline.is_none() {
                 if let Some(v) = values.get("article:author") {
@@ -779,22 +776,17 @@ impl Readability {
 
         // description
         if metadata.excerpt.is_none() {
-            if let Some(val) = get_map_any_value(&values, META_EXCERPT_KEYS) {
-                metadata.excerpt = Some(val.to_string());
-            }
+            metadata.excerpt = get_map_any_value(&values, META_EXCERPT_KEYS);
         }
 
         //site name
         if metadata.site_name.is_none() {
-            if let Some(val) = values.get("og:site_name") {
-                metadata.site_name = Some(val.to_string());
-            }
+            metadata.site_name = values.get("og:site_name").map(|v| v.to_string());
         }
 
         //published time
         if metadata.published_time.is_none() {
-            metadata.published_time =
-                get_map_any_value(&values, META_PUB_TIME_KEYS).map(|x| x.to_string());
+            metadata.published_time = get_map_any_value(&values, META_PUB_TIME_KEYS);
         }
 
         self.assign_extra_article_metadata(&mut metadata, &values);
@@ -808,17 +800,16 @@ impl Readability {
     fn assign_extra_article_metadata(
         &self,
         metadata: &mut Metadata,
-        values: &HashMap<String, StrTendril>,
+        values: &HashMap<String, String>,
     ) {
         // thumbnail
         if metadata.image.is_none() {
-            metadata.image = get_map_any_value(values, META_IMAGE_KEYS).map(|x| x.to_string());
+            metadata.image = get_map_any_value(values, META_IMAGE_KEYS);
         }
 
         // modified time
         if metadata.modified_time.is_none() {
-            metadata.modified_time =
-                get_map_any_value(values, META_MOD_TIME_KEYS).map(|x| x.to_string());
+            metadata.modified_time = get_map_any_value(values, META_MOD_TIME_KEYS);
         }
         //TODO: favicon
     }
@@ -1003,11 +994,9 @@ impl Readability {
     }
 }
 
-fn get_map_any_value<'a>(
-    map: &'a HashMap<String, StrTendril>,
-    keys: &[&str],
-) -> Option<&'a StrTendril> {
-    keys.iter().find_map(|&key| map.get(key))
+fn get_map_any_value(map: &HashMap<String, String>, keys: &[&str]) -> Option<String> {
+    keys.iter()
+        .find_map(|&key| map.get(key).map(|v| v.to_string()))
 }
 
 fn remove_comments(n: &Node) {
