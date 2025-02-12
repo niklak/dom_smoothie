@@ -41,7 +41,6 @@ impl Readability {
             // finding the -right- content.
 
             if let Some(ref article_node) = article_node {
-                metadata.dir = get_dir_attr(article_node);
                 let text_length = article_node.normalized_char_count();
                 if text_length >= self.config.char_threshold {
                     return Some(doc);
