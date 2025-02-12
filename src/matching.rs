@@ -151,6 +151,32 @@ pub(crate) fn meta_property_name(property: &str) -> Option<&str> {
     None
 }
 
+pub(crate) fn is_loading_word(text: &str) -> bool {
+    let trimmed = text.trim_end_matches(['…', '.']);
+    LOADING_WORDS.contains(trimmed)
+}
+
+pub(crate) fn contains_share_elements(value: &str) -> bool {
+    let lower_value = value.to_lowercase();
+    lower_value
+        .split([' ', '_'])
+        .any(|word| SHARE_WORDS.contains(word))
+}
+
+pub(crate) fn split_base64_url(src: &str) -> Option<(&str, &str)> {
+    if let Some(rest) = src.strip_prefix("data:") {
+        if let Some(pos) = rest.find(BASE64_MARKER) {
+            let image_type = &rest[..pos];
+            let image_data = &rest[pos + BASE64_MARKER_LEN..];
+            if image_data.is_empty() {
+                return None;
+            }
+            return Some((image_type, image_data));
+        }
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -284,5 +310,28 @@ mod tests {
         assert!(!is_video_url("//youtubeXcom/watch?v=123")); // invalid domain
         assert!(!is_video_url("//www.notvideo.com")); // non-video domain
         assert!(!is_video_url("")); // empty string
+    }
+
+    #[test]
+    fn test_split_base64_url() {
+        let src = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+        let (image_type, image_data) = split_base64_url(src).unwrap();
+        assert_eq!(image_type, "image/gif");
+        assert_eq!(
+            image_data,
+            "R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+        );
+
+        // Test empty base64 data
+        let src = "data:image/gif;base64,";
+        assert!(split_base64_url(src).is_none());
+
+        // Test invalid data URL format
+        let src = "invalid:image/gif;base64,data";
+        assert!(split_base64_url(src).is_none());
+
+        // Test missing base64 marker
+        let src = "data:image/gif,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+        assert!(split_base64_url(src).is_none());
     }
 }

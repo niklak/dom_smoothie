@@ -23,13 +23,8 @@ fn clean(n: &Node, tag: &str) {
                     break;
                 }
             }
-
             // For embed with <object> tag, check inner HTML as well.
-            if node
-                .node_name()
-                .map_or(false, |name| name.as_ref() == "object")
-                && is_video_url(&node.inner_html())
-            {
+            if node_name_is(&node, "object") && is_video_url(&node.inner_html()) {
                 should_remove = false;
             }
         }
@@ -110,11 +105,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
                     return false;
                 }
             }
-            if embed
-                .node_name()
-                .map_or(false, |name| name.as_ref() == "object")
-                && is_video_url(&embed.inner_html())
-            {
+            if node_name_is(embed, "object") && is_video_url(&embed.inner_html()) {
                 return false;
             }
             embed_count += 1;
@@ -193,9 +184,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
                 }
             }
             let li_count = node.find(&["li"]).len();
-            if img == li_count as f32 {
-                return false;
-            }
+            return !(img == li_count as f32);
         }
 
         return have_to_remove;
@@ -259,8 +248,11 @@ fn mark_data_tables(n: &Node) {
             continue;
         }
 
-        let data_table = node.attr_or("datatable", "");
-        if data_table.as_ref() == "0" {
+        if node
+            .attr("datatable")
+            .filter(|s| s.as_ref() == "0")
+            .is_some()
+        {
             set_data_readability_table(node, false);
             continue;
         }
@@ -448,10 +440,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
 
     for br_node in article_node.find(&["br"]).iter() {
         if let Some(next_node) = br_node.next_element_sibling() {
-            if next_node
-                .node_name()
-                .map_or(false, |name| name.as_ref() == "p")
-            {
+            if node_name_is(&next_node, "p") {
                 br_node.remove_from_parent();
             }
         }
@@ -470,13 +459,13 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
             if has_single_tag_inside_element(&row, "td") {
                 let cell = row.first_element_child().unwrap();
 
-                let new_tag = if cell.children().iter().all(|c| is_phrasing_content(c)) {
+                let new_name = if cell.children().iter().all(|c| is_phrasing_content(c)) {
                     "p"
                 } else {
                     "div"
                 };
 
-                cell.rename(new_tag);
+                cell.rename(new_name);
                 table_node.insert_before(&cell.id);
                 table_node.remove_from_parent();
             }
@@ -517,60 +506,5 @@ fn remove_share_elements(root_sel: &Selection, share_element_threshold: usize) {
         if has_share_elements {
             child.remove_from_parent();
         }
-    }
-}
-
-fn is_loading_word(text: &str) -> bool {
-    let trimmed = text.trim_end_matches(['…', '.']);
-    LOADING_WORDS.contains(trimmed)
-}
-
-fn contains_share_elements(value: &str) -> bool {
-    let lower_value = value.to_lowercase();
-    lower_value
-        .split([' ', '_'])
-        .any(|word| SHARE_WORDS.contains(word))
-}
-
-fn split_base64_url(src: &str) -> Option<(&str, &str)> {
-    if let Some(rest) = src.strip_prefix("data:") {
-        if let Some(pos) = rest.find(BASE64_MARKER) {
-            let image_type = &rest[..pos];
-            let image_data = &rest[pos + BASE64_MARKER_LEN..];
-            if image_data.is_empty() {
-                return None;
-            }
-            return Some((image_type, image_data));
-        }
-    }
-    None
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-
-    #[test]
-    fn test_split_base64_url() {
-        let src = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
-        let (image_type, image_data) = split_base64_url(src).unwrap();
-        assert_eq!(image_type, "image/gif");
-        assert_eq!(
-            image_data,
-            "R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
-        );
-
-        // Test empty base64 data
-        let src = "data:image/gif;base64,";
-        assert!(split_base64_url(src).is_none());
-
-        // Test invalid data URL format
-        let src = "invalid:image/gif;base64,data";
-        assert!(split_base64_url(src).is_none());
-
-        // Test missing base64 marker
-        let src = "data:image/gif,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
-        assert!(split_base64_url(src).is_none());
     }
 }
