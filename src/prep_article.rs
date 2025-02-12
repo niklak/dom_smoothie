@@ -248,7 +248,11 @@ fn mark_data_tables(n: &Node) {
             continue;
         }
 
-        if node.attr("datatable").filter(|s| s.as_ref() == "0").is_some() {
+        if node
+            .attr("datatable")
+            .filter(|s| s.as_ref() == "0")
+            .is_some()
+        {
             set_data_readability_table(node, false);
             continue;
         }
@@ -436,7 +440,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
 
     for br_node in article_node.find(&["br"]).iter() {
         if let Some(next_node) = br_node.next_element_sibling() {
-            if node_name_is(&next_node, "p"){
+            if node_name_is(&next_node, "p") {
                 br_node.remove_from_parent();
             }
         }
@@ -504,4 +508,3 @@ fn remove_share_elements(root_sel: &Selection, share_element_threshold: usize) {
         }
     }
 }
-

@@ -151,7 +151,6 @@ pub(crate) fn meta_property_name(property: &str) -> Option<&str> {
     None
 }
 
-
 pub(crate) fn is_loading_word(text: &str) -> bool {
     let trimmed = text.trim_end_matches(['…', '.']);
     LOADING_WORDS.contains(trimmed)
@@ -312,7 +311,6 @@ mod tests {
         assert!(!is_video_url("//www.notvideo.com")); // non-video domain
         assert!(!is_video_url("")); // empty string
     }
-
 
     #[test]
     fn test_split_base64_url() {
