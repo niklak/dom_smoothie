@@ -247,26 +247,23 @@ impl Readability {
     /// The method will also try to clean up the title by removing any
     /// unnecessary characters from it.
     pub fn get_article_title(&self) -> StrTendril {
-        let orig_title = self
-            .doc
-            .select_single_matcher(&MATCHER_TITLE)
-            .text()
-            .trim()
-            .to_string();
+        let title = self.doc.select_single_matcher(&MATCHER_TITLE).text();
+        let orig_title = title.trim();
+        let mut h1: Option<StrTendril> = None;
         //let orig_title = normalize_spaces(&orig_title);
-        let mut cur_title = orig_title.to_string();
+        let mut cur_title = orig_title;
         let char_count = orig_title.chars().count();
         let mut has_hierarchy_sep = false;
         //TODO: handle `—` or not?
         if orig_title.chars().any(|c| TITLE_SEPARATORS.contains(&c)) {
             has_hierarchy_sep = orig_title.chars().any(|c| TITLE_HIERARCHY_SEP.contains(&c));
             if let Some(title_part) = truncate_title_last(&orig_title) {
-                cur_title = title_part.to_string();
+                cur_title = title_part;
             }
 
             if cur_title.split_whitespace().count() < 3 {
                 if let Some(title_part) = truncate_title_first(&orig_title) {
-                    cur_title = title_part.to_string();
+                    cur_title = title_part;
                 }
             }
             // Everything below is such a mess
@@ -279,13 +276,13 @@ impl Readability {
             if !matched {
                 if let Some(tmp_title) = orig_title
                     .rfind(":")
-                    .map(|idx| orig_title[idx + 1..].trim().to_string())
+                    .map(|idx| orig_title[idx + 1..].trim())
                 {
                     cur_title = tmp_title;
                     if cur_title.split_whitespace().count() < 3 {
                         if let Some(tmp_title) = orig_title
                             .find(":")
-                            .map(|idx| orig_title[idx + 1..].trim().to_string())
+                            .map(|idx| orig_title[idx + 1..].trim())
                         {
                             cur_title = tmp_title
                         }
@@ -294,17 +291,21 @@ impl Readability {
                         .map_or(0, |idx| orig_title[0..idx + 1].split_whitespace().count())
                         > 5
                     {
-                        cur_title = orig_title.to_string();
+                        cur_title = orig_title;
                     }
                 }
             }
         } else if !(15..=150).contains(&char_count) {
             let h1_sel = self.doc.select_single("h1");
             if !h1_sel.is_empty() {
-                cur_title = h1_sel.text().to_string();
+                h1 = Some(h1_sel.text());
             }
         }
-        cur_title = normalize_spaces(&cur_title);
+        if let Some(ref h1) = h1 {
+            cur_title = h1;
+        }
+        let normalized_title = normalize_spaces(&cur_title);
+        cur_title = &normalized_title;
 
         // If we now have 4 words or fewer as our title, and either no
         // 'hierarchical' separators (\, /, > or ») were found in the original
