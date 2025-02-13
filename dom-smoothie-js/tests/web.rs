@@ -7,13 +7,6 @@ use wasm_bindgen::JsValue;
 use wasm_bindgen_test::*;
 
 
-cfg_if! {
-    if #[cfg(feature="alloc_cat")] {
-        #[global_allocator]
-        pub static GLOBAL_ALLOCATOR: &alloc_cat::AllocCat = &alloc_cat::ALLOCATOR;
-    }
-}
-
 //wasm_bindgen_test_configure!(run_in_browser);
 
 #[wasm_bindgen_test]
