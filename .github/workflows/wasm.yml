@@ -1,0 +1,31 @@
+name: wasm ci
+
+on:
+  push:
+    branches: [ "main", "feature/*" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER: wasm-bindgen-test-runner
+
+jobs:
+  test-wasm:
+
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install stable rust
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: 1.83.0
+        targets: wasm32-unknown-unknown
+    - name: Install wasm-bindgen-cli
+      uses: taiki-e/install-action@v2
+      with:
+        tool: wasm-pack       
+    - name: Run tests
+      working-directory: dom-smoothie-js
+      run: wasm-pack test --node

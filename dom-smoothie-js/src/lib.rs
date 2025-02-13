@@ -4,9 +4,9 @@ use cfg_if::cfg_if;
 use wasm_bindgen::prelude::*;
 
 cfg_if! {
-    if #[cfg(feature="mini-alloc")] {
+    if #[cfg(feature="alloc_cat")] {
         #[global_allocator]
-        static ALLOC: mini_alloc::MiniAlloc = mini_alloc::MiniAlloc::INIT;
+        pub static GLOBAL_ALLOCATOR: &alloc_cat::AllocCat = &alloc_cat::ALLOCATOR;
     }
 }
 
