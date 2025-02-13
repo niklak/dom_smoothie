@@ -10,11 +10,16 @@ use crate::matching::*;
 use crate::score::*;
 use crate::Config;
 
-fn clean(n: &Node, tag: &str) {
-    let is_embed = EMBED_ELEMENTS.contains(tag);
+fn clean(root_sel: &Selection, tags: &str) {
 
-    for node in n.find(&[tag]) {
+    for node in root_sel.select(tags).nodes().iter() {
         // Allow youtube and vimeo videos through as people usually want to see those.
+        let is_embed = if let Some(name) = node.node_name() {
+            EMBED_ELEMENTS.contains(&name)
+        }else {
+            false
+        };
+
         let mut should_remove = true;
         if is_embed {
             for attr in node.attrs().iter() {
@@ -24,7 +29,7 @@ fn clean(n: &Node, tag: &str) {
                 }
             }
             // For embed with <object> tag, check inner HTML as well.
-            if node_name_is(&node, "object") && is_video_url(&node.inner_html()) {
+            if should_remove && node_name_is(&node, "object") && is_video_url(&node.inner_html()) {
                 should_remove = false;
             }
         }
@@ -393,25 +398,17 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
     clean_conditionally(article_node, "form", flags);
     clean_conditionally(article_node, "fieldset", flags);
 
-    // Clean out junk from the article content
-    clean(article_node, "object");
-    clean(article_node, "embed");
-    clean(article_node, "footer");
-    clean(article_node, "link");
-    clean(article_node, "aside");
-
     let article_sel = Selection::from(article_node.clone());
+
+
+    // Clean out junk from the article content
+    clean(&article_sel, "object,embed,footer,link,aside,iframe,input,textarea,select,button");
 
     // Clean out elements with little content that have "share" in their id/class combinations from final top candidates,
     // which means we don't remove the top candidates even they have "share".
 
     remove_share_elements(&article_sel, cfg.char_threshold);
 
-    clean(article_node, "iframe");
-    clean(article_node, "input");
-    clean(article_node, "textarea");
-    clean(article_node, "select");
-    clean(article_node, "button");
 
     clean_headers(article_node, flags);
 
