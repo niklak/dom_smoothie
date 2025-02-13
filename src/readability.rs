@@ -316,7 +316,7 @@ impl Readability {
             .split(TITLE_SEPARATORS)
             .flat_map(str::split_whitespace)
             .count();
-        if cur_title_wc <= 4 && (!has_hierarchy_sep || cur_title_wc != orig_wc - 1) {
+        if cur_title_wc <= 4 && (!has_hierarchy_sep || cur_title_wc + 1 != orig_wc) {
             cur_title = orig_title;
         }
 
