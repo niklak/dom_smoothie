@@ -1059,7 +1059,7 @@ fn simplify_nested_elements(root_sel: &Selection) {
 
 fn extract_excerpt(doc: &Document) -> Option<String> {
     let p_sel = doc
-        .select_single("#readability-page-1")
+        .select_single_matcher(&MATCHER_CONTENT_ID)
         .select_single_matcher(&MATCHER_P);
     if p_sel.is_empty() {
         None

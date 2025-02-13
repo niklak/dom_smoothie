@@ -163,8 +163,7 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
 
     if !children
         .first()
-        .and_then(|child| child.node_name())
-        .map_or(false, |name| name.as_ref() == tag)
+        .map_or( false,|child| node_name_is(child, tag))
     {
         return false;
     }

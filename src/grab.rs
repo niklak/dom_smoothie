@@ -132,7 +132,6 @@ impl Readability {
             if !has_node_score(tc) {
                 init_node_score(tc, weigh_class);
             }
-
             // Now that we have the top candidate, look through its siblings for content
             // that might also be related. Things like preambles, content split by ads
             // that we removed, etc.

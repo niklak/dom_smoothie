@@ -86,10 +86,9 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
     }
 
     let node_text = node.text();
-    let inner_text = node_text.trim();
     let content_len = node.normalized_char_count();
 
-    if inner_text.matches(',').count() < 10 {
+    if node_text.matches(',').count() < 10 {
         // If there are not very many commas, and the number of
         // non-paragraph elements is more than paragraphs or other
         // ominous signs, remove the element.
@@ -110,7 +109,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
             }
             embed_count += 1;
         }
-        let text_low = inner_text.to_lowercase();
+        let text_low = node_text.trim().to_lowercase();
         if AD_WORDS.contains(&text_low) || is_loading_word(&text_low) {
             return true;
         }

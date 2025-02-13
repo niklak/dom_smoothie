@@ -148,7 +148,7 @@ pub(crate) static IMG_EXT: &[&str] = &[".jpg", ".jpeg", ".png", ".webp", ".avif"
 
 #[rustfmt::skip]
 pub(crate) static META_NAME_PREFIXES: &[&str] = &[
-    "article", "dc", "dcterm", "og", "twitter","parsely", "weibo:article","weibo:webpage",
+    "article", "dc", "dcterm", "og", "twitter", "parsely", "weibo:article", "weibo:webpage",
 ];
 
 #[rustfmt::skip]
@@ -157,11 +157,11 @@ pub(crate) static META_NAME_KEYS: &[&str] = &[
 ];
 
 pub(crate) static META_NAME_SEP: &[char] = &['-', '.', ':'];
-
 pub(crate) static META_PROPERTY_PREFIXES: &[&str] = &["article", "dc", "dcterm", "og", "twitter"];
+
 #[rustfmt::skip]
 pub(crate) static META_PROPERTY_KEYS: &[&str] = &[
-    "author", "creator", "description", "published_time", "title","site_name",
+    "author", "creator", "description", "published_time", "title", "site_name",
 ];
 
 #[rustfmt::skip]
@@ -171,13 +171,10 @@ pub(crate) static BLOCK_ELEMS: phf::Set<&'static str> = phf_set!(
 
 pub(crate) static ALTER_TO_DIV_EXCEPTIONS: phf::Set<&'static str> =
     phf_set!("article", "section", "p", "ol", "ul");
-
 pub(crate) static DEFAULT_TAGS_TO_SCORE: phf::Set<&'static str> =
     phf_set!("section", "h2", "h3", "h4", "h5", "h6", "p", "td", "pre");
-
 pub(crate) static TAGS_WITH_CONTENT: phf::Set<&'static str> =
     phf_set!("div", "section", "header", "h1", "h2", "h3", "h4", "h5", "h6");
-
 pub(crate) static EMBED_ELEMENTS: phf::Set<&'static str> = phf_set!("object", "embed", "iframe");
 
 #[rustfmt::skip]
