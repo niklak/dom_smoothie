@@ -4,6 +4,9 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- Avoid a potential underflow of `orig_wc - 1` in `Readability::get_article_title`, which causes a panic when the `<title>` element contains only the `/` character. (Fix by @rMazeiks).
+
 ### Added
 - Introduced `dom-smoothie-js` a sub-crate that wraps the `dom_smoothie` for use in a JS environment.
 
