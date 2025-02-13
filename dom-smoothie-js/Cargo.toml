@@ -6,6 +6,7 @@ license.workspace = true
 rust-version.workspace = true
 authors.workspace = true
 description = "A wrapper around the `dom_smoothie` crate for extracting relevant content from web pages"
+keywords = ["html", "readability"]
 
 
 [lib]
@@ -17,7 +18,7 @@ wasm-bindgen = "0.2.84"
 dom_smoothie = { path = "./..", features = ["serde"] }
 
 serde-wasm-bindgen = "0.6.5"
-mini-alloc = {version = "0.7.0", optional = true}
+alloc_cat  = {version = "1.0.0", optional = true}
 cfg-if = "1.0.0"
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
@@ -28,9 +29,6 @@ console_error_panic_hook = { version = "0.1.7", optional = true }
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"
 
-[profile.release]
-# Tell `rustc` to optimize for small code size.
-opt-level = "z"
 
 # `wasm-opt` is on by default in for the release profile, but it can be
 # disabled by setting it to `false`
@@ -39,6 +37,6 @@ wasm-opt = ['-Oz']
 
 
 [features]
-default = ["console_error_panic_hook", "mini-alloc"]
-mini-alloc = ["dep:mini-alloc"]
+default = ["console_error_panic_hook", "alloc_cat"]
+alloc_cat = ["dep:alloc_cat"]
 console_error_panic_hook = ["dep:console_error_panic_hook"]
