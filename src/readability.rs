@@ -1255,4 +1255,16 @@ mod tests {
         let base_url = readability.parse_base_url();
         assert_eq!(base_url.unwrap().as_str(), "https://example.com/");
     }
+
+    #[test]
+    fn test_get_title_with_separator_only() {
+        let contents = r#"<!DOCTYPE>
+        <html>
+            <head><title>/</title></head>
+            <body></body>
+        </html>"#;
+        let readability = Readability::from(contents);
+        let title = readability.get_article_title();
+        assert_eq!(title, "/".into());
+    }
 }
