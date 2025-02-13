@@ -15,7 +15,6 @@ jobs:
   test-wasm:
 
     runs-on: ubuntu-latest
-    
     steps:
     - uses: actions/checkout@v4
     - name: Install stable rust
@@ -26,8 +25,7 @@ jobs:
     - name: Install wasm-bindgen-cli
       uses: taiki-e/install-action@v2
       with:
-        tool: wasm-pack
-        
+        tool: wasm-pack       
     - name: Run tests
       working-directory: dom-smoothie-js
       run: wasm-pack test --node
