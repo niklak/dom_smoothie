@@ -10,13 +10,12 @@ use crate::matching::*;
 use crate::score::*;
 use crate::Config;
 
-fn clean(root_sel: &Selection, tags: &str) {
-
-    for node in root_sel.select(tags).nodes().iter() {
+fn clean(root_sel: &Selection) {
+    for node in root_sel.select_matcher(&MATCHER_CLEAN).nodes().iter() {
         // Allow youtube and vimeo videos through as people usually want to see those.
         let is_embed = if let Some(name) = node.node_name() {
             EMBED_ELEMENTS.contains(&name)
-        }else {
+        } else {
             false
         };
 
@@ -400,15 +399,13 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
 
     let article_sel = Selection::from(article_node.clone());
 
-
     // Clean out junk from the article content
-    clean(&article_sel, "object,embed,footer,link,aside,iframe,input,textarea,select,button");
+    clean(&article_sel);
 
     // Clean out elements with little content that have "share" in their id/class combinations from final top candidates,
     // which means we don't remove the top candidates even they have "share".
 
     remove_share_elements(&article_sel, cfg.char_threshold);
-
 
     clean_headers(article_node, flags);
 

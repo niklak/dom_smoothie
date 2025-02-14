@@ -94,7 +94,6 @@ where
 }
 
 pub(crate) fn get_text_density(node: &Node, selector: &str, char_count: Option<usize>) -> f32 {
-
     let sel = Selection::from(node.clone()).select(selector);
     let sel_nodes = sel.nodes();
 
@@ -133,7 +132,6 @@ pub(crate) fn normalize_spaces(text: &str) -> String {
 }
 
 pub(crate) fn link_density(node: &Node, char_count: Option<usize>) -> f32 {
-    
     let mut link_length = 0f32;
 
     for a in node.find(&["a"]) {
@@ -147,7 +145,7 @@ pub(crate) fn link_density(node: &Node, char_count: Option<usize>) -> f32 {
     }
 
     if link_length == 0.0 {
-        return  0.0;
+        return 0.0;
     }
 
     let text_length = if let Some(c) = char_count {
@@ -171,7 +169,7 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
 
     if !children
         .first()
-        .map_or( false,|child| node_name_is(child, tag))
+        .map_or(false, |child| node_name_is(child, tag))
     {
         return false;
     }

@@ -47,6 +47,7 @@ pub(crate) static MATCHER_SOURCES: Lazy<Matcher> =
     lazy_matcher!("img,picture,figure,video,audio,sources");
 pub(crate) static MATCHER_P: Lazy<Matcher> = lazy_matcher!("p");
 pub(crate) static MATCHER_EMBEDS: Lazy<Matcher> = lazy_matcher!("object,embed,iframe");
+pub(crate) static MATCHER_CLEAN: Lazy<Matcher> = lazy_matcher!("object,embed,footer,link,aside,iframe,input,textarea,select,button");
 
 pub(crate) static META_TITLE_KEYS: &[&str] = &[
     "dc:title",

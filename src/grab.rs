@@ -362,6 +362,9 @@ fn score_elements<'a>(
 
     for candidate in candidates.iter() {
         let prev_score = get_node_score(candidate);
+        if prev_score < 1.0 {
+            continue;
+        }
         let score = prev_score * (1.0 - link_density(candidate, None));
         set_node_score(candidate, score);
     }
