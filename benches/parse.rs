@@ -11,7 +11,7 @@ fn dom_smoothie_parse(contents: &str) -> Result<Article, ReadabilityError> {
 fn bench_dom_smoothie_parse(c: &mut Criterion) {
     let contents = include_str!("../test-pages/rustwiki_2024.html");
     c.bench_function("dom_smoothie_parse", |b| {
-        b.iter(|| dom_smoothie_parse(black_box(&contents)))
+        b.iter(|| dom_smoothie_parse(black_box(contents)))
     });
 }
 

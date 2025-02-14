@@ -204,7 +204,9 @@ fn clean_conditionally(node: &Node, tags: &str, flags: &FlagSet<GrabFlags>) {
     // traversing tag nodes in reverse order,
     // so that how children nodes will appear before parent nodes
     for tag_node in tag_sel.nodes().iter().rev() {
-        let tag = tag_node.node_name().unwrap();
+        let Some(tag) = tag_node.node_name() else {
+            continue;
+        };
         if should_clean_conditionally(tag_node, &tag, flags) {
             tag_node.remove_from_parent();
         }
