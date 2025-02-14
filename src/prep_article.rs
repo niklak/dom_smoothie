@@ -28,7 +28,7 @@ fn clean(root_sel: &Selection) {
                 }
             }
             // For embed with <object> tag, check inner HTML as well.
-            if should_remove && node_name_is(&node, "object") && is_video_url(&node.inner_html()) {
+            if should_remove && node_name_is(node, "object") && is_video_url(&node.inner_html()) {
                 should_remove = false;
             }
         }
