@@ -13,11 +13,9 @@ use crate::Config;
 fn clean(root_sel: &Selection) {
     for node in root_sel.select_matcher(&MATCHER_CLEAN).nodes().iter() {
         // Allow youtube and vimeo videos through as people usually want to see those.
-        let is_embed = if let Some(name) = node.node_name() {
-            EMBED_ELEMENTS.contains(&name)
-        } else {
-            false
-        };
+        let is_embed = node
+            .node_name()
+            .map_or(false, |name| EMBED_ELEMENTS.contains(&name));
 
         let mut should_remove = true;
         if is_embed {
@@ -301,10 +299,7 @@ fn mark_data_tables(sel: &Selection) {
 }
 
 fn fix_lazy_images(sel: &Selection) {
-    for node in sel.select("img,picture,figure")
-        .nodes()
-        .iter()
-    {
+    for node in sel.select("img,picture,figure").nodes().iter() {
         // In some sites (e.g. Kotaku), they put 1px square image as base64 data uri in the src attribute.
         // So, here we check if the data uri is too short, just might as well remove it.
         if let Some(src) = node.attr("src") {
@@ -375,10 +370,7 @@ fn fix_lazy_images(sel: &Selection) {
 }
 
 fn clean_headers(sel: &Selection, flags: &FlagSet<GrabFlags>) {
-    for h_node in sel.select_matcher(&MATCHER_HEADING)
-        .nodes()
-        .iter()
-    {
+    for h_node in sel.select_matcher(&MATCHER_HEADING).nodes().iter() {
         if get_class_weight(h_node, flags.contains(GrabFlags::WeightClasses)) < 0.0 {
             h_node.remove_from_parent();
         }
@@ -388,12 +380,11 @@ fn clean_headers(sel: &Selection, flags: &FlagSet<GrabFlags>) {
 pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg: &Config) {
     let article_sel = Selection::from(article_node.clone());
     // *Important*: Currently the order of calling 'cleaning' functions is matters.
-    // It shouldn't be but it is. 
+    // It shouldn't be but it is.
 
     // Clean out elements with little content that have "share" in their id/class combinations from final top candidates,
     // which means we don't remove the top candidates even they have "share".
     remove_share_elements(&article_sel, cfg.char_threshold);
-
 
     // Check for data tables before we continue, to avoid removing items in
     // those tables, which will often be isolated even though they're
@@ -417,7 +408,6 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
     article_sel.select("h1").rename("h2");
     // remove all presentational attributes
     clean_styles(article_node);
-
 
     // Remove extra paragraphs
 
