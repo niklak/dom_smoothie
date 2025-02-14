@@ -56,13 +56,11 @@ pub(crate) fn get_class_weight(node: &Node, weigh_classes: bool) -> f32 {
                 .find(|a| a.name.local == local_name!("class"))
             {
                 let class_name = &a.value.to_ascii_lowercase();
-
                 weight += determine_attr_weight(class_name);
             };
 
             if let Some(a) = el.attrs.iter().find(|a| a.name.local == local_name!("id")) {
                 let id = &a.value.to_ascii_lowercase();
-
                 weight += determine_attr_weight(id);
             }
         }

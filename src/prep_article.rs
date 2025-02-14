@@ -10,11 +10,13 @@ use crate::matching::*;
 use crate::score::*;
 use crate::Config;
 
-fn clean(n: &Node, tag: &str) {
-    let is_embed = EMBED_ELEMENTS.contains(tag);
-
-    for node in n.find(&[tag]) {
+fn clean(root_sel: &Selection) {
+    for node in root_sel.select_matcher(&MATCHER_CLEAN).nodes().iter() {
         // Allow youtube and vimeo videos through as people usually want to see those.
+        let is_embed = node
+            .node_name()
+            .map_or(false, |name| EMBED_ELEMENTS.contains(&name));
+
         let mut should_remove = true;
         if is_embed {
             for attr in node.attrs().iter() {
@@ -24,7 +26,7 @@ fn clean(n: &Node, tag: &str) {
                 }
             }
             // For embed with <object> tag, check inner HTML as well.
-            if node_name_is(&node, "object") && is_video_url(&node.inner_html()) {
+            if should_remove && node_name_is(node, "object") && is_video_url(&node.inner_html()) {
                 should_remove = false;
             }
         }
@@ -191,16 +193,19 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
     false
 }
 
-fn clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>) {
+fn clean_conditionally(node: &Node, tags: &str, flags: &FlagSet<GrabFlags>) {
     if !flags.contains(GrabFlags::CleanConditionally) {
         return;
     }
 
-    let tag_sel = Selection::from(node.clone()).select(tag);
+    let tag_sel = Selection::from(node.clone()).select(tags);
     // traversing tag nodes in reverse order,
     // so that how children nodes will appear before parent nodes
     for tag_node in tag_sel.nodes().iter().rev() {
-        if should_clean_conditionally(tag_node, tag, flags) {
+        let Some(tag) = tag_node.node_name() else {
+            continue;
+        };
+        if should_clean_conditionally(tag_node, &tag, flags) {
             tag_node.remove_from_parent();
         }
     }
@@ -234,9 +239,9 @@ fn get_row_and_col_count(table: &Selection) -> (usize, usize) {
     (rows, cols)
 }
 
-fn mark_data_tables(n: &Node) {
+fn mark_data_tables(sel: &Selection) {
     // TODO: revise this
-    let table_sel = Selection::from(n.clone()).select("table");
+    let table_sel = sel.select("table");
 
     for node in table_sel.nodes().iter() {
         let sel = Selection::from(node.clone());
@@ -293,12 +298,8 @@ fn mark_data_tables(n: &Node) {
     }
 }
 
-fn fix_lazy_images(n: &Node) {
-    for node in Selection::from(n.clone())
-        .select("img,picture,figure")
-        .nodes()
-        .iter()
-    {
+fn fix_lazy_images(sel: &Selection) {
+    for node in sel.select("img,picture,figure").nodes().iter() {
         // In some sites (e.g. Kotaku), they put 1px square image as base64 data uri in the src attribute.
         // So, here we check if the data uri is too short, just might as well remove it.
         if let Some(src) = node.attr("src") {
@@ -368,12 +369,8 @@ fn fix_lazy_images(n: &Node) {
     }
 }
 
-fn clean_headers(n: &Node, flags: &FlagSet<GrabFlags>) {
-    for h_node in Selection::from(n.clone())
-        .select_matcher(&MATCHER_HEADING)
-        .nodes()
-        .iter()
-    {
+fn clean_headers(sel: &Selection, flags: &FlagSet<GrabFlags>) {
+    for h_node in sel.select_matcher(&MATCHER_HEADING).nodes().iter() {
         if get_class_weight(h_node, flags.contains(GrabFlags::WeightClasses)) < 0.0 {
             h_node.remove_from_parent();
         }
@@ -381,49 +378,36 @@ fn clean_headers(n: &Node, flags: &FlagSet<GrabFlags>) {
 }
 
 pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg: &Config) {
-    clean_styles(article_node);
+    let article_sel = Selection::from(article_node.clone());
+    // *Important*: Currently the order of calling 'cleaning' functions is matters.
+    // It shouldn't be but it is.
+
+    // Clean out elements with little content that have "share" in their id/class combinations from final top candidates,
+    // which means we don't remove the top candidates even they have "share".
+    remove_share_elements(&article_sel, cfg.char_threshold);
 
     // Check for data tables before we continue, to avoid removing items in
     // those tables, which will often be isolated even though they're
     // visually linked to other content-ful elements (text, images, etc.).
+    mark_data_tables(&article_sel);
 
-    mark_data_tables(article_node);
-    fix_lazy_images(article_node);
+    fix_lazy_images(&article_sel);
 
-    clean_conditionally(article_node, "form", flags);
-    clean_conditionally(article_node, "fieldset", flags);
+    clean_conditionally(article_node, "form,fieldset", flags);
 
     // Clean out junk from the article content
-    clean(article_node, "object");
-    clean(article_node, "embed");
-    clean(article_node, "footer");
-    clean(article_node, "link");
-    clean(article_node, "aside");
+    clean(&article_sel);
 
-    let article_sel = Selection::from(article_node.clone());
-
-    // Clean out elements with little content that have "share" in their id/class combinations from final top candidates,
-    // which means we don't remove the top candidates even they have "share".
-
-    remove_share_elements(&article_sel, cfg.char_threshold);
-
-    clean(article_node, "iframe");
-    clean(article_node, "input");
-    clean(article_node, "textarea");
-    clean(article_node, "select");
-    clean(article_node, "button");
-
-    clean_headers(article_node, flags);
+    clean_headers(&article_sel, flags);
 
     // Do these last as the previous stuff may have removed junk
     // that will affect these
-    clean_conditionally(article_node, "table", flags);
-    clean_conditionally(article_node, "ul", flags);
-    clean_conditionally(article_node, "div", flags);
+    clean_conditionally(article_node, "table,ul,div", flags);
 
     // replace H1 with H2 as H1 should be only title that is displayed separately
-
     article_sel.select("h1").rename("h2");
+    // remove all presentational attributes
+    clean_styles(article_node);
 
     // Remove extra paragraphs
 
@@ -465,8 +449,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
                 };
 
                 cell.rename(new_name);
-                table_node.insert_before(&cell.id);
-                table_node.remove_from_parent();
+                table_node.replace_with(&cell);
             }
         }
     }
