@@ -20,7 +20,7 @@ description = "A Rust crate for extracting relevant content from web pages"
 documentation = "https://docs.rs/dom_smoothie/latest"
 keywords = ["html", "readability"]
 readme = "README.md"
-exclude = [".*", "test-pages"]
+exclude = [".*", "test-pages", "benches"]
 
 [dependencies]
 dom_query = {version = "0.13.3"}
