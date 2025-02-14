@@ -1,3 +1,4 @@
+use dom_query::Tree;
 use foldhash::{HashMap, HashSet};
 use std::vec;
 
@@ -77,7 +78,7 @@ impl Readability {
     ) -> Option<NodeRef<'a>> {
         let tree = body_node.tree;
         let weigh_class = flags.contains(GrabFlags::WeightClasses);
-        let mut top_candidates = score_elements(elements_to_score, flags);
+        let mut top_candidates = score_elements(elements_to_score, tree, flags);
 
         top_candidates.truncate(self.config.n_top_candidates);
 
@@ -308,9 +309,10 @@ fn has_child_block_element(node: &NodeRef) -> bool {
 
 fn score_elements<'a>(
     elements_to_score: &Vec<NodeRef<'a>>,
+    tree: &'a Tree,
     flags: &FlagSet<GrabFlags>,
 ) -> Vec<NodeRef<'a>> {
-    let mut candidates = vec![];
+    let mut score_map: HashMap<NodeId, f32> = HashMap::default();
 
     for element in elements_to_score {
         if element.parent().is_none() {
@@ -341,14 +343,17 @@ fn score_elements<'a>(
                 _ => (level * 3) as f32,
             };
 
-            let mut ancestor_score = if !has_node_score(ancestor) {
-                candidates.push(ancestor.clone());
-                determine_node_score(ancestor, flags.contains(GrabFlags::WeightClasses))
+            let mut ancestor_score = if let Some(score) = score_map.get(&ancestor.id) {
+                *score
             } else {
-                get_node_score(ancestor)
+                score_map.insert(ancestor.id, 0.0);
+                determine_node_score(ancestor, flags.contains(GrabFlags::WeightClasses))
             };
+
             ancestor_score += content_score as f32 / score_divider;
-            set_node_score(ancestor, ancestor_score);
+            score_map
+                .entry(ancestor.id)
+                .and_modify(|s| *s = ancestor_score);
 
             if node_name_is(ancestor, "body") {
                 break;
@@ -360,14 +365,21 @@ fn score_elements<'a>(
     // should have a relatively small link density (5% or less) and be mostly
     // unaffected by this operation.
 
-    for candidate in candidates.iter() {
-        let prev_score = get_node_score(candidate);
-        if prev_score < 1.0 {
-            continue;
-        }
-        let score = prev_score * (1.0 - link_density(candidate, None));
-        set_node_score(candidate, score);
-    }
+    let mut candidates: Vec<_> = score_map
+        .into_iter()
+        .filter(|(_, score)| *score > 0.0)
+        .map(|(node_id, prev_score)| {
+            let candidate = NodeRef::new(node_id, tree);
+            let score = if prev_score > 5.0 {
+                prev_score * (1.0 - link_density(&candidate, None))
+            } else {
+                prev_score
+            };
+            set_node_score(&candidate, score);
+            candidate
+        })
+        .collect();
+
 
     candidates.sort_by(|n1, n2| get_node_score(n2).partial_cmp(&get_node_score(n1)).unwrap());
     candidates
