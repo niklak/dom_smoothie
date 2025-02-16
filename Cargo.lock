@@ -394,7 +394,6 @@ dependencies = [
  "foldhash",
  "gjson",
  "html-escape",
- "html5ever",
  "once_cell",
  "phf",
  "serde",

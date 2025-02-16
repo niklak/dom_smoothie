@@ -464,13 +464,13 @@ fn remove_share_elements(root_sel: &Selection, share_element_threshold: usize) {
 
         child.query(|n| {
             if let NodeData::Element(ref el) = n.data {
-                if let Some(class_name) = el.class(){
+                if let Some(class_name) = el.class() {
                     has_share_elements = contains_share_elements(&class_name);
                 };
                 if has_share_elements {
                     return;
                 }
-                if let Some(id_attr) = el.id(){
+                if let Some(id_attr) = el.id() {
                     has_share_elements = contains_share_elements(&id_attr);
                 }
             }

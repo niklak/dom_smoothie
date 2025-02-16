@@ -49,8 +49,7 @@ pub(crate) fn get_class_weight(node: &Node, weigh_classes: bool) -> f32 {
 
     node.query(|n| {
         if let NodeData::Element(ref el) = n.data {
-            if let Some(mut class_name) = el.class()
-            {
+            if let Some(mut class_name) = el.class() {
                 class_name.make_ascii_lowercase();
                 weight += determine_attr_weight(&class_name);
             };
