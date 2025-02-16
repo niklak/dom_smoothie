@@ -23,7 +23,7 @@ readme = "README.md"
 exclude = [".*", "test-pages", "benches"]
 
 [dependencies]
-dom_query = {version = "0.13.3"}
+dom_query = {version = "0.14.0"}
 html5ever = "0.29.1"
 tendril = {version = "0.4.3"}
 once_cell = { version = "1" }
