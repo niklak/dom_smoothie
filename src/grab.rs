@@ -1,3 +1,4 @@
+use dom_query::NodeData;
 use dom_query::Tree;
 use foldhash::{HashMap, HashSet};
 use std::vec;
@@ -293,13 +294,13 @@ fn div_into_p(node: &NodeRef) {
 }
 
 fn has_child_block_element(node: &NodeRef) -> bool {
-    node.children().iter().any(|n| {
-        if let Some(name) = n.node_name() {
-            BLOCK_ELEMS.contains(&name) || has_child_block_element(n)
+    node.descendants_it().any(|n| n.query_or(false, |tree_node|{
+        if let NodeData::Element(ref el) = tree_node.data {
+            BLOCK_ELEMS.contains(&el.name.local)
         } else {
             false
         }
-    })
+    }))
 }
 
 fn score_elements<'a>(
