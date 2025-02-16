@@ -11,7 +11,9 @@ Abstract:Ranking and recommendation systems are the foundation for numerous onli
 Subjects: Information Retrieval (cs.IR); Artificial Intelligence (cs.AI)
 Cite as: arXiv:2501.16450 [cs.IR]
 (or arXiv:2501.16450v1 [cs.IR] for this version)
-https://doi.org/10.48550/arXiv.2501.16450 arXiv-issued DOI via DataCite
+https://doi.org/10.48550/arXiv.2501.16450
+
+arXiv-issued DOI via DataCite
 
 Submission history
 
