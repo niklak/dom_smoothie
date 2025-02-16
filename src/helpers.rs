@@ -183,7 +183,7 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
 pub(crate) fn is_element_without_content(node: &Node) -> bool {
     // since this function calls only for elements check `node.is_element()` is redundant
 
-    let has_text = node.descendants_it().filter(|n| n.is_text()).any(|n| {
+    let has_text = node.descendants_it().any(|n| {
         n.query_or(false, |t| {
             if let NodeData::Text { ref contents } = t.data {
                 !contents.trim().is_empty()
