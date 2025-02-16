@@ -2,6 +2,13 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+- Update `dom_query`'s version to `0.14.0` which brings performance improvements and improves the accuracy of the `NodeRef::formatted_text` method.
+- Code optimizations, which improve the performance of the `Readability::parse` method.
+
+
 ## [0.6.0] - 2025-02-13
 
 ### Fixed
