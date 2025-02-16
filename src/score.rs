@@ -1,5 +1,4 @@
 use dom_query::{Node, NodeData};
-use html5ever::local_name;
 
 use crate::{glob::*, matching::contains_one_of_words};
 
@@ -50,18 +49,15 @@ pub(crate) fn get_class_weight(node: &Node, weigh_classes: bool) -> f32 {
 
     node.query(|n| {
         if let NodeData::Element(ref el) = n.data {
-            if let Some(a) = el
-                .attrs
-                .iter()
-                .find(|a| a.name.local == local_name!("class"))
+            if let Some(mut class_name) = el.class()
             {
-                let class_name = &a.value.to_ascii_lowercase();
-                weight += determine_attr_weight(class_name);
+                class_name.make_ascii_lowercase();
+                weight += determine_attr_weight(&class_name);
             };
 
-            if let Some(a) = el.attrs.iter().find(|a| a.name.local == local_name!("id")) {
-                let id = &a.value.to_ascii_lowercase();
-                weight += determine_attr_weight(id);
+            if let Some(mut id_attr) = el.id() {
+                id_attr.make_ascii_lowercase();
+                weight += determine_attr_weight(&id_attr);
             }
         }
     });

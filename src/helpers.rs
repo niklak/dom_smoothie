@@ -236,9 +236,7 @@ pub(crate) fn is_probably_visible(node: &Node) -> bool {
     let is_aria_hidden = node
         .attr("aria-hidden")
         .map_or(false, |a| a.as_ref() == "true");
-    let has_fallback_image = node
-        .attr("class")
-        .map_or(false, |s| s.contains("fallback-image"));
+    let has_fallback_image = node.class().map_or(false, |s| s.contains("fallback-image"));
 
     if is_aria_hidden && !has_fallback_image {
         return false;

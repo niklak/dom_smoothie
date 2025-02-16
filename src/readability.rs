@@ -869,7 +869,7 @@ impl Readability {
         let class_sel = sel.select(&format!(".page {}", class_selector));
 
         for node in class_sel.nodes().iter() {
-            let Some(class_string) = node.attr("class") else {
+            let Some(class_string) = node.class() else {
                 unreachable!();
             };
             let classes_to_remove = class_string

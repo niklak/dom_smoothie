@@ -1,7 +1,6 @@
 use dom_query::NodeData;
 use dom_query::{Node, Selection};
 use flagset::FlagSet;
-use html5ever::local_name;
 
 use crate::glob::*;
 use crate::grab_flags::GrabFlags;
@@ -465,22 +464,14 @@ fn remove_share_elements(root_sel: &Selection, share_element_threshold: usize) {
 
         child.query(|n| {
             if let NodeData::Element(ref el) = n.data {
-                if let Some(a) = el
-                    .attrs
-                    .iter()
-                    .find(|attr| attr.name.local == local_name!("class"))
-                {
-                    has_share_elements = contains_share_elements(&a.value);
+                if let Some(class_name) = el.class(){
+                    has_share_elements = contains_share_elements(&class_name);
                 };
                 if has_share_elements {
                     return;
                 }
-                if let Some(a) = el
-                    .attrs
-                    .iter()
-                    .find(|attr| attr.name.local == local_name!("id"))
-                {
-                    has_share_elements = contains_share_elements(&a.value);
+                if let Some(id_attr) = el.id(){
+                    has_share_elements = contains_share_elements(&id_attr);
                 }
             }
         });

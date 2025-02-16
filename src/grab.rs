@@ -216,12 +216,12 @@ fn get_node_matching_string(node: &NodeRef) -> StrTendril {
     let mut matched_buf = StrTendril::new();
     node.query(|n| {
         if let dom_query::NodeData::Element(ref el) = n.data {
-            if let Some(a) = el.attrs.iter().find(|attr| &attr.name.local == "class") {
-                matched_buf.push_tendril(&a.value);
+            if let Some(class) = el.class() {
+                matched_buf.push_tendril(&class);
                 matched_buf.push_char(' ');
             };
-            if let Some(a) = el.attrs.iter().find(|attr| &attr.name.local == "id") {
-                matched_buf.push_tendril(&a.value);
+            if let Some(id_attr) = el.id() {
+                matched_buf.push_tendril(&id_attr);
             }
         }
     });
