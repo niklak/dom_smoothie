@@ -159,7 +159,7 @@ impl Readability {
     }
 }
 
-fn pre_filter_document<'a>(root_node: &'a NodeRef, metadata: &mut Metadata) {
+fn pre_filter_document(root_node: &NodeRef, metadata: &mut Metadata) {
     let tree = &root_node.tree;
     let mut should_remove_title_header = !metadata.title.is_empty();
     let mut next_node_id = get_child_or_sibling_id(root_node, false);

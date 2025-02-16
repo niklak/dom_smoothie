@@ -186,7 +186,7 @@ pub(crate) fn is_element_without_content(node: &Node) -> bool {
     let has_text = node.descendants_it().filter(|n| n.is_text()).any(|n| {
         n.query_or(false, |t| {
             if let NodeData::Text { ref contents } = t.data {
-                return !contents.trim().is_empty();
+                !contents.trim().is_empty()
             } else {
                 false
             }
