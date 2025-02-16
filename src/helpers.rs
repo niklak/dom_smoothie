@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use dom_query::NodeData;
 use unicode_segmentation::UnicodeSegmentation;
 
 use dom_query::{Node, Selection};
@@ -181,16 +182,28 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
 
 pub(crate) fn is_element_without_content(node: &Node) -> bool {
     // since this function calls only for elements check `node.is_element()` is redundant
-    if !node.text().trim().is_empty() {
+
+    let has_text = node.descendants_it().filter(|n| n.is_text()).any(|n| {
+        n.query_or(false, |t| {
+            if let NodeData::Text { ref contents } = t.data {
+                return !contents.trim().is_empty();
+            } else {
+                false
+            }
+        })
+    });
+
+    if has_text {
         return false;
     }
-    let children = node.element_children();
-    if children.is_empty() {
+
+    let el_children_count = node.children_it(false).filter(|n| n.is_element()).count();
+    if el_children_count == 0 {
         return true;
     }
 
     let line_breaks = node.find(&["br"]).len() + node.find(&["hr"]).len();
-    children.len() == line_breaks
+    el_children_count == line_breaks
 }
 
 pub(crate) fn get_dir_attr(node: &Node) -> Option<String> {
