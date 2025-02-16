@@ -158,25 +158,22 @@ impl Readability {
     }
 }
 
-fn pre_filter_document(root_node: &NodeRef, metadata: &mut Metadata) {
+fn pre_filter_document<'a>(root_node: &'a NodeRef, metadata: &mut Metadata) {
+    let tree = &root_node.tree;
     let mut should_remove_title_header = !metadata.title.is_empty();
+    let mut next_node_id = get_child_or_sibling_id(root_node, false);
+    while let Some(node_id) = next_node_id {
+        let node = NodeRef::new(node_id, tree);
 
-    let mut nodes_to_remove = HashSet::default();
-
-    for node in root_node.descendants_it().filter(|n| n.is_element()) {
-        if let Some(parent) = node.parent() {
-            if nodes_to_remove.contains(&parent.id) {
-                nodes_to_remove.insert(node.id);
-                continue;
-            }
-        }
         if !is_probably_visible(&node) {
-            nodes_to_remove.insert(node.id);
+            next_node_id = get_child_or_sibling_id(&node, true);
+            node.remove_from_parent();
             continue;
         }
 
         if MATCHER_DIALOGS.match_element(&node) {
-            nodes_to_remove.insert(node.id);
+            next_node_id = get_child_or_sibling_id(&node, true);
+            node.remove_from_parent();
             continue;
         }
 
@@ -185,7 +182,8 @@ fn pre_filter_document(root_node: &NodeRef, metadata: &mut Metadata) {
             && text_similarity(&metadata.title, &node.text()) > 0.75
         {
             should_remove_title_header = false;
-            nodes_to_remove.insert(node.id);
+            next_node_id = get_child_or_sibling_id(&node, true);
+            node.remove_from_parent();
             continue;
         }
 
@@ -202,13 +200,11 @@ fn pre_filter_document(root_node: &NodeRef, metadata: &mut Metadata) {
             };
 
             metadata.byline = Some(normalize_spaces(&byline));
-            nodes_to_remove.insert(node.id);
+            next_node_id = get_child_or_sibling_id(&node, true);
+            node.remove_from_parent();
             continue;
         }
-    }
-
-    for node_id in nodes_to_remove {
-        root_node.tree.remove_from_parent(&node_id);
+        next_node_id = get_child_or_sibling_id(&node, false);
     }
 }
 
