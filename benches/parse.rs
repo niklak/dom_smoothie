@@ -1,4 +1,4 @@
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use std::hint::black_box;
 
 use dom_smoothie::{Article, Readability, ReadabilityError};
@@ -9,10 +9,27 @@ fn dom_smoothie_parse(contents: &str) -> Result<Article, ReadabilityError> {
 }
 
 fn bench_dom_smoothie_parse(c: &mut Criterion) {
-    let contents = include_str!("../test-pages/rustwiki_2024.html");
-    c.bench_function("dom_smoothie_parse", |b| {
-        b.iter(|| dom_smoothie_parse(black_box(contents)))
-    });
+    let mut group = c.benchmark_group("dom_smoothie");
+
+    // Test different sizes/types of content
+    let test_cases = vec![
+        ("small", include_str!("../test-pages/ok/ehow-1/source.html")),
+        (
+            "medium",
+            include_str!("../test-pages/ok/engadget/source.html"),
+        ),
+        (
+            "large",
+            include_str!("../test-pages/ok/wikipedia-2/source.html"),
+        ),
+    ];
+
+    for (name, contents) in test_cases {
+        group.bench_with_input(BenchmarkId::new("parse", name), contents, |b, contents| {
+            b.iter(|| dom_smoothie_parse(black_box(contents)))
+        });
+    }
+    group.finish();
 }
 
 criterion_group!(benches, bench_dom_smoothie_parse);
