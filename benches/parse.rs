@@ -32,5 +32,11 @@ fn bench_dom_smoothie_parse(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_dom_smoothie_parse);
+fn configure_criterion() -> Criterion {
+    Criterion::default()
+        .measurement_time(std::time::Duration::new(10, 0))
+        
+}
+
+criterion_group!{ name = benches; config = configure_criterion(); targets = bench_dom_smoothie_parse }
 criterion_main!(benches);
