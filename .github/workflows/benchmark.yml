@@ -3,12 +3,16 @@ name: Benchmark
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+
+permissions:
+  # deployments permission to deploy GitHub pages website
+  deployments: write
+  # contents permission to update benchmark contents in gh-pages branch
+  contents: write
 
 jobs:
   benchmark:
-    name: Run benchmarks
+    name: Performance regression check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
