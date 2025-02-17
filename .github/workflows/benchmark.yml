@@ -1,0 +1,53 @@
+name: Benchmark
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  benchmark:
+    name: Run benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      # Cache dependencies to speed up build
+      - uses: Swatinem/rust-cache@v2
+
+      # Run benchmark
+      - name: Run benchmark
+        run: cargo bench --bench parse -- --output-format bencher | tee benchmark-results.txt
+
+      # Store benchmark results
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Rust Benchmark
+          tool: "cargo"
+          output-file-path: benchmark-results.txt
+          # Save the results as GitHub Pages
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          # Show alert with commit comment on detecting possible performance regression
+          alert-threshold: "150%"
+          comment-on-alert: true
+          # Optional: Alert only when changes are made to specific files
+          alert-comment-cc-users: "@niklak"
+          # Optional: Enable failure when performance regresses
+          # fail-on-alert: true
+
+          # Configure GitHub Pages
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: dev/bench/
+
+      # Optional: Upload the results as artifacts
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-results
+          path: benchmark-results.txt
