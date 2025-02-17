@@ -43,7 +43,7 @@ jobs:
 
           # Configure GitHub Pages
           gh-pages-branch: gh-pages
-          benchmark-data-dir-path: dev/bench/
+          benchmark-data-dir-path: docs/dev/bench/
 
       # Optional: Upload the results as artifacts
       - name: Upload benchmark results
