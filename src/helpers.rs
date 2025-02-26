@@ -43,15 +43,15 @@ pub(crate) fn is_phrasing_content(node: &Node) -> bool {
     }
 
     // only elements has a node name
-    let Some(node_name) = node.node_name() else {
+    let Some(qual_name) = node.tree.get_name(&node.id) else {
         return false;
     };
-
-    if PHRASING_ELEMS.contains(&node_name) {
+    let node_name = qual_name.local.as_ref();
+    if PHRASING_ELEMS.contains(node_name) {
         return true;
     }
 
-    if matches!(node_name.as_ref(), "a" | "del" | "ins")
+    if matches!(node_name, "a" | "del" | "ins")
         && node.children().into_iter().all(|n| is_phrasing_content(&n))
     {
         return true;
