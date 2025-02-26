@@ -188,8 +188,7 @@ fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
             continue;
         }
 
-        let match_string = get_node_matching_string(&node);
-        if metadata.byline.is_none() && is_valid_byline(&node, &match_string) {
+        if metadata.byline.is_none() && is_valid_byline(&node) {
             let byline = if let Some(item_prop_name) = Selection::from(node.clone())
                 .select("[itemprop=name]")
                 .nodes()
@@ -226,7 +225,8 @@ fn get_node_matching_string(node: &NodeRef) -> StrTendril {
     matched_buf
 }
 
-fn is_valid_byline(node: &NodeRef, match_string: &str) -> bool {
+fn is_valid_byline(node: &NodeRef) -> bool {
+    let match_string = get_node_matching_string(&node);
     let is_byline = MATCHER_BYLINE.match_element(node)
         || BYLINE_PATTERNS.iter().any(|p| match_string.contains(p));
     if !is_byline {
@@ -648,13 +648,9 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
     let mut next_node_id = get_child_or_sibling_id(root_node, false);
     while let Some(node_id) = next_node_id {
         let mut node = NodeRef::new(node_id, tree);
-        let Some(node_name) = node.node_name() else {
-            unreachable!()
-        };
-
-        let match_string = get_node_matching_string(&node);
 
         if strip_unlikely {
+            let match_string = get_node_matching_string(&node);
             if !match_string.is_empty() && is_unlikely_candidate(&node, &match_string) {
                 next_node_id = get_child_or_sibling_id(&node, true);
                 node.remove_from_parent();
@@ -669,6 +665,10 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
                 }
             }
         }
+
+        let Some(node_name) = node.node_name() else {
+            unreachable!()
+        };
 
         if TAGS_WITH_CONTENT.contains(&node_name) {
             // TODO: this is a controversial moment, it may leave an empty block,
