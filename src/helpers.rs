@@ -221,7 +221,7 @@ pub(crate) fn get_dir_attr(node: &Node) -> Option<String> {
 }
 
 pub(crate) fn node_name_is(node: &Node, name: &str) -> bool {
-    node.node_name().as_deref() == Some(name)
+    node.tree.get_name(&node.id).map_or(false,|n| n.local.as_ref() == name)
 }
 
 pub(crate) fn is_probably_visible(node: &Node) -> bool {
