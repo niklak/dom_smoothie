@@ -93,7 +93,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
         // If there are not very many commas, and the number of
         // non-paragraph elements is more than paragraphs or other
         // ominous signs, remove the element.
-        let img = node.find(&["img"]).len() as f32;
+        
 
         let mut embed_count = 0;
 
@@ -127,10 +127,12 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
             is_list = (list_length as f32 / content_len as f32) > 0.9;
         }
 
+        let img = node.find_descendants("img").len() as f32;
+
         let should_remove = || {
             let is_figure_child = has_ancestor_tag::<NodePredicate>(node, "figure", None, None);
-            let p: f32 = node.find(&["p"]).len() as f32;
-            let li = node.find(&["li"]).len() as f32 - 100.0;
+            let p: f32 = node.find_descendants("p").len() as f32;
+            let li = node.find_descendants("li").len() as f32 - 100.0;
 
             if !is_figure_child && img > 1.0 && p / img < 0.5 {
                 return true;
@@ -140,7 +142,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
                 return true;
             }
 
-            let input = node.find(&["input"]).len() as f32;
+            let input = node.find_descendants("input").len() as f32;
             if input > (p / 3.0).floor() {
                 return true;
             }
@@ -183,7 +185,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
                     return have_to_remove;
                 }
             }
-            let li_count = node.find(&["li"]).len();
+            let li_count = node.find_descendants("li").len();
             return !(img == li_count as f32);
         }
 
@@ -420,7 +422,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
         }
     }
 
-    for br_node in article_node.find(&["br"]).iter() {
+    for br_node in article_node.find_descendants("br").iter() {
         if let Some(next_node) = br_node.next_element_sibling() {
             if node_name_is(&next_node, "p") {
                 br_node.remove_from_parent();
