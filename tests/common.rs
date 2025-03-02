@@ -21,17 +21,17 @@ struct ExpectedMetadata {
     readerable: bool,
 }
 
-pub(crate) fn test_alt_formatted_text<P>(test_path: P)
+pub(crate) fn test_alt_text<P>(test_path: P, text_mode: TextMode, expected_filename: &str)
 where
     P: AsRef<Path>,
 {
     let base_path = test_path.as_ref();
     let source_path = base_path.join("source.html");
-    let expected_path = base_path.join("expected_alt.txt");
+    let expected_path = base_path.join(expected_filename);
     // for more options check the documentation
     let cfg = Config {
         candidate_select_mode: CandidateSelectMode::DomSmoothie,
-        text_mode: TextMode::Formatted,
+        text_mode,
         ..Default::default()
     };
 

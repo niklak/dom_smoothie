@@ -242,18 +242,17 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 
 <details>
-    <summary><b>Formatted text content</b></summary>
+    <summary><b>Formatted text content and Markdown</b></summary>
 
 By default, the text content is output as-is, without formatting, 
 preserving whitespace from the original HTML document. 
 Depending on the document's initial markup, this can be quite verbose and inconvenient.
 
-In version 0.5.0, it will be possible to retrieve formatted text content. 
-To enable this, set `text_mode: TextMode::Formatted` in the config.
-This formatting is simple; for example, it does not account for table formatting.
-It is certainly nowhere near markdown-level, but the result is noticeably 
-cleaner than without formatting.
+To retrieve formatted text content, set text_mode: `TextMode::Formatted` in the config.
+This formatting does not preserve table structures, meaning table data may be output as plain text without column alignment.
+While this formatting is not as structured as Markdown, it provides a cleaner output compared to raw text.
 
+`TextMode::Markdown` enables markdown formatting.
 
 
 ```rust
@@ -267,6 +266,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let cfg = Config {
         // Enable formatted text output
         text_mode: TextMode::Formatted,
+        // Enable Markdown output (for more structured text)
+        //text_mode: TextMode::Markdown,
         ..Default::default()
     };
 

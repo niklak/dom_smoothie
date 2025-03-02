@@ -1,0 +1,22 @@
+## Computer Science \> Information Retrieval
+
+**arXiv:2501\.16450** \(cs\)
+
+Authors:[Hamed Firooz](https://arxiv.org/search/cs?searchtype=author&query=Firooz,+H), [Maziar Sanjabi](https://arxiv.org/search/cs?searchtype=author&query=Sanjabi,+M), [Adrian Englhardt](https://arxiv.org/search/cs?searchtype=author&query=Englhardt,+A), [Aman Gupta](https://arxiv.org/search/cs?searchtype=author&query=Gupta,+A), [Ben Levine](https://arxiv.org/search/cs?searchtype=author&query=Levine,+B), [Dre Olgiati](https://arxiv.org/search/cs?searchtype=author&query=Olgiati,+D), [Gungor Polatkan](https://arxiv.org/search/cs?searchtype=author&query=Polatkan,+G), [Iuliia Melnychuk](https://arxiv.org/search/cs?searchtype=author&query=Melnychuk,+I), [Karthik Ramgopal](https://arxiv.org/search/cs?searchtype=author&query=Ramgopal,+K), [Kirill Talanine](https://arxiv.org/search/cs?searchtype=author&query=Talanine,+K), [Kutta Srinivasan](https://arxiv.org/search/cs?searchtype=author&query=Kutta), [Luke Simon](https://arxiv.org/search/cs?searchtype=author&query=Simon,+L), [Natesh Sivasubramoniapillai](https://arxiv.org/search/cs?searchtype=author&query=Sivasubramoniapillai,+N), [Necip Fazil Ayan](https://arxiv.org/search/cs?searchtype=author&query=Ayan,+N+F), [Qingquan Song](https://arxiv.org/search/cs?searchtype=author&query=Song,+Q), [Samira Sriram](https://arxiv.org/search/cs?searchtype=author&query=Samira), [Souvik Ghosh](https://arxiv.org/search/cs?searchtype=author&query=Ghosh,+S), [Tao Song](https://arxiv.org/search/cs?searchtype=author&query=Song,+T), [Vignesh Kothapalli](https://arxiv.org/search/cs?searchtype=author&query=Kothapalli,+V), [Xiaoling Zhai](https://arxiv.org/search/cs?searchtype=author&query=Zhai,+X), [Ya Xu](https://arxiv.org/search/cs?searchtype=author&query=Xu,+Y), [Yu Wang](https://arxiv.org/search/cs?searchtype=author&query=Wang,+Y), [Yun Dai](https://arxiv.org/search/cs?searchtype=author&query=Dai,+Y)
+
+[View PDF](/pdf/2501.16450) [HTML \(experimental\)](https://arxiv.org/html/2501.16450v1)
+
+> Abstract:Ranking and recommendation systems are the foundation for numerous online experiences, ranging from search results to personalized content delivery\. These systems have evolved into complex, multilayered architectures that leverage vast datasets and often incorporate thousands of predictive models\. The maintenance and enhancement of these models is a labor intensive process that requires extensive feature engineering\. This approach not only exacerbates technical debt but also hampers innovation in extending these systems to emerging problem domains\. In this report, we present our research to address these challenges by utilizing a large foundation model with a textual interface for ranking and recommendation tasks\. We illustrate several key advantages of our approach: \(1\) a single model can manage multiple predictive tasks involved in ranking and recommendation, \(2\) decoder models with textual interface due to their comprehension of reasoning capabilities, can generalize to new recommendation surfaces and out-of-domain problems, and \(3\) by employing natural language interfaces for task definitions and verbalizing member behaviors and their social connections, we eliminate the need for feature engineering and the maintenance of complex directed acyclic graphs of model dependencies\. We introduce our research pre-production model, 360Brew V1\.0, a 150B parameter, decoder-only model that has been trained and fine-tuned on LinkedIn's data and tasks\. This model is capable of solving over 30 predictive tasks across various segments of the LinkedIn platform, achieving performance levels comparable to or exceeding those of current production systems based on offline metrics, without task-specific fine-tuning\. Notably, each of these tasks is conventionally addressed by dedicated models that have been developed and maintained over multiple years by teams of a similar or larger size than our own\.
+
+
+|   |   |
+| - | - |
+| Subjects: | Information Retrieval \(cs\.IR\); Artificial Intelligence \(cs\.AI\) |
+| Cite as: | [arXiv:2501\.16450](https://arxiv.org/abs/2501.16450) \[cs\.IR\] |
+|  | \(or [arXiv:2501\.16450v1](https://arxiv.org/abs/2501.16450v1) \[cs\.IR\] for this version\) |
+|  | [https://doi\.org/10\.48550/arXiv\.2501\.16450](https://doi.org/10.48550/arXiv.2501.16450) arXiv-issued DOI via DataCite |
+
+## Submission history
+
+From: Maziar Sanjabi \[[view email](/show-email/fa91fd8b/2501.16450)\]
+**\[v1\]** Mon, 27 Jan 2025 19:14:52 UTC \(1,931 KB\)

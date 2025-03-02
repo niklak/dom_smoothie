@@ -17,6 +17,7 @@ pub enum TextMode {
     #[default]
     Raw,
     Formatted,
+    Markdown,
 }
 
 /// Configuration options for [`crate::Readability`]
@@ -46,7 +47,7 @@ pub struct Config {
     /// based on [Readability.js](https://github.com/mozilla/readability)
     /// or uses the crate's exclusive implementation.
     pub candidate_select_mode: CandidateSelectMode,
-    /// Allows to set the text mode, whether it should be raw (as-is) or formatted
+    /// Allows to set the text mode, whether it should be raw (as-is), formatted or markdown
     pub text_mode: TextMode,
 }
 
