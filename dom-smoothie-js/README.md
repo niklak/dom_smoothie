@@ -15,7 +15,7 @@
 | readable_min_score         | `number` (float)          | `20.0`                             | Minimum score required for readability check |
 | readable_min_content_length| `number`                  | `140`                              | Minimum content length for readability check |
 | candidate_select_mode      | `'Readability' \| 'DomSmoothie'` | `'Readability'`                 | Candidate selection mode |
-| text_mode                  | `'Raw' \| 'Formatted' \| 'Markdown'`    | `'Raw'`                            | Text output mode, either raw or formatted |
+| text_mode                  | `'Raw' \| 'Formatted' \| 'Markdown'`    | `'Raw'`                            | Text output mode, either raw, formatted or Markdown |
 
 ### Example Object with Default Parameters
 
