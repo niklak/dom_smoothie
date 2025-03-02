@@ -252,7 +252,7 @@ To retrieve formatted text content, set text_mode: `TextMode::Formatted` in the 
 This formatting does not preserve table structures, meaning table data may be output as plain text without column alignment.
 While this formatting is not as structured as Markdown, it provides a cleaner output compared to raw text.
 
-`TextMode::Markdown` enables markdown formatting.
+`TextMode::Markdown` enables Markdown formatting.
 
 
 ```rust
