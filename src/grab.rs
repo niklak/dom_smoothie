@@ -226,7 +226,7 @@ fn get_node_matching_string(node: &NodeRef) -> StrTendril {
 }
 
 fn is_valid_byline(node: &NodeRef) -> bool {
-    let match_string = get_node_matching_string(&node);
+    let match_string = get_node_matching_string(node);
     let is_byline = MATCHER_BYLINE.match_element(node)
         || BYLINE_PATTERNS.iter().any(|p| match_string.contains(p));
     if !is_byline {
