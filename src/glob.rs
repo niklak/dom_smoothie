@@ -1,4 +1,4 @@
-use dom_query::Matcher;
+use dom_query::{mini_selector::MiniSelector, Matcher};
 use once_cell::sync::Lazy;
 use phf::phf_set;
 
@@ -223,3 +223,9 @@ pub(crate) static LOADING_WORDS: phf::Set<&'static str> = phf_set!(
 );
 
 pub(crate) static SHARE_WORDS: phf::Set<&'static str> = phf_set!("share", "sharedaddy");
+
+pub(crate) static MINI_BR: Lazy<MiniSelector> = Lazy::new(|| MiniSelector::new(r#"br"#).unwrap());
+pub(crate) static MINI_FALLBACK_IMG: Lazy<MiniSelector> =
+    Lazy::new(|| MiniSelector::new(r#"[class*="fallback-image"]"#).unwrap());
+pub(crate) static MINI_ARIA_HIDDEN: Lazy<MiniSelector> =
+    Lazy::new(|| MiniSelector::new(r#"[aria-hidden="true"]"#).unwrap());

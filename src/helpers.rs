@@ -43,15 +43,15 @@ pub(crate) fn is_phrasing_content(node: &Node) -> bool {
     }
 
     // only elements has a node name
-    let Some(node_name) = node.node_name() else {
+    let Some(qual_name) = node.tree.get_name(&node.id) else {
         return false;
     };
-
-    if PHRASING_ELEMS.contains(&node_name) {
+    let node_name = qual_name.local.as_ref();
+    if PHRASING_ELEMS.contains(node_name) {
         return true;
     }
 
-    if matches!(node_name.as_ref(), "a" | "del" | "ins")
+    if matches!(node_name, "a" | "del" | "ins")
         && node.children().into_iter().all(|n| is_phrasing_content(&n))
     {
         return true;
@@ -65,7 +65,7 @@ pub(crate) fn is_whitespace(node: &Node) -> bool {
         return node.text().trim().is_empty();
     }
     // only an element node has a node_name
-    node.node_name().map_or(false, |name| name == "br".into())
+    MINI_BR.match_node(node)
 }
 
 pub(crate) type NodePredicate = fn(&Node) -> bool;
@@ -82,10 +82,7 @@ where
     let max_depth = max_depth.map(|max_depth| if max_depth == 0 { 3 } else { max_depth });
     let mut matched_ancestors = node
         .ancestors_it(max_depth)
-        .filter(|a| match a.node_name() {
-            Some(name) => name.as_ref() == tag,
-            None => false,
-        });
+        .filter(|a| node_name_is(a, tag));
 
     if let Some(filter_fn) = filter_fn {
         matched_ancestors.any(|a| filter_fn(&a))
@@ -135,7 +132,7 @@ pub(crate) fn normalize_spaces(text: &str) -> String {
 pub(crate) fn link_density(node: &Node, char_count: Option<usize>) -> f32 {
     let mut link_length = 0f32;
 
-    for a in node.find(&["a"]) {
+    for a in node.find_descendants("a") {
         let href = a.attr_or("href", "");
         let coeff = if href.len() > 1 && href.starts_with('#') {
             0.3
@@ -175,23 +172,13 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
         return false;
     }
 
-    !node
-        .children_it(false)
-        .any(|n| n.is_text() && !n.text().trim().is_empty())
+    !node.children_it(false).any(|n| is_empty_text(&n))
 }
 
 pub(crate) fn is_element_without_content(node: &Node) -> bool {
     // since this function calls only for elements check `node.is_element()` is redundant
 
-    let has_text = node.descendants_it().any(|n| {
-        n.query_or(false, |t| {
-            if let NodeData::Text { ref contents } = t.data {
-                !contents.trim().is_empty()
-            } else {
-                false
-            }
-        })
-    });
+    let has_text = node.descendants_it().any(|n| is_empty_text(&n));
 
     if has_text {
         return false;
@@ -202,7 +189,7 @@ pub(crate) fn is_element_without_content(node: &Node) -> bool {
         return true;
     }
 
-    let line_breaks = node.find(&["br"]).len() + node.find(&["hr"]).len();
+    let line_breaks = node.find_descendants("br").len() + node.find_descendants("hr").len();
     el_children_count == line_breaks
 }
 
@@ -221,7 +208,9 @@ pub(crate) fn get_dir_attr(node: &Node) -> Option<String> {
 }
 
 pub(crate) fn node_name_is(node: &Node, name: &str) -> bool {
-    node.node_name().as_deref() == Some(name)
+    node.tree
+        .get_name(&node.id)
+        .map_or(false, |n| n.local.as_ref() == name)
 }
 
 pub(crate) fn is_probably_visible(node: &Node) -> bool {
@@ -233,16 +222,25 @@ pub(crate) fn is_probably_visible(node: &Node) -> bool {
         return false;
     }
 
-    let is_aria_hidden = node
-        .attr("aria-hidden")
-        .map_or(false, |a| a.as_ref() == "true");
-    let has_fallback_image = node.class().map_or(false, |s| s.contains("fallback-image"));
+    if MINI_FALLBACK_IMG.match_node(node) {
+        return true;
+    }
 
-    if is_aria_hidden && !has_fallback_image {
+    if MINI_ARIA_HIDDEN.match_node(node) {
         return false;
     }
 
     true
+}
+
+fn is_empty_text(node: &Node) -> bool {
+    node.query_or(false, |t| {
+        if let NodeData::Text { ref contents } = t.data {
+            !contents.trim().is_empty()
+        } else {
+            false
+        }
+    })
 }
 
 #[cfg(test)]

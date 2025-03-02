@@ -337,10 +337,7 @@ impl Readability {
             let mut replaced = false;
 
             while let Some(next) = next_significant_node(next_sibling) {
-                let Some(node_name) = next.node_name() else {
-                    break;
-                };
-                if node_name != "br".into() {
+                if !node_name_is(&next, "br") {
                     break;
                 }
 
@@ -354,13 +351,10 @@ impl Readability {
 
                 let mut next_sibling = p.next_sibling();
                 while let Some(next) = next_sibling {
-                    if let Some(node_name) = next.node_name() {
-                        if node_name == "br".into() {
-                            let next_elem = next_significant_node(next.next_sibling());
-                            if let Some(elem_name) = next_elem.and_then(|n| n.node_name()) {
-                                if elem_name == "br".into() {
-                                    break;
-                                }
+                    if node_name_is(&next, "br") {
+                        if let Some(next_elem) = next_significant_node(next.next_sibling()) {
+                            if node_name_is(&next_elem, "br") {
+                                break;
                             }
                         }
                     }
@@ -382,10 +376,8 @@ impl Readability {
                 }
 
                 if let Some(parent) = p.parent() {
-                    if let Some(node_name) = parent.node_name() {
-                        if node_name == "p".into() {
-                            parent.rename("div");
-                        }
+                    if node_name_is(&parent, "p") {
+                        parent.rename("div");
                     }
                 }
             }
@@ -402,6 +394,7 @@ impl Readability {
             {
                 continue;
             }
+            //TODO: These two conditions can be combined.
             if attrs
                 .iter()
                 .any(|a| IMG_EXT.iter().any(|p| a.value.contains(p)))
@@ -513,7 +506,7 @@ impl Readability {
         if metadata.excerpt.is_none() {
             // TODO: Although this matches readability.js,
             // the procedure is far from perfect and requires improvement.
-            metadata.excerpt = extract_excerpt(&doc)
+            metadata.excerpt = extract_excerpt(&root_sel)
         }
 
         let text_content = match self.config.text_mode {
@@ -1045,7 +1038,7 @@ fn simplify_nested_elements(root_sel: &Selection) {
         .select("div, section")
         .select(":is(div, section) > :is(div, section):only-child");
 
-    for node in only_sel.nodes().iter().rev() {
+    for node in only_sel.nodes().iter() {
         let Some(parent) = node.parent() else {
             continue;
         };
@@ -1057,10 +1050,8 @@ fn simplify_nested_elements(root_sel: &Selection) {
     root_sel.select(":is(div, section):empty").remove();
 }
 
-fn extract_excerpt(doc: &Document) -> Option<String> {
-    let p_sel = doc
-        .select_single_matcher(&MATCHER_CONTENT_ID)
-        .select_single_matcher(&MATCHER_P);
+fn extract_excerpt(sel: &Selection) -> Option<String> {
+    let p_sel = sel.select_single_matcher(&MATCHER_P);
     if p_sel.is_empty() {
         None
     } else {

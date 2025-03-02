@@ -25,11 +25,11 @@ pub(crate) fn init_node_score(node: &Node, weigh_classes: bool) -> f32 {
 }
 
 pub(crate) fn determine_node_score(node: &Node, weigh_classes: bool) -> f32 {
-    let Some(node_name) = node.node_name() else {
+    let Some(node_name) = node.tree.get_name(&node.id) else {
         return 0.0;
     };
 
-    let score: f32 = match node_name.as_ref() {
+    let score: f32 = match node_name.local.as_ref() {
         "div" => 5.0,
         "pre" | "td" | "blockquote" => 3.0,
         "address" | "ol" | "ul" | "dl" | "dd" | "dt" | "li" | "form" => -3.0,

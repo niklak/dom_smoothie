@@ -19,13 +19,10 @@ use crate::Readability;
 
 impl Readability {
     pub(crate) fn grab_article(&self, metadata: &mut Metadata) -> Option<Document> {
+        pre_filter_document(&self.doc, metadata);
+
         let mut flags =
             GrabFlags::CleanConditionally | GrabFlags::StripUnlikelys | GrabFlags::WeightClasses;
-        let body_sel = self.doc.select_single("body");
-        // html5ever always puts body element, even if it wasn't in the document's contents
-        let body_node = body_sel.nodes().first()?;
-        pre_filter_document(body_node, metadata);
-
         let mut best_attempt: Option<(Document, usize)> = None;
         loop {
             let doc = self.doc.clone();
@@ -159,8 +156,11 @@ impl Readability {
     }
 }
 
-fn pre_filter_document(root_node: &NodeRef, metadata: &mut Metadata) {
-    let tree = &root_node.tree;
+fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
+    let body_sel = doc.select_single("body");
+    // html5ever always puts body element, even if it wasn't in the document's contents
+    let root_node = body_sel.nodes().first().unwrap();
+    let tree = &doc.tree;
     let mut should_remove_title_header = !metadata.title.is_empty();
     let mut next_node_id = get_child_or_sibling_id(root_node, false);
     while let Some(node_id) = next_node_id {
@@ -188,8 +188,7 @@ fn pre_filter_document(root_node: &NodeRef, metadata: &mut Metadata) {
             continue;
         }
 
-        let match_string = get_node_matching_string(&node);
-        if metadata.byline.is_none() && is_valid_byline(&node, &match_string) {
+        if metadata.byline.is_none() && is_valid_byline(&node) {
             let byline = if let Some(item_prop_name) = Selection::from(node.clone())
                 .select("[itemprop=name]")
                 .nodes()
@@ -226,7 +225,8 @@ fn get_node_matching_string(node: &NodeRef) -> StrTendril {
     matched_buf
 }
 
-fn is_valid_byline(node: &NodeRef, match_string: &str) -> bool {
+fn is_valid_byline(node: &NodeRef) -> bool {
+    let match_string = get_node_matching_string(node);
     let is_byline = MATCHER_BYLINE.match_element(node)
         || BYLINE_PATTERNS.iter().any(|p| match_string.contains(p));
     if !is_byline {
@@ -294,13 +294,15 @@ fn div_into_p(node: &NodeRef) {
 }
 
 fn has_child_block_element(node: &NodeRef) -> bool {
-    node.descendants_it().any(|n| n.query_or(false, |tree_node|{
-        if let NodeData::Element(ref el) = tree_node.data {
-            BLOCK_ELEMS.contains(&el.name.local)
-        } else {
-            false
-        }
-    }))
+    node.descendants_it().any(|n| {
+        n.query_or(false, |tree_node| {
+            if let NodeData::Element(ref el) = tree_node.data {
+                BLOCK_ELEMS.contains(&el.name.local)
+            } else {
+                false
+            }
+        })
+    })
 }
 
 fn score_elements<'a>(
@@ -646,13 +648,9 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
     let mut next_node_id = get_child_or_sibling_id(root_node, false);
     while let Some(node_id) = next_node_id {
         let mut node = NodeRef::new(node_id, tree);
-        let Some(node_name) = node.node_name() else {
-            unreachable!()
-        };
-
-        let match_string = get_node_matching_string(&node);
 
         if strip_unlikely {
+            let match_string = get_node_matching_string(&node);
             if !match_string.is_empty() && is_unlikely_candidate(&node, &match_string) {
                 next_node_id = get_child_or_sibling_id(&node, true);
                 node.remove_from_parent();
@@ -667,6 +665,10 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
                 }
             }
         }
+
+        let Some(node_name) = node.node_name() else {
+            unreachable!()
+        };
 
         if TAGS_WITH_CONTENT.contains(&node_name) {
             // TODO: this is a controversial moment, it may leave an empty block,
@@ -743,7 +745,7 @@ mod tests {
 
         let doc = Document::from(contents);
         let mut meta = Metadata::default();
-        pre_filter_document(&doc.root(), &mut meta);
+        pre_filter_document(&doc, &mut meta);
 
         assert_eq!(6, doc.select("p").length());
     }
@@ -764,7 +766,7 @@ mod tests {
         let doc = Document::from(contents);
         assert!(doc.select("#dialog1").exists());
 
-        pre_filter_document(&doc.root(), &mut Metadata::default());
+        pre_filter_document(&doc, &mut Metadata::default());
         assert!(!doc.select("#dialog1").exists());
         assert!(!doc.select("#close1").exists());
     }
@@ -836,7 +838,7 @@ mod tests {
 
         let doc = Document::from(contents);
         // consuming byline during grabbing the article
-        pre_filter_document(&doc.root(), &mut Metadata::default());
+        pre_filter_document(&doc, &mut Metadata::default());
         assert!(!doc.select("a").exists())
     }
 
@@ -856,7 +858,7 @@ mod tests {
             ..Default::default()
         };
         // consuming byline during grabbing the article
-        pre_filter_document(&doc.root(), &mut metadata);
+        pre_filter_document(&doc, &mut metadata);
         assert!(doc.select("a").exists())
     }
 
@@ -874,7 +876,7 @@ mod tests {
         let mut metadata = readability.get_article_metadata(None);
 
         assert!(readability.doc.select("h1").exists());
-        pre_filter_document(&readability.doc.root(), &mut metadata);
+        pre_filter_document(&readability.doc, &mut metadata);
 
         assert!(!readability.doc.select("h1").exists())
     }
