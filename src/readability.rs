@@ -512,6 +512,7 @@ impl Readability {
         let text_content = match self.config.text_mode {
             TextMode::Raw => root_node.text(),
             TextMode::Formatted => root_node.formatted_text(),
+            TextMode::Markdown => root_node.md(None),
         };
         let text_length = text_content.chars().count();
 

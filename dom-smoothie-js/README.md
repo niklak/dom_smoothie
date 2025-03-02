@@ -15,7 +15,7 @@
 | readable_min_score         | `number` (float)          | `20.0`                             | Minimum score required for readability check |
 | readable_min_content_length| `number`                  | `140`                              | Minimum content length for readability check |
 | candidate_select_mode      | `'Readability' \| 'DomSmoothie'` | `'Readability'`                 | Candidate selection mode |
-| text_mode                  | `'Raw' \| 'Formatted'`    | `'Raw'`                            | Text output mode, either raw or formatted |
+| text_mode                  | `'Raw' \| 'Formatted' \| 'Markdown'`    | `'Raw'`                            | Text output mode, either raw, formatted or Markdown |
 
 ### Example Object with Default Parameters
 
@@ -214,17 +214,17 @@ main();
 
 
 <details>
-    <summary><b>Formatted text content</b></summary>
+    <summary><b>Formatted text content and Markdown</b></summary>
 
 By default, the text content is output as-is, without formatting, 
 preserving whitespace from the original HTML document. 
 Depending on the document's initial markup, this can be quite verbose and inconvenient.
 
-But it is also possible to retrieve formatted text content. 
-To enable this, set `text_mode: TextMode::Formatted` in the config.
-This formatting is simple; for example, it does not account for table formatting.
-It is certainly nowhere near markdown-level, but the result is noticeably 
-cleaner than without formatting.
+To retrieve formatted text content, set text_mode: `TextMode::Formatted` in the config.
+This formatting does not preserve table structures, meaning table data may be output as plain text without column alignment.
+While this formatting is not as structured as Markdown, it provides a cleaner output compared to raw text.
+
+`TextMode::Markdown` enables Markdown formatting.
 
 ```javascript
 import { Readability } from "dom-smoothie-js";
@@ -235,6 +235,7 @@ function main() {
 
   const cfg = {
     text_mode: "Formatted",
+    //text_mode: "Markdown",
   };
 
   const readability = new Readability(content, null, cfg);

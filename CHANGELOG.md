@@ -4,8 +4,11 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- `Readability::parse` can now output text as `Markdown` in `Article::text_content` when `Config::text_mode` is set to `TextMode::Markdown`.
+
 ### Changed
-- Update `dom_query`'s version to `0.15.0`.
+- Update `dom_query`'s version to `0.15.1`.
 - Minor code changes.
 
 ## [0.6.1] - 2025-02-16
