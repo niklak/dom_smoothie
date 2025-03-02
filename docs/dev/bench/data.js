@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1740909240278,
+  "lastUpdate": 1740932336936,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -125,6 +125,48 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large",
             "value": 55653100,
             "range": "± 570816",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a2d9207901f139a027fcf376c54adaf2ee99a0a7",
+          "message": "Merge pull request #65 from niklak/feature/markdown-support\n\n- `Readability::parse` can now output text as `Markdown` in `Article::text_content` when `Config::text_mode` is set to `TextMode::Markdown`.",
+          "timestamp": "2025-03-02T18:17:46+02:00",
+          "tree_id": "780b28dddb0d630c2635878b920cfedd070fbae1",
+          "url": "https://github.com/niklak/dom_smoothie/commit/a2d9207901f139a027fcf376c54adaf2ee99a0a7"
+        },
+        "date": 1740932335966,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 3242587,
+            "range": "± 80162",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 12854079,
+            "range": "± 284054",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 57723496,
+            "range": "± 1437540",
             "unit": "ns/iter"
           }
         ]
