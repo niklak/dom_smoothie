@@ -172,9 +172,7 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
         return false;
     }
 
-    !node
-        .children_it(false)
-        .any(|n| is_empty_text(&n))
+    !node.children_it(false).any(|n| is_empty_text(&n))
 }
 
 pub(crate) fn is_element_without_content(node: &Node) -> bool {
@@ -210,7 +208,9 @@ pub(crate) fn get_dir_attr(node: &Node) -> Option<String> {
 }
 
 pub(crate) fn node_name_is(node: &Node, name: &str) -> bool {
-    node.tree.get_name(&node.id).map_or(false,|n| n.local.as_ref() == name)
+    node.tree
+        .get_name(&node.id)
+        .map_or(false, |n| n.local.as_ref() == name)
 }
 
 pub(crate) fn is_probably_visible(node: &Node) -> bool {

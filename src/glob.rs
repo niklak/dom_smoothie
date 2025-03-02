@@ -224,7 +224,8 @@ pub(crate) static LOADING_WORDS: phf::Set<&'static str> = phf_set!(
 
 pub(crate) static SHARE_WORDS: phf::Set<&'static str> = phf_set!("share", "sharedaddy");
 
-
-pub(crate) static MINI_BR: Lazy<MiniSelector> = Lazy::new(|| MiniSelector::new(r#"br"#).unwrap()); 
-pub(crate) static MINI_FALLBACK_IMG: Lazy<MiniSelector> = Lazy::new(|| MiniSelector::new(r#"[class*="fallback-image"]"#).unwrap()); 
-pub(crate) static MINI_ARIA_HIDDEN: Lazy<MiniSelector> = Lazy::new(|| MiniSelector::new(r#"[aria-hidden="true"]"#).unwrap()); 
+pub(crate) static MINI_BR: Lazy<MiniSelector> = Lazy::new(|| MiniSelector::new(r#"br"#).unwrap());
+pub(crate) static MINI_FALLBACK_IMG: Lazy<MiniSelector> =
+    Lazy::new(|| MiniSelector::new(r#"[class*="fallback-image"]"#).unwrap());
+pub(crate) static MINI_ARIA_HIDDEN: Lazy<MiniSelector> =
+    Lazy::new(|| MiniSelector::new(r#"[aria-hidden="true"]"#).unwrap());
