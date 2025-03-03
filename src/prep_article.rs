@@ -87,7 +87,6 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
     }
 
     let node_text = node.text();
-    let content_len = node.normalized_char_count();
 
     if node_text.matches(',').count() < 10 {
         // If there are not very many commas, and the number of
@@ -114,6 +113,8 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
             return true;
         }
 
+        let content_len = node.normalized_char_count();
+
         //TODO: tag "ol" unhandled
         let mut is_list = matches!(tag, "ul" | "ol");
         if !is_list {
@@ -130,13 +131,15 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
 
         let should_remove = || {
             let is_figure_child = has_ancestor_tag::<NodePredicate>(node, "figure", None, None);
-            let p: f32 = node.find_descendants("p").len() as f32;
+            let p  = node.find_descendants("p").len() as f32;
+            // TODO: `li` looks suspicious
             let li = node.find_descendants("li").len() as f32 - 100.0;
 
             if !is_figure_child && img > 1.0 && p / img < 0.5 {
                 return true;
             }
 
+            // TODO: this is no working, useless
             if !is_list && li > p {
                 return true;
             }
@@ -413,10 +416,10 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
 
     // At this point, nasty iframes have been removed; only embedded video
     // ones remain.
-    for p_sel in article_sel.select("p").iter() {
+    for p_node in article_sel.select("p").nodes().iter() {
+        let p_sel = Selection::from(p_node.clone());
         let content_el_count = p_sel.select("img,object,embed,iframe").length();
-        let text = p_sel.text();
-        if content_el_count == 0 && text.trim().is_empty() {
+        if content_el_count == 0 && p_node.normalized_char_count() == 0 {
             p_sel.remove();
         }
     }
@@ -465,15 +468,12 @@ fn remove_share_elements(root_sel: &Selection, share_element_threshold: usize) {
 
         child.query(|n| {
             if let NodeData::Element(ref el) = n.data {
-                if let Some(class_name) = el.class() {
-                    has_share_elements = contains_share_elements(&class_name);
-                };
+                has_share_elements = el.class().map_or(false, |s| contains_share_elements(&s));
+
                 if has_share_elements {
                     return;
                 }
-                if let Some(id_attr) = el.id() {
-                    has_share_elements = contains_share_elements(&id_attr);
-                }
+                has_share_elements = el.id().map_or(false, |s| contains_share_elements(&s));
             }
         });
 
