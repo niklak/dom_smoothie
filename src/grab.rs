@@ -226,9 +226,11 @@ fn get_node_matching_string(node: &NodeRef) -> StrTendril {
 }
 
 fn is_valid_byline(node: &NodeRef) -> bool {
-    let match_string = get_node_matching_string(node);
-    let is_byline = MATCHER_BYLINE.match_element(node)
-        || BYLINE_PATTERNS.iter().any(|p| match_string.contains(p));
+    let mut is_byline = MATCHER_BYLINE.match_element(node);
+    if !is_byline {
+        let match_string = get_node_matching_string(node);
+        is_byline = BYLINE_PATTERNS.iter().any(|p| match_string.contains(p));
+    }
     if !is_byline {
         return false;
     }
@@ -236,9 +238,14 @@ fn is_valid_byline(node: &NodeRef) -> bool {
     byline_len > 0 && byline_len < 100
 }
 
-fn is_unlikely_candidate(node: &NodeRef, match_string: &str) -> bool {
+fn is_unlikely_candidate(node: &NodeRef) -> bool {
     // Assuming that `<body>` node can't can't reach this function
     if node_name_is(node, "a") {
+        return false;
+    }
+
+    let match_string = get_node_matching_string(node);
+    if match_string.is_empty() {
         return false;
     }
 
@@ -650,8 +657,7 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
         let mut node = NodeRef::new(node_id, tree);
 
         if strip_unlikely {
-            let match_string = get_node_matching_string(&node);
-            if !match_string.is_empty() && is_unlikely_candidate(&node, &match_string) {
+            if is_unlikely_candidate(&node) {
                 next_node_id = get_child_or_sibling_id(&node, true);
                 node.remove_from_parent();
                 continue;
