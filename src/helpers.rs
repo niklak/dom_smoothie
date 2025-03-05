@@ -62,7 +62,7 @@ pub(crate) fn is_phrasing_content(node: &Node) -> bool {
 
 pub(crate) fn is_whitespace(node: &Node) -> bool {
     if node.is_text() {
-        return node.text().trim().is_empty();
+        return !is_nonempty_text(node);
     }
     // only an element node has a node_name
     MINI_BR.match_node(node)
@@ -172,14 +172,12 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
         return false;
     }
 
-    !node.children_it(false).any(|n| is_empty_text(&n))
+    !node.children_it(false).any(|n| is_nonempty_text(&n))
 }
 
 pub(crate) fn is_element_without_content(node: &Node) -> bool {
     // since this function calls only for elements check `node.is_element()` is redundant
-
-    let has_text = node.descendants_it().any(|n| is_empty_text(&n));
-
+    let has_text = node.descendants_it().any(|n| is_nonempty_text(&n));
     if has_text {
         return false;
     }
@@ -233,7 +231,7 @@ pub(crate) fn is_probably_visible(node: &Node) -> bool {
     true
 }
 
-fn is_empty_text(node: &Node) -> bool {
+fn is_nonempty_text(node: &Node) -> bool {
     node.query_or(false, |t| {
         if let NodeData::Text { ref contents } = t.data {
             !contents.trim().is_empty()
