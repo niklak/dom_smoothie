@@ -54,7 +54,7 @@ pub(crate) fn is_phrasing_content(node: &Node) -> bool {
     if matches!(node_name, "a" | "del" | "ins") {
         // There is no big sense to consider link content as phrasing content if they doesn't have children element.
         let children = node.children();
-        return !children.is_empty() && children.into_iter().all(|n| is_phrasing_content(&n))
+        return !children.is_empty() && children.into_iter().all(|n| is_phrasing_content(&n));
     }
 
     false
