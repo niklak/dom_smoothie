@@ -157,6 +157,9 @@ impl Readability {
 }
 
 fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
+    // Mozilla's implementation performs filtering for each approach of grabbing the article.
+    // However, I believe it is better to do it only once. Additionally, there is a lot of logic that relies 
+    // on a certain element which is going to be removed in the next iteration.
     let body_sel = doc.select_single("body");
     // html5ever always puts body element, even if it wasn't in the document's contents
     let root_node = body_sel.nodes().first().unwrap();
