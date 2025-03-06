@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1740998306790,
+  "lastUpdate": 1741262013561,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -251,6 +251,48 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large",
             "value": 56952473,
             "range": "± 622049",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "105551b76f50dbbaf013a185969f5f3dc6bbc149",
+          "message": "Merge pull request #67 from niklak/feature/empty-links\n\n- Link elements (`<a>`) without an `href` attribute and without child nodes are now removed from the article content during post-processing.\n- Changed how phrasing content determines wrapping some `<div>` element children with a `<p>` element. Now the element must contain some nodes to be wrapped.",
+          "timestamp": "2025-03-06T13:52:39+02:00",
+          "tree_id": "278d2a1507399c944867bf6621b885d74ba4ab82",
+          "url": "https://github.com/niklak/dom_smoothie/commit/105551b76f50dbbaf013a185969f5f3dc6bbc149"
+        },
+        "date": 1741262013182,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 3187636,
+            "range": "± 43909",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 12766966,
+            "range": "± 405664",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 58549666,
+            "range": "± 1741251",
             "unit": "ns/iter"
           }
         ]
