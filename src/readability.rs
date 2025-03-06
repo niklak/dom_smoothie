@@ -823,7 +823,7 @@ impl Readability {
     fn post_process_content(&self, root_sel: &Selection, base_url: Option<url::Url>) {
         // Readability cannot open relative uris so we convert them to absolute uris.
 
-        self.fix_js_links(root_sel);
+        self.fix_links(root_sel);
 
         self.fix_relative_uris(root_sel, base_url);
 
@@ -875,7 +875,7 @@ impl Readability {
         }
     }
 
-    fn fix_js_links(&self, root_sel: &Selection) {
+    fn fix_links(&self, root_sel: &Selection) {
         // Handle links with javascript: URIs, since
         // they won't work after scripts have been removed from the page.
         for a in root_sel.select_matcher(&MATCHER_JS_LINK).nodes().iter() {
@@ -893,6 +893,13 @@ impl Readability {
             } else {
                 a.remove_all_attrs();
                 a.rename("span");
+            }
+        }
+
+        // Handle links without href attributes.
+        for a in root_sel.select("a:not([href])").nodes().iter() {
+            if a.children().is_empty() {
+                a.remove_from_parent();
             }
         }
     }
@@ -1147,7 +1154,7 @@ mod tests {
             </body>
         </html>"#;
         let readability = Readability::from(contents);
-        readability.fix_js_links(&readability.doc.select("body"));
+        readability.fix_links(&readability.doc.select("body"));
         assert_eq!(readability.doc.select("a").length(), 1);
     }
 
