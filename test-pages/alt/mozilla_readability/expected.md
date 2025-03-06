@@ -1,4 +1,8 @@
+## Readability\.js
+
 A standalone version of the readability library used for [Firefox Reader View](https://support.mozilla.org/kb/firefox-reader-view-clutter-free-web-pages)\.
+
+## Installation
 
 Readability is available on npm:
 
@@ -10,6 +14,8 @@ npm install @mozilla/readability
 
 You can then `require()` it, or for web-based projects, load the `Readability.js` script from your webpage\.
 
+## Basic usage
+
 To parse a document, you must create a new `Readability` object from a DOM document object, and then call the [parse\(\)](#parse) method\. Here's an example:
 
 
@@ -19,6 +25,10 @@ var article = new Readability(document).parse();
 
 
 If you use Readability in a web browser, you will likely be able to use a `document` reference from elsewhere \(e\.g\. fetched via XMLHttpRequest, in a same-origin `<iframe>` you have access to, etc\.\)\. In Node\.js, you can [use an external DOM library](#nodejs-usage)\.
+
+## API Reference
+
+### `new Readability(document, options)`
 
 The `options` object accepts a number of properties, all optional:
 
@@ -32,6 +42,8 @@ The `options` object accepts a number of properties, all optional:
 - `serializer` \(function, default `el => el.innerHTML`\) controls how the `content` property returned by the `parse()` method is produced from the root DOM element\. It may be useful to specify the `serializer` as the identity function \(`el => el`\) to obtain a DOM element instead of a string for `content` if you plan to process it further\.
 - `allowedVideoRegex` \(RegExp, default `undefined` \): a regular expression that matches video URLs that should be allowed to be included in the article content\. If `undefined`, the [default regex](https://github.com/mozilla/readability/blob/8e8ec27cd2013940bc6f3cc609de10e35a1d9d86/Readability.js#L133) is applied\.
 - `linkDensityModifier` \(number, default `0`\): a number that is added to the base link density threshold during the shadiness checks\. This can be used to penalize nodes with a high link density or vice versa\.
+### `parse()`
+
 Returns an object containing the following properties:
 
 - `title`: article title;
@@ -52,6 +64,8 @@ var documentClone = document.cloneNode(true);
 var article = new Readability(documentClone).parse();
 ```
 
+
+### `isProbablyReaderable(document, options)`
 
 A quick-and-dirty way of figuring out if it's plausible that the contents of a given document are suitable for processing with Readability\. It is likely to produce both false positives and false negatives\. The reason it exists is to avoid bogging down a time-sensitive process \(like loading and showing the user a webpage\) with the complex logic in the core of Readability\. Improvements to its logic \(while not deteriorating its performance\) are very welcome\.
 
@@ -74,6 +88,8 @@ if (isProbablyReaderable(document)) {
 ```
 
 
+## Node\.js usage
+
 Since Node\.js does not come with its own DOM implementation, we rely on external libraries like [jsdom](https://github.com/jsdom/jsdom)\. Here's an example using `jsdom` to obtain a DOM document object:
 
 
@@ -92,9 +108,15 @@ Remember to pass the page's URI as the `url` option in the `JSDOM` constructor \
 
 `jsdom` has the ability to run the scripts included in the HTML and fetch remote resources\. For security reasons these are [disabled by default](https://github.com/jsdom/jsdom#executing-scripts), and we **strongly** recommend you keep them that way\.
 
+## Security
+
 If you're going to use Readability with untrusted input \(whether in HTML or DOM form\), we **strongly** recommend you use a sanitizer library like [DOMPurify](https://github.com/cure53/DOMPurify) to avoid script injection when you use the output of Readability\. We would also recommend using [CSP](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) to add further defense-in-depth restrictions to what you allow the resulting content to do\. The Firefox integration of reader mode uses both of these techniques itself\. Sanitizing unsafe content out of the input is explicitly not something we aim to do as part of Readability itself - there are other good sanitizer libraries out there, use them\!
 
+## Contributing
+
 Please see our [Contributing](/mozilla/readability/blob/main/CONTRIBUTING.md) document\.
+
+## License
 
 
 ```

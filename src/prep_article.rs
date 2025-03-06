@@ -131,7 +131,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
 
         let should_remove = || {
             let is_figure_child = has_ancestor_tag::<NodePredicate>(node, "figure", None, None);
-            let p  = node.find_descendants("p").len() as f32;
+            let p = node.find_descendants("p").len() as f32;
             // TODO: `li` looks suspicious
             let li = node.find_descendants("li").len() as f32 - 100.0;
 
