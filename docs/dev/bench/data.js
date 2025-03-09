@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1741262013561,
+  "lastUpdate": 1741523264490,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -293,6 +293,48 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large",
             "value": 58549666,
             "range": "± 1741251",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4c3c8d29a602638e0e25ff31c263b1c8da5353d6",
+          "message": "Merge pull request #68 from niklak/feature/refactor-3\n\n- Adapted the code to changes in the `dom_query`dependency.",
+          "timestamp": "2025-03-09T14:26:09+02:00",
+          "tree_id": "46ab9514fc8148f4449cf2440cbaa1f3a5850082",
+          "url": "https://github.com/niklak/dom_smoothie/commit/4c3c8d29a602638e0e25ff31c263b1c8da5353d6"
+        },
+        "date": 1741523263976,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 3064590,
+            "range": "± 76761",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 11992452,
+            "range": "± 284573",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 52714546,
+            "range": "± 593707",
             "unit": "ns/iter"
           }
         ]
