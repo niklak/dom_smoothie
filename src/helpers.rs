@@ -207,7 +207,7 @@ pub(crate) fn node_name_in(node: &Node, names: &phf::Set<&str>) -> bool {
     let Some(qual_name) = node.qual_name_ref() else {
         return false;
     };
-    names.contains(&qual_name.local.as_ref())
+    names.contains(qual_name.local.as_ref())
 }
 
 pub(crate) fn is_probably_visible(node: &Node) -> bool {
