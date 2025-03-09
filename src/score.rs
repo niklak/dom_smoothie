@@ -25,7 +25,7 @@ pub(crate) fn init_node_score(node: &Node, weigh_classes: bool) -> f32 {
 }
 
 pub(crate) fn determine_node_score(node: &Node, weigh_classes: bool) -> f32 {
-    let Some(node_name) = node.tree.get_name(&node.id) else {
+    let Some(node_name) = node.qual_name_ref() else {
         return 0.0;
     };
 

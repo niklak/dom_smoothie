@@ -81,14 +81,9 @@ impl Readability {
 
         let mut top_candidate = top_candidates.first().cloned();
 
-        let tc_name = top_candidate
-            .as_ref()
-            .and_then(|n| n.node_name())
-            .unwrap_or_else(StrTendril::new);
-
         let mut needed_to_create_top_candidate = false;
 
-        if top_candidate.is_none() || tc_name.as_ref() == "body" {
+        if top_candidate.is_none() || top_candidate.as_ref().map_or(false, |n|n.has_name("body")) {
             needed_to_create_top_candidate = true;
             let tc = tree.new_element("div");
 
@@ -114,7 +109,7 @@ impl Readability {
                 let mut parent_of_top_candidate = tc.parent();
 
                 while let Some(ref tc_parent) = parent_of_top_candidate {
-                    if node_name_is(tc_parent, "body") {
+                    if tc_parent.has_name("body") {
                         break;
                     }
 
@@ -162,10 +157,10 @@ fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
     // on a certain element which is going to be removed in the next iteration.
     let body_sel = doc.select_single("body");
     // html5ever always puts body element, even if it wasn't in the document's contents
-    let root_node = body_sel.nodes().first().unwrap();
+    let body_node = body_sel.nodes().first().unwrap();
     let tree = &doc.tree;
     let mut should_remove_title_header = !metadata.title.is_empty();
-    let mut next_node_id = get_child_or_sibling_id(root_node, false);
+    let mut next_node_id = get_child_or_sibling_id(body_node, false);
     while let Some(node_id) = next_node_id {
         let node = NodeRef::new(node_id, tree);
 
@@ -213,17 +208,18 @@ fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
 
 fn get_node_matching_string(node: &NodeRef) -> StrTendril {
     let mut matched_buf = StrTendril::new();
-    node.query(|n| {
-        if let dom_query::NodeData::Element(ref el) = n.data {
-            if let Some(class) = el.class() {
-                matched_buf.push_tendril(&class);
-                matched_buf.push_char(' ');
-            };
-            if let Some(id_attr) = el.id() {
-                matched_buf.push_tendril(&id_attr);
-            }
-        }
-    });
+    let Some(el) = node.element_ref() else {
+         return matched_buf;
+    };
+
+    if let Some(class) = el.class() {
+        matched_buf.push_tendril(&class);
+        matched_buf.push_char(' ');
+    };
+    if let Some(id_attr) = el.id() {
+        matched_buf.push_tendril(&id_attr);
+    }
+
     matched_buf.make_ascii_lowercase();
     matched_buf
 }
@@ -243,7 +239,7 @@ fn is_valid_byline(node: &NodeRef) -> bool {
 
 fn is_unlikely_candidate(node: &NodeRef) -> bool {
     // Assuming that `<body>` node can't can't reach this function
-    if node_name_is(node, "a") {
+    if node.has_name("a") {
         return false;
     }
 
@@ -364,7 +360,7 @@ fn score_elements<'a>(
                 .entry(ancestor.id)
                 .and_modify(|s| *s = ancestor_score);
 
-            if node_name_is(ancestor, "body") {
+            if ancestor.has_name("body") {
                 break;
             }
         }
@@ -390,8 +386,6 @@ fn score_elements<'a>(
         })
         .collect();
 
-    //use score to sort without get
-
     scored_candidates.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
 
     scored_candidates
@@ -412,17 +406,15 @@ fn assign_article_node(tc: &NodeRef, article_content: &NodeRef) {
         unreachable!()
     };
 
+    let tc_class = tc.attr_or("class", "");
     let siblings: Vec<NodeRef> = tc_parent.element_children();
-
     for sibling in siblings.iter() {
-        let sibling_name = sibling.node_name().unwrap();
         let mut append = false;
         if sibling.id == tc.id {
             append = true;
         } else {
             let mut content_bonus: f32 = 0.0;
             let sibling_class = sibling.attr_or("class", "");
-            let tc_class = tc.attr_or("class", "");
             if !tc_class.is_empty() && sibling_class == tc_class {
                 content_bonus += tc_node_score * 0.2;
             }
@@ -431,7 +423,7 @@ fn assign_article_node(tc: &NodeRef, article_content: &NodeRef) {
                 if sibling_score + content_bonus >= sibling_score_threshold {
                     append = true;
                 }
-            } else if sibling_name.as_ref() == "p" {
+            } else if sibling.has_name("p") {
                 let sibling_text = sibling.text();
                 let node_content = normalize_spaces(&sibling_text);
                 let node_length = sibling.normalized_char_count();
@@ -450,7 +442,7 @@ fn assign_article_node(tc: &NodeRef, article_content: &NodeRef) {
 
         //appending sibling
         if append {
-            if !ALTER_TO_DIV_EXCEPTIONS.contains(&sibling_name) {
+            if !node_name_in(sibling, &ALTER_TO_DIV_EXCEPTIONS){
                 // We have a node that isn't a common block level element, like a form or td tag.
                 // Turn it into a div so it doesn't get filtered out later by accident.
                 sibling.rename("div");
@@ -493,7 +485,7 @@ fn find_common_candidate<'a>(
     if alternative_candidate_ancestors.len() > MIN_COMMON_ANCESTORS {
         let mut parent_of_top_candidate = tc.parent();
         while let Some(ref tc_parent) = parent_of_top_candidate {
-            if node_name_is(tc_parent, "body") {
+            if tc_parent.has_name("body") {
                 break;
             }
 
@@ -605,7 +597,7 @@ fn adjust_top_candidate_by_parent(
         let score_threshold = last_score / 3.0;
         let mut parent_of_top_candidate = tc.parent();
         while let Some(ref tc_parent) = parent_of_top_candidate {
-            if node_name_is(tc_parent, "body") {
+            if tc_parent.has_name("body") {
                 break;
             }
 
@@ -673,12 +665,7 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
                 }
             }
         }
-
-        let Some(node_name) = node.node_name() else {
-            unreachable!()
-        };
-
-        if TAGS_WITH_CONTENT.contains(&node_name) {
+        if node_name_in(&node, &TAGS_WITH_CONTENT) {
             // TODO: this is a controversial moment, it may leave an empty block,
             // which will have an impact on the result.
             // When parent of the top candidate have more than one child,
@@ -691,12 +678,12 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
             }
         }
 
-        if DEFAULT_TAGS_TO_SCORE.contains(&node_name) {
+        if node_name_in(&node, &DEFAULT_TAGS_TO_SCORE) {
             elements_id_to_score.push(node.id);
         }
 
         // this block is relate to previous block
-        if node_name.as_ref() == "div" {
+        if node.has_name("div") {
             div_into_p(&node);
 
             // Sites like http://mobile.slate.com encloses each paragraph with a DIV

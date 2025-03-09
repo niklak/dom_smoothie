@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 
-use dom_query::NodeData;
 use unicode_segmentation::UnicodeSegmentation;
 
 use dom_query::{Node, Selection};
@@ -43,7 +42,7 @@ pub(crate) fn is_phrasing_content(node: &Node) -> bool {
     }
 
     // only elements has a node name
-    let Some(qual_name) = node.tree.get_name(&node.id) else {
+    let Some(qual_name) = node.qual_name_ref() else {
         return false;
     };
     let node_name = qual_name.local.as_ref();
@@ -56,13 +55,12 @@ pub(crate) fn is_phrasing_content(node: &Node) -> bool {
         let children = node.children();
         return !children.is_empty() && children.into_iter().all(|n| is_phrasing_content(&n));
     }
-
     false
 }
 
 pub(crate) fn is_whitespace(node: &Node) -> bool {
-    if node.is_text() {
-        return !is_nonempty_text(node);
+    if node.is_text() && !node.is_nonempty_text() {
+        return true;
     }
     // only an element node has a node_name
     MINI_BR.match_node(node)
@@ -82,7 +80,7 @@ where
     let max_depth = max_depth.map(|max_depth| if max_depth == 0 { 3 } else { max_depth });
     let mut matched_ancestors = node
         .ancestors_it(max_depth)
-        .filter(|a| node_name_is(a, tag));
+        .filter(|a| a.has_name(tag));
 
     if let Some(filter_fn) = filter_fn {
         matched_ancestors.any(|a| filter_fn(&a))
@@ -167,17 +165,17 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
 
     if !children
         .first()
-        .map_or(false, |child| node_name_is(child, tag))
+        .map_or(false, |child| child.has_name(tag))
     {
         return false;
     }
 
-    !node.children_it(false).any(|n| is_nonempty_text(&n))
+    !node.children_it(false).any(|n| n.is_nonempty_text())
 }
 
 pub(crate) fn is_element_without_content(node: &Node) -> bool {
     // since this function calls only for elements check `node.is_element()` is redundant
-    let has_text = node.descendants_it().any(|n| is_nonempty_text(&n));
+    let has_text = node.descendants_it().any(|n| n.is_nonempty_text());
     if has_text {
         return false;
     }
@@ -205,40 +203,27 @@ pub(crate) fn get_dir_attr(node: &Node) -> Option<String> {
     None
 }
 
-pub(crate) fn node_name_is(node: &Node, name: &str) -> bool {
-    node.tree
-        .get_name(&node.id)
-        .map_or(false, |n| n.local.as_ref() == name)
+pub(crate) fn node_name_in(node: &Node, names: &phf::Set<&str>) -> bool {
+    let Some(qual_name) = node.qual_name_ref() else {
+        return false;
+    };
+    names.contains(&qual_name.local.as_ref())
 }
 
 pub(crate) fn is_probably_visible(node: &Node) -> bool {
     if node.has_attr("hidden") {
         return false;
     }
-
     if is_invisible_style(node) {
         return false;
     }
-
     if MINI_FALLBACK_IMG.match_node(node) {
         return true;
     }
-
     if MINI_ARIA_HIDDEN.match_node(node) {
         return false;
     }
-
     true
-}
-
-fn is_nonempty_text(node: &Node) -> bool {
-    node.query_or(false, |t| {
-        if let NodeData::Text { ref contents } = t.data {
-            !contents.trim().is_empty()
-        } else {
-            false
-        }
-    })
 }
 
 #[cfg(test)]
