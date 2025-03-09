@@ -83,7 +83,7 @@ impl Readability {
 
         let mut needed_to_create_top_candidate = false;
 
-        if top_candidate.is_none() || top_candidate.as_ref().map_or(false, |n|n.has_name("body")) {
+        if top_candidate.is_none() || top_candidate.as_ref().map_or(false, |n| n.has_name("body")) {
             needed_to_create_top_candidate = true;
             let tc = tree.new_element("div");
 
@@ -209,7 +209,7 @@ fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
 fn get_node_matching_string(node: &NodeRef) -> StrTendril {
     let mut matched_buf = StrTendril::new();
     let Some(el) = node.element_ref() else {
-         return matched_buf;
+        return matched_buf;
     };
 
     if let Some(class) = el.class() {
@@ -442,7 +442,7 @@ fn assign_article_node(tc: &NodeRef, article_content: &NodeRef) {
 
         //appending sibling
         if append {
-            if !node_name_in(sibling, &ALTER_TO_DIV_EXCEPTIONS){
+            if !node_name_in(sibling, &ALTER_TO_DIV_EXCEPTIONS) {
                 // We have a node that isn't a common block level element, like a form or td tag.
                 // Turn it into a div so it doesn't get filtered out later by accident.
                 sibling.rename("div");

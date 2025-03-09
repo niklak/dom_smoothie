@@ -78,9 +78,7 @@ where
     F: Fn(&Node) -> bool,
 {
     let max_depth = max_depth.map(|max_depth| if max_depth == 0 { 3 } else { max_depth });
-    let mut matched_ancestors = node
-        .ancestors_it(max_depth)
-        .filter(|a| a.has_name(tag));
+    let mut matched_ancestors = node.ancestors_it(max_depth).filter(|a| a.has_name(tag));
 
     if let Some(filter_fn) = filter_fn {
         matched_ancestors.any(|a| filter_fn(&a))
@@ -163,10 +161,7 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
         return false;
     }
 
-    if !children
-        .first()
-        .map_or(false, |child| child.has_name(tag))
-    {
+    if !children.first().map_or(false, |child| child.has_name(tag)) {
         return false;
     }
 
@@ -204,10 +199,8 @@ pub(crate) fn get_dir_attr(node: &Node) -> Option<String> {
 }
 
 pub(crate) fn node_name_in(node: &Node, names: &phf::Set<&str>) -> bool {
-    let Some(qual_name) = node.qual_name_ref() else {
-        return false;
-    };
-    names.contains(qual_name.local.as_ref())
+    node.qual_name_ref()
+        .map_or(false, |name| names.contains(name.local.as_ref()))
 }
 
 pub(crate) fn is_probably_visible(node: &Node) -> bool {
