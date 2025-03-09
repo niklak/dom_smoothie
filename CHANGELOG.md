@@ -7,6 +7,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ### Changed
 - Link elements (`<a>`) without an `href` attribute and without child nodes are now removed from the article content during post-processing.
 - Changed how phrasing content determines wrapping some `<div>` element children with a `<p>` element. Now the element must contain some nodes to be wrapped.
+- Updated `dom_query`'s version to `0.16.0`.
 
 ## [0.7.0] - 2025-03-03
 

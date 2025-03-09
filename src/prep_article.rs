@@ -12,11 +12,8 @@ use crate::Config;
 fn clean(root_sel: &Selection) {
     for node in root_sel.select_matcher(&MATCHER_CLEAN).nodes().iter() {
         // Allow youtube and vimeo videos through as people usually want to see those.
-        let is_embed = node
-            .node_name()
-            .map_or(false, |name| EMBED_ELEMENTS.contains(&name));
-
         let mut should_remove = true;
+        let is_embed = node_name_in(node, &EMBED_ELEMENTS);
         if is_embed {
             for attr in node.attrs().iter() {
                 if is_video_url(&attr.value) {
@@ -25,7 +22,7 @@ fn clean(root_sel: &Selection) {
                 }
             }
             // For embed with <object> tag, check inner HTML as well.
-            if should_remove && node_name_is(node, "object") && is_video_url(&node.inner_html()) {
+            if should_remove && node.has_name("object") && is_video_url(&node.inner_html()) {
                 should_remove = false;
             }
         }
@@ -41,16 +38,13 @@ fn clean_styles(n: &Node) {
         return;
     }
 
-    let Some(node_name) = n.node_name() else {
-        return;
-    };
-    if node_name.as_ref() == "svg" {
+    if n.has_name("svg") {
         return;
     }
 
     n.remove_attrs(PRESENTATIONAL_ATTRIBUTES);
 
-    if DEPRECATED_SIZE_ATTRIBUTE_ELEMS.contains(&node_name) {
+    if node_name_in(n, &DEPRECATED_SIZE_ATTRIBUTE_ELEMS) {
         n.remove_attrs(&["width", "height"]);
     }
 
@@ -59,7 +53,7 @@ fn clean_styles(n: &Node) {
     }
 }
 
-fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>) -> bool {
+fn should_clean_conditionally(node: &Node, flags: &FlagSet<GrabFlags>) -> bool {
     let sel = Selection::from(node.clone());
     // keep element if it has a data tables
     if sel.select("table[data-readability-table]").exists() {
@@ -67,6 +61,11 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
     }
 
     let is_data_table = |n: &Node| n.has_attr("data-readability-table");
+
+    let Some(qual_name) = node.qual_name_ref() else {
+        return false;
+    };
+    let tag = qual_name.local.as_ref();
 
     if tag == "table" && is_data_table(node) {
         return false;
@@ -103,7 +102,7 @@ fn should_clean_conditionally(node: &Node, tag: &str, flags: &FlagSet<GrabFlags>
                     return false;
                 }
             }
-            if node_name_is(embed, "object") && is_video_url(&embed.inner_html()) {
+            if embed.has_name("object") && is_video_url(&embed.inner_html()) {
                 return false;
             }
             embed_count += 1;
@@ -205,10 +204,7 @@ fn clean_conditionally(node: &Node, tags: &str, flags: &FlagSet<GrabFlags>) {
     // traversing tag nodes in reverse order,
     // so that how children nodes will appear before parent nodes
     for tag_node in tag_sel.nodes().iter().rev() {
-        let Some(tag) = tag_node.node_name() else {
-            continue;
-        };
-        if should_clean_conditionally(tag_node, &tag, flags) {
+        if should_clean_conditionally(tag_node, flags) {
             tag_node.remove_from_parent();
         }
     }
@@ -426,7 +422,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
 
     for br_node in article_node.find_descendants("br").iter() {
         if let Some(next_node) = br_node.next_element_sibling() {
-            if node_name_is(&next_node, "p") {
+            if next_node.has_name("p") {
                 br_node.remove_from_parent();
             }
         }

@@ -337,7 +337,7 @@ impl Readability {
             let mut replaced = false;
 
             while let Some(next) = next_significant_node(next_sibling) {
-                if !node_name_is(&next, "br") {
+                if !next.has_name("br") {
                     break;
                 }
 
@@ -351,9 +351,9 @@ impl Readability {
 
                 let mut next_sibling = p.next_sibling();
                 while let Some(next) = next_sibling {
-                    if node_name_is(&next, "br") {
+                    if next.has_name("br") {
                         if let Some(next_elem) = next_significant_node(next.next_sibling()) {
-                            if node_name_is(&next_elem, "br") {
+                            if next_elem.has_name("br") {
                                 break;
                             }
                         }
@@ -376,7 +376,7 @@ impl Readability {
                 }
 
                 if let Some(parent) = p.parent() {
-                    if node_name_is(&parent, "p") {
+                    if parent.has_name("p") {
                         parent.rename("div");
                     }
                 }
