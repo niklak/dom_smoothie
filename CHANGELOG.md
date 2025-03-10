@@ -2,7 +2,7 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
-## [Unreleased]
+## [0.8.0] - 2025-03-10
 
 ### Changed
 - Link elements (`<a>`) without an `href` attribute and without child nodes are now removed from the article content during post-processing.
