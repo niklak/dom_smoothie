@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1741608567518,
+  "lastUpdate": 1741783106521,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -419,6 +419,48 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large",
             "value": 54745255,
             "range": "± 1218675",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bd95294612ab6f9ab2952671be65d20bbf0af4ce",
+          "message": "Merge pull request #69 from niklak/dependabot/cargo/clap-4.5.32\n\nbuild(deps): bump clap from 4.5.31 to 4.5.32",
+          "timestamp": "2025-03-12T14:37:13+02:00",
+          "tree_id": "26236ac96e6d7e36e43e133012ad467aba3506ef",
+          "url": "https://github.com/niklak/dom_smoothie/commit/bd95294612ab6f9ab2952671be65d20bbf0af4ce"
+        },
+        "date": 1741783106081,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 3105941,
+            "range": "± 125345",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 11649269,
+            "range": "± 44963",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 52687004,
+            "range": "± 1457773",
             "unit": "ns/iter"
           }
         ]
