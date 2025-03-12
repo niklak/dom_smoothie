@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1741783106521,
+  "lastUpdate": 1741783278947,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -461,6 +461,48 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large",
             "value": 52687004,
             "range": "± 1457773",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "distinct": true,
+          "id": "56a94872325d9af7630aff288d8e4323199414c0",
+          "message": "build(deps): bump once_cell from 1.20.3 to 1.21.0\n\nBumps [once_cell](https://github.com/matklad/once_cell) from 1.20.3 to 1.21.0.\n- [Changelog](https://github.com/matklad/once_cell/blob/master/CHANGELOG.md)\n- [Commits](https://github.com/matklad/once_cell/compare/v1.20.3...v1.21.0)\n\n---\nupdated-dependencies:\n- dependency-name: once_cell\n  dependency-type: direct:production\n  update-type: version-update:semver-minor\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>",
+          "timestamp": "2025-03-12T14:40:00+02:00",
+          "tree_id": "62bd6b1b82cb211b0ce6b7363634ef4150155105",
+          "url": "https://github.com/niklak/dom_smoothie/commit/56a94872325d9af7630aff288d8e4323199414c0"
+        },
+        "date": 1741783278541,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 3063229,
+            "range": "± 98731",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 11490463,
+            "range": "± 36310",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 52356841,
+            "range": "± 1149478",
             "unit": "ns/iter"
           }
         ]
