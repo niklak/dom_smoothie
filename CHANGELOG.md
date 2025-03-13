@@ -7,6 +7,9 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ### Fixed
 - Fixed the `get_row_and_col_count` function, which determines the number of rows and columns. Skipped counting `rowspan` since it is meaningless.
 
+### Changed
+- Ignoring `svg` elements during pre-filtering and element collection for scoring, improving performance for documents with many `svg` elements.
+
 ## [0.8.0] - 2025-03-10
 
 ### Changed
