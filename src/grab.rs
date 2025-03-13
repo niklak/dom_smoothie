@@ -170,6 +170,11 @@ fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
             continue;
         }
 
+        if node.has_name("svg") {
+            next_node_id = get_child_or_sibling_id(&node, true);
+            continue;
+        }
+
         if MATCHER_DIALOGS.match_element(&node) {
             next_node_id = get_child_or_sibling_id(&node, true);
             node.remove_from_parent();
@@ -649,6 +654,11 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
     let mut next_node_id = get_child_or_sibling_id(root_node, false);
     while let Some(node_id) = next_node_id {
         let mut node = NodeRef::new(node_id, tree);
+
+        if node.has_name("svg") {
+            next_node_id = get_child_or_sibling_id(&node, true);
+            continue;
+        }
 
         if strip_unlikely {
             if is_unlikely_candidate(&node) {
