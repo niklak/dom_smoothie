@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1741863475886,
+  "lastUpdate": 1741895098143,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -587,6 +587,48 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large",
             "value": 52150972,
             "range": "± 810140",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "58a4c121bbf3e9e0281d750dda24599f2540a9df",
+          "message": "Merge pull request #73 from niklak/feature/skip-svg\n\n- Ignoring `svg` elements during pre-filtering and element collection for scoring, improving performance for documents with many `svg` elements.",
+          "timestamp": "2025-03-13T21:44:04+02:00",
+          "tree_id": "21582ec9ad67409246da25ef0129d4d588a29f80",
+          "url": "https://github.com/niklak/dom_smoothie/commit/58a4c121bbf3e9e0281d750dda24599f2540a9df"
+        },
+        "date": 1741895097724,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 3087693,
+            "range": "± 33432",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 11510146,
+            "range": "± 133317",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 53600860,
+            "range": "± 1608193",
             "unit": "ns/iter"
           }
         ]
