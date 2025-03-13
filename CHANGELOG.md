@@ -2,6 +2,11 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- Fixed the `get_row_and_col_count` function, which determines the number of rows and columns. Previously, it incorrectly attempted to retrieve the `rowspan` attribute from the `table` element.
+
 ## [0.8.0] - 2025-03-10
 
 ### Changed
