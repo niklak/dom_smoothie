@@ -222,7 +222,7 @@ fn get_row_and_col_count(table: &Selection) -> (usize, usize) {
     let mut rows = 0usize;
     let mut cols = 0usize;
     for tr in table.select("tr").iter() {
-        let rowspan = table.attr_or("rowspan", "1");
+        let rowspan = tr.attr_or("rowspan", "1");
         rows += rowspan.parse::<usize>().unwrap_or(1);
 
         //Now look for column-related info
