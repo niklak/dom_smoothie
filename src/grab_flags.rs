@@ -1,4 +1,4 @@
-use flagset::flags;
+use flagset::{flags, FlagSet};
 
 flags! {
     pub enum GrabFlags: u8 {
@@ -6,6 +6,9 @@ flags! {
         WeightClasses,
         CleanConditionally,
     }
+}
+pub (crate) fn all_grab_flags() -> FlagSet<GrabFlags> {
+    GrabFlags::StripUnlikelys | GrabFlags::WeightClasses | GrabFlags::CleanConditionally
 }
 
 #[cfg(test)]

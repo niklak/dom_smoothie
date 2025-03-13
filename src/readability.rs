@@ -6,6 +6,7 @@ use url::Url;
 
 use crate::config::TextMode;
 use crate::glob::*;
+use crate::grab;
 use crate::helpers::*;
 use crate::is_probably_readable;
 use crate::matching::*;
@@ -480,7 +481,10 @@ impl Readability {
 
         self.prepare();
 
-        let Some(doc) = self.grab_article(&mut metadata) else {
+        //pre-filter
+        grab::pre_filter_document(&self.doc, &mut metadata);
+
+        let Some(doc) = self.grab_article() else {
             return Err(ReadabilityError::GrabFailed);
         };
 
