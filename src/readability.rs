@@ -451,7 +451,7 @@ impl Readability {
         }
     }
 
-    fn parse_internal(&mut self, policy: Option<ParsePolicy>) -> Result<Article, ReadabilityError>  {
+    fn parse_impl(&mut self, policy: Option<ParsePolicy>) -> Result<Article, ReadabilityError>  {
         self.verify_doc()?;
 
         let ld_meta = if self.config.disable_json_ld {
@@ -547,7 +547,7 @@ impl Readability {
     /// a [`ReadabilityError::TooManyElements`] error is returned.
     /// If the document fails to extract the content, a [`ReadabilityError::GrabFailed`] error is returned.
     pub fn parse(&mut self) -> Result<Article, ReadabilityError> {
-        self.parse_internal(None)
+        self.parse_impl(None)
     }
 
 
@@ -559,7 +559,7 @@ impl Readability {
     /// If you need more precise results, use [`Readability::parse`] method,
     /// because it applies all policies sequentially from the strict to raw.
     pub fn parse_with_policy(&mut self, policy: ParsePolicy) -> Result<Article, ReadabilityError> {
-        self.parse_internal(Some(policy))
+        self.parse_impl(Some(policy))
     }
 
     /// This method will search for a JSON-LD block in the page and
