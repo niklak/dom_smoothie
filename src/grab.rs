@@ -9,7 +9,6 @@ use tendril::StrTendril;
 
 use crate::config::CandidateSelectMode;
 use crate::glob::*;
-use crate::grab_flags::all_grab_flags;
 use crate::grab_flags::GrabFlags;
 use crate::helpers::*;
 use crate::matching::*;
@@ -21,7 +20,7 @@ use crate::Readability;
 impl Readability {
     pub(crate) fn grab_article(&self) -> Option<Document> {
         
-        let mut flags = all_grab_flags();
+        let mut flags: FlagSet<GrabFlags> = FlagSet::full();
         let mut best_attempt: Option<(Document, usize)> = None;
         loop {
             let doc = self.doc.clone();

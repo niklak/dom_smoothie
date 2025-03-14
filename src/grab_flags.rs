@@ -1,4 +1,4 @@
-use flagset::{flags, FlagSet};
+use flagset::flags;
 
 flags! {
     pub enum GrabFlags: u8 {
@@ -7,19 +7,16 @@ flags! {
         CleanConditionally,
     }
 }
-pub (crate) fn all_grab_flags() -> FlagSet<GrabFlags> {
-    GrabFlags::StripUnlikelys | GrabFlags::WeightClasses | GrabFlags::CleanConditionally
-}
 
 #[cfg(test)]
 mod tests {
+    use flagset::FlagSet;
 
     use super::*;
 
     #[test]
     fn test_grab_flags() {
-        let mut flags =
-            GrabFlags::CleanConditionally | GrabFlags::StripUnlikelys | GrabFlags::WeightClasses;
+        let mut flags: FlagSet<GrabFlags> = FlagSet::full();
         assert!(flags.contains(GrabFlags::StripUnlikelys));
         flags -= GrabFlags::StripUnlikelys;
         assert!(!flags.contains(GrabFlags::StripUnlikelys));
