@@ -1,4 +1,6 @@
-use crate::glob::{MIN_CONTENT_LENGTH, MIN_SCORE};
+use flagset::FlagSet;
+
+use crate::{glob::{MIN_CONTENT_LENGTH, MIN_SCORE}, grab_flags::GrabFlags};
 
 pub(crate) static DEFAULT_N_TOP_CANDIDATES: usize = 5;
 pub(crate) static DEFAULT_CHAR_THRESHOLD: usize = 500;
@@ -64,6 +66,35 @@ impl Default for Config {
             readable_min_content_length: MIN_CONTENT_LENGTH,
             candidate_select_mode: CandidateSelectMode::Readability,
             text_mode: TextMode::Raw,
+        }
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Default, Clone, Copy)]
+/// ParsePolicy is used to determine how much content cleaning should be applied to the extracted content.
+pub enum  ParsePolicy {
+    /// Strict policy -- removes unlikely elements before determining the elements score;
+    /// uses id and class attributes of the element to determine it's score; 
+    /// applies additional content cleaning after identifying the main content.
+    #[default]
+    Strict,
+    /// Moderate policy, -- uses id and class attributes of the element to determine it's score; 
+    /// applies additional content cleaning after identifying the main content.
+    Moderate,
+    /// Clean policy -- applies additional content cleaning after identifying the main content.
+    Clean,
+    /// Raw policy, applies no cleaning heuristics.
+    Raw,
+}
+
+impl Into<FlagSet<GrabFlags>> for ParsePolicy {
+    fn into(self) -> FlagSet<GrabFlags> {
+        match self {
+            ParsePolicy::Strict => FlagSet::full(),
+            ParsePolicy::Moderate => GrabFlags::WeightClasses | GrabFlags::CleanConditionally,
+            ParsePolicy::Clean => FlagSet::default() | GrabFlags::CleanConditionally,
+            ParsePolicy::Raw => FlagSet::default(),
         }
     }
 }

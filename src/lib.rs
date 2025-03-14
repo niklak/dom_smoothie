@@ -12,7 +12,7 @@ mod score;
 #[cfg(feature = "serde")]
 mod serde_helpers;
 
-pub use config::{CandidateSelectMode, Config, TextMode};
+pub use config::{CandidateSelectMode, Config, TextMode, ParsePolicy};
 pub use readability::Article;
 pub use readability::Metadata;
 pub use readability::Readability;
