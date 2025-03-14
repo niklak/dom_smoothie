@@ -72,7 +72,7 @@ impl Default for Config {
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Default, Clone, Copy)]
-/// ParsePolicy is used to determine how much content cleaning should be applied to the extracted content.
+/// `ParsePolicy` defines how scoring, content extraction, and cleaning should be performed.
 pub enum  ParsePolicy {
     /// Strict policy -- removes unlikely elements before determining the elements score;
     /// uses id and class attributes of the element to determine it's score; 

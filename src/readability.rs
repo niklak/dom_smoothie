@@ -551,13 +551,13 @@ impl Readability {
     }
 
 
-    /// Extracts the relevant content from the document and provides it as a [`Article`] object.
+    /// Extracts the relevant content from the document and provides it as an [`Article`] object.
     /// 
-    /// This method performs the same steps as [`Readability::parse`], but does only one attempt with specified [`ParsePolicy`].
-    /// Probably, the results of this method will be worse than [`Readability::parse`] method but it consumes significantly 
-    /// less memory because it doesn't need to keep the best attempt.
-    /// If you need more precise results, use [`Readability::parse`] method,
-    /// because it applies all policies sequentially from the strict to raw.
+    /// This method performs the same steps as [`Readability::parse`], but performs only one attempt with the specified [`ParsePolicy`].
+    /// The results of this method are likely to be worse than those of [`Readability::parse`], but it consumes significantly 
+    /// less memory because it does not need to keep the best attempt.
+    /// If you need more precise results, use [`Readability::parse`],  
+    /// as it sequentially applies all policies, from strict to raw.
     pub fn parse_with_policy(&mut self, policy: ParsePolicy) -> Result<Article, ReadabilityError> {
         self.parse_impl(Some(policy))
     }
