@@ -18,21 +18,12 @@ use crate::Metadata;
 use crate::Readability;
 
 impl Readability {
-    pub(crate) fn grab_article(&self, metadata: &mut Metadata) -> Option<Document> {
-        pre_filter_document(&self.doc, metadata);
-
-        let mut flags =
-            GrabFlags::CleanConditionally | GrabFlags::StripUnlikelys | GrabFlags::WeightClasses;
+    pub(crate) fn grab_article(&self) -> Option<Document> {
+        let mut flags: FlagSet<GrabFlags> = FlagSet::full();
         let mut best_attempt: Option<(Document, usize)> = None;
         loop {
             let doc = self.doc.clone();
-            let selection = doc.select_single("body");
-            // html5ever always puts body element, even if it wasn't in the document's contents
-            let body_node = selection.nodes().first()?;
-            let strip_unlikely = flags.contains(GrabFlags::StripUnlikelys);
-
-            let mut elements_to_score = collect_elements_to_score(body_node, strip_unlikely);
-            let article_node = self.handle_candidates(&mut elements_to_score, body_node, &flags);
+            let article_node = self.attempt_grab_article(&doc, &flags);
             // Now that we've gone through the full algorithm, check to see if
             // we got any meaningful content. If we didn't, we may need to re-run
             // grabArticle with different flags set. This gives us a higher likelihood of
@@ -66,6 +57,21 @@ impl Readability {
                 return Some(best_doc);
             }
         }
+    }
+
+    pub(crate) fn attempt_grab_article<'a>(
+        &self,
+        doc: &'a Document,
+        flags: &FlagSet<GrabFlags>,
+    ) -> Option<NodeRef<'a>> {
+        let selection = doc.select_single("body");
+        // html5ever always puts body element, even if it wasn't in the document's contents
+        let body_node = selection.nodes().first()?;
+        let strip_unlikely = flags.contains(GrabFlags::StripUnlikelys);
+        let mut elements_to_score = collect_elements_to_score(body_node, strip_unlikely);
+        let article_node = self.handle_candidates(&mut elements_to_score, body_node, flags);
+        let res = article_node.map(|n| NodeRef::new(n.id, &doc.tree));
+        res
     }
 
     fn handle_candidates<'a>(
@@ -151,7 +157,7 @@ impl Readability {
     }
 }
 
-fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
+pub(crate) fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
     // Mozilla's implementation performs filtering for each approach of grabbing the article.
     // However, I believe it is better to do it only once. Additionally, there is a lot of logic that relies
     // on a certain element which is going to be removed in the next iteration.
@@ -260,9 +266,6 @@ fn is_unlikely_candidate(node: &NodeRef) -> bool {
     if MAYBE_CANDIDATES.iter().any(|p| match_string.contains(p)) {
         return false;
     }
-
-    // TODO: There is also a chance that `unlikely` block may contain `likely` block.
-    // It may be checked in place instead of starting a new loop iteration.
 
     if has_ancestor_tag::<NodePredicate>(node, "table", Some(0), None) {
         return false;
@@ -822,7 +825,7 @@ mod tests {
 
         assert_eq!(count_before, 10);
 
-        let clean_doc = ra.grab_article(&mut Metadata::default()).unwrap();
+        let clean_doc = ra.grab_article().unwrap();
         let sel = clean_doc.select("body > *");
         let count_after = sel.nodes().iter().filter(|n| n.is_element()).count();
         assert_eq!(count_after, 1);

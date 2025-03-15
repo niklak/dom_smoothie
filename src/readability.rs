@@ -4,8 +4,10 @@ use dom_query::{Document, Node, NodeData, NodeRef, Selection};
 use tendril::StrTendril;
 use url::Url;
 
+use crate::config::ParsePolicy;
 use crate::config::TextMode;
 use crate::glob::*;
+use crate::grab;
 use crate::helpers::*;
 use crate::is_probably_readable;
 use crate::matching::*;
@@ -449,26 +451,7 @@ impl Readability {
         }
     }
 
-    /// Extracts the relevant content from the document and provides it as a [`Article`] object.
-    ///
-    /// This is the primary method of the crate. It performs the following steps:
-    ///
-    /// - Verify the document (element nodes length)
-    /// - Extracts the metadata
-    /// - Cleans the document
-    /// - Extracts the main content of the document
-    /// - Post-processes the content
-    /// - Returns the content and the metadata as an [`Article`] object
-    ///
-    /// # Returns
-    ///
-    /// An [`Article`] object containing the content and the metadata.
-    ///
-    /// # Errors
-    /// If `config.max_elements_to_parse` is > 0 and the document's number of element nodes exceeds this limit,
-    /// a [`ReadabilityError::TooManyElements`] error is returned.
-    /// If the document fails to extract the content, a [`ReadabilityError::GrabFailed`] error is returned.
-    pub fn parse(&mut self) -> Result<Article, ReadabilityError> {
+    fn parse_impl(&mut self, policy: Option<ParsePolicy>) -> Result<Article, ReadabilityError> {
         self.verify_doc()?;
 
         let ld_meta = if self.config.disable_json_ld {
@@ -480,11 +463,26 @@ impl Readability {
 
         self.prepare();
 
-        let Some(doc) = self.grab_article(&mut metadata) else {
-            return Err(ReadabilityError::GrabFailed);
-        };
+        // Pre-filter the document by removing hidden elements, dialogs, duplicate article titles, and bylines.
+        grab::pre_filter_document(&self.doc, &mut metadata);
 
-        let root_sel = doc.select_single_matcher(&MATCHER_CONTENT_ID);
+        if let Some(policy) = policy {
+            // When using a specific policy, make a single attempt to extract content
+            if self
+                .attempt_grab_article(&self.doc, &policy.into())
+                .is_none()
+            {
+                return Err(ReadabilityError::GrabFailed);
+            }
+        } else {
+            // When no policy is specified, use the multi-attempt approach for better results
+            let Some(doc) = self.grab_article() else {
+                return Err(ReadabilityError::GrabFailed);
+            };
+            self.doc = doc;
+        }
+
+        let root_sel = self.doc.select_single_matcher(&MATCHER_CONTENT_ID);
 
         let Some(root_node) = root_sel.nodes().first() else {
             // After `grab_article` successfully returns a document
@@ -532,6 +530,40 @@ impl Readability {
             favicon: metadata.favicon,
             url: metadata.url,
         })
+    }
+
+    /// Extracts the relevant content from the document and provides it as a [`Article`] object.
+    ///
+    /// This is the primary method of the crate. It performs the following steps:
+    ///
+    /// - Verify the document (element nodes length)
+    /// - Extracts the metadata
+    /// - Cleans the document
+    /// - Extracts the main content of the document
+    /// - Post-processes the content
+    /// - Returns the content and the metadata as an [`Article`] object
+    ///
+    /// # Returns
+    ///
+    /// An [`Article`] object containing the content and the metadata.
+    ///
+    /// # Errors
+    /// If `config.max_elements_to_parse` is > 0 and the document's number of element nodes exceeds this limit,
+    /// a [`ReadabilityError::TooManyElements`] error is returned.
+    /// If the document fails to extract the content, a [`ReadabilityError::GrabFailed`] error is returned.
+    pub fn parse(&mut self) -> Result<Article, ReadabilityError> {
+        self.parse_impl(None)
+    }
+
+    /// Extracts the relevant content from the document and provides it as an [`Article`] object.
+    ///
+    /// This method performs the same steps as [`Readability::parse`], but performs only one attempt with the specified [`ParsePolicy`].
+    /// The results of this method are likely to be worse than those of [`Readability::parse`], but it consumes significantly
+    /// less memory because it does not need to keep the best attempt.
+    /// If you need more precise results, use [`Readability::parse`],  
+    /// as it sequentially applies all policies, from strict to raw.
+    pub fn parse_with_policy(&mut self, policy: ParsePolicy) -> Result<Article, ReadabilityError> {
+        self.parse_impl(Some(policy))
     }
 
     /// This method will search for a JSON-LD block in the page and
