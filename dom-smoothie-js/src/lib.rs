@@ -32,9 +32,9 @@ pub enum ParsePolicy {
     Raw,
 }
 
-impl Into<dom_smoothie::ParsePolicy> for ParsePolicy {
-    fn into(self) -> dom_smoothie::ParsePolicy {
-        match self {
+impl From<ParsePolicy> for dom_smoothie::ParsePolicy {
+    fn from(val: ParsePolicy) -> Self {
+        match val {
             ParsePolicy::Strict => dom_smoothie::ParsePolicy::Strict,
             ParsePolicy::Moderate => dom_smoothie::ParsePolicy::Moderate,
             ParsePolicy::Clean => dom_smoothie::ParsePolicy::Clean,

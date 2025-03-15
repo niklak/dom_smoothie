@@ -95,9 +95,9 @@ pub enum ParsePolicy {
     Raw,
 }
 
-impl Into<FlagSet<GrabFlags>> for ParsePolicy {
-    fn into(self) -> FlagSet<GrabFlags> {
-        match self {
+impl From<ParsePolicy> for FlagSet<GrabFlags> {
+    fn from(val: ParsePolicy) -> Self {
+        match val {
             ParsePolicy::Strict => FlagSet::full(),
             ParsePolicy::Moderate => GrabFlags::WeightClasses | GrabFlags::CleanConditionally,
             ParsePolicy::Clean => FlagSet::default() | GrabFlags::CleanConditionally,
