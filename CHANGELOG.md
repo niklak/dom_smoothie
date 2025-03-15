@@ -5,13 +5,14 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Added `Readability::parse_with_policy` method, which performs one attempt to extract relevant content from an HTML document with `ParsePolicy`. This method consumes less memory than `Readability::parse` but it is also less precise, as `Readability::parse` is able to perform more than one attempt.
-
-### Fixed
-- Fixed the `get_row_and_col_count` function, which determines the number of rows and columns. Skipped counting `rowspan` since it is meaningless.
+- Added `Readability::parse_with_policy` method, which performs one attempt to extract relevant content from an HTML document with `ParsePolicy`. This method consumes **significantly** less memory than `Readability::parse` but it is also less precise, as `Readability::parse` is able to perform more than one attempt.
+- Added the `dom_smoothie_js::Readability::parse_with_policy` method, a wrapper around `dom_smoothie::Readability::parse_with_policy`.
 
 ### Changed
 - Ignoring `svg` elements during pre-filtering and element collection for scoring, improving performance for documents with many `svg` elements.
+
+### Fixed
+- Fixed the `get_row_and_col_count` function, which determines the number of rows and columns. Skipped counting `rowspan` since it is meaningless.
 
 ## [0.8.0] - 2025-03-10
 
