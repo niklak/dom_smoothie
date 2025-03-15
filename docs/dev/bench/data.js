@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1741895098143,
+  "lastUpdate": 1742045082095,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -629,6 +629,48 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large",
             "value": 53600860,
             "range": "± 1608193",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f7a574b886152179a533ecbeedc1da1714a7bdc2",
+          "message": "Merge pull request #74 from niklak/feature/parse-with-policy\n\n- Added `Readability::parse_with_policy` method, which performs one attempt to extract relevant content from an HTML document with `ParsePolicy`. This method consumes **significantly** less memory than `Readability::parse` but it is also less precise, as `Readability::parse` is able to perform more than one attempt.\n- Added the `dom_smoothie_js::Readability::parse_with_policy` method, a wrapper around `dom_smoothie::Readability::parse_with_policy`.",
+          "timestamp": "2025-03-15T15:23:51+02:00",
+          "tree_id": "8ecb6ef8928f308a4c449fe17669a887392432a8",
+          "url": "https://github.com/niklak/dom_smoothie/commit/f7a574b886152179a533ecbeedc1da1714a7bdc2"
+        },
+        "date": 1742045081689,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 3113364,
+            "range": "± 86081",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 11884268,
+            "range": "± 582838",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 53008646,
+            "range": "± 363385",
             "unit": "ns/iter"
           }
         ]
