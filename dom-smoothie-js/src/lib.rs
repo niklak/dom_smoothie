@@ -11,6 +11,39 @@ cfg_if! {
 }
 
 #[wasm_bindgen]
+#[derive(Debug, Default, Clone, Copy)]
+/// `ParsePolicy` defines how scoring, content extraction, and cleaning should be performed.
+pub enum ParsePolicy {
+    /// Strict policy
+    /// - removes unlikely elements before determining the elements score;
+    /// - uses `id` and `class` attributes of the element to determine it's score;
+    /// - applies additional content cleaning after identifying the main content.
+    #[default]
+    Strict,
+    /// Moderate policy
+    /// - uses `id` and `class` attributes of the element to determine it's score;
+    /// - applies additional content cleaning after identifying the main content.
+    Moderate,
+    /// Clean policy
+    /// - applies additional content cleaning after identifying the main content.
+    Clean,
+    /// Raw policy
+    /// - applies no cleaning heuristics.
+    Raw,
+}
+
+impl Into<dom_smoothie::ParsePolicy> for ParsePolicy {
+    fn into(self) -> dom_smoothie::ParsePolicy {
+        match self {
+            ParsePolicy::Strict => dom_smoothie::ParsePolicy::Strict,
+            ParsePolicy::Moderate => dom_smoothie::ParsePolicy::Moderate,
+            ParsePolicy::Clean => dom_smoothie::ParsePolicy::Clean,
+            ParsePolicy::Raw => dom_smoothie::ParsePolicy::Raw,
+        }
+    }
+}
+
+#[wasm_bindgen]
 /// A struct that provides readability functionality
 pub struct Readability(dom_smoothie::Readability);
 
@@ -44,10 +77,7 @@ impl Readability {
         let cfg = if cfg.is_null() {
             None
         } else {
-            match serde_wasm_bindgen::from_value(cfg) {
-                Ok(cfg) => Some(cfg),
-                Err(e) => return Err(JsError::new(&e.to_string())),
-            }
+            serde_wasm_bindgen::from_value(cfg).map_err(|e| JsError::new(&e.to_string()))?
         };
 
         let doc_url = document_url.as_ref().map(|s| s.as_str());
@@ -78,6 +108,24 @@ impl Readability {
     #[wasm_bindgen]
     pub fn parse(&mut self) -> Result<JsValue, JsError> {
         match self.0.parse() {
+            Ok(article) => {
+                serde_wasm_bindgen::to_value(&article).map_err(|e| JsError::new(&e.to_string()))
+            }
+            Err(e) => Err(JsError::new(&e.to_string())),
+        }
+    }
+
+    /// Extracts the relevant content from the document and provides it as an JSON object.
+    ///
+    /// This method performs the same steps as [`Readability::parse`], but performs only one attempt with the specified [`ParsePolicy`].
+    /// The results of this method are likely to be worse than those of [`Readability::parse`], but it consumes significantly
+    /// less memory because it does not need to keep the best attempt.
+    /// If you need more precise results, use [`Readability::parse`],  
+    /// as it sequentially applies all policies, from strict to raw.
+    #[wasm_bindgen]
+    pub fn parse_with_policy(&mut self, policy: ParsePolicy) -> Result<JsValue, JsError> {
+
+        match self.0.parse_with_policy(policy.into()) {
             Ok(article) => {
                 serde_wasm_bindgen::to_value(&article).map_err(|e| JsError::new(&e.to_string()))
             }
@@ -157,11 +205,14 @@ impl Readability {
 ///
 /// Returns a `JsError` if the document fails to parse.
 #[wasm_bindgen]
-pub fn parse(content: &str) -> Result<JsValue, JsValue> {
+pub fn parse(content: &str) -> Result<JsValue, JsError> {
     let mut ra = dom_smoothie::Readability::new(content, None, None)
-        .map_err(|e| JsValue::from_str(&e.to_string()))?;
+        .map_err(|e| JsError::new(&e.to_string()))?;
 
-    let article = ra.parse().map_err(|e| JsValue::from_str(&e.to_string()))?;
-
-    serde_wasm_bindgen::to_value(&article).map_err(|e| JsValue::from_str(&e.to_string()))
+    match ra.parse() {
+        Ok(article) => {
+            serde_wasm_bindgen::to_value(&article).map_err(|e| JsError::new(&e.to_string()))
+        }
+        Err(e) => Err(JsError::new(&e.to_string())),
+    }
 }

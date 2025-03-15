@@ -248,6 +248,38 @@ main();
 ```
 </details>
 
+
+<details>
+    <summary><b>Parsing with One Policy</b></summary>
+
+The `Readability.parse_with_policy` method allows parsing content with a specific policy.
+This method follows the same steps as `Readability.parse` but makes only a single attempt using the specified `ParsePolicy`.
+
+As a result, it doesn\`t store the best attempt, leading to significantly lower memory consumption. Some policies may also be faster than others.
+Typically, `ParsePolicy.Strict` is the slowest but provides the cleanest result. `ParsePolicy.Moderate` can also yield a good result, while the others may be less accurate.
+
+In some cases, using certain policies (e.g., `ParsePolicy.Strict`) may result in an error, whereas `Readability.parse` might succeed.
+This happens because `Readability.parse` attempts parsing with different policies (essentially a set of grab flags) until it either succeeds or exhausts all options.
+
+Available policies: `ParsePolicy.Strict`, `ParsePolicy.Moderate`, `ParsePolicy.Clean`, `ParsePolicy.Raw`.
+
+```javascript
+import { Readability, ParsePolicy } from "dom-smoothie-js";
+import { readFileSync } from "node:fs";
+
+function main() {
+  const content = readFileSync("test_data/rustwiki_2024.html", "utf8");
+  const document_url = "https://en.wikipedia.org/wiki/Rust_(programming_language)";
+
+  // Available policies: ParsePolicy.Strict, ParsePolicy.Moderate, ParsePolicy.Clean, ParsePolicy.Raw
+  const article = new Readability(content, document_url, null).parse_with_policy(ParsePolicy.Strict);
+  console.log("Text Content:", article.text_content);
+}
+
+main();
+```
+</details>
+
 ## License
 
 Licensed under MIT ([LICENSE](LICENSE) or http://opensource.org/licenses/MIT).
