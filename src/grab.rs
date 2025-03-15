@@ -19,7 +19,6 @@ use crate::Readability;
 
 impl Readability {
     pub(crate) fn grab_article(&self) -> Option<Document> {
-        
         let mut flags: FlagSet<GrabFlags> = FlagSet::full();
         let mut best_attempt: Option<(Document, usize)> = None;
         loop {
@@ -60,16 +59,19 @@ impl Readability {
         }
     }
 
-    pub(crate) fn attempt_grab_article<'a>(&self, doc: &'a Document, flags: &FlagSet<GrabFlags>) -> Option<NodeRef<'a>> {
-            let selection = doc.select_single("body");
-            // html5ever always puts body element, even if it wasn't in the document's contents
-            let body_node = selection.nodes().first()?;
-            let strip_unlikely = flags.contains(GrabFlags::StripUnlikelys);
-            let mut elements_to_score = collect_elements_to_score(body_node, strip_unlikely);
-            let article_node = self.handle_candidates(&mut elements_to_score, body_node, flags);
-            let res = article_node.map(|n| NodeRef::new(n.id, &doc.tree));
-            res
-            
+    pub(crate) fn attempt_grab_article<'a>(
+        &self,
+        doc: &'a Document,
+        flags: &FlagSet<GrabFlags>,
+    ) -> Option<NodeRef<'a>> {
+        let selection = doc.select_single("body");
+        // html5ever always puts body element, even if it wasn't in the document's contents
+        let body_node = selection.nodes().first()?;
+        let strip_unlikely = flags.contains(GrabFlags::StripUnlikelys);
+        let mut elements_to_score = collect_elements_to_score(body_node, strip_unlikely);
+        let article_node = self.handle_candidates(&mut elements_to_score, body_node, flags);
+        let res = article_node.map(|n| NodeRef::new(n.id, &doc.tree));
+        res
     }
 
     fn handle_candidates<'a>(
@@ -264,7 +266,6 @@ fn is_unlikely_candidate(node: &NodeRef) -> bool {
     if MAYBE_CANDIDATES.iter().any(|p| match_string.contains(p)) {
         return false;
     }
-
 
     if has_ancestor_tag::<NodePredicate>(node, "table", Some(0), None) {
         return false;

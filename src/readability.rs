@@ -451,7 +451,7 @@ impl Readability {
         }
     }
 
-    fn parse_impl(&mut self, policy: Option<ParsePolicy>) -> Result<Article, ReadabilityError>  {
+    fn parse_impl(&mut self, policy: Option<ParsePolicy>) -> Result<Article, ReadabilityError> {
         self.verify_doc()?;
 
         let ld_meta = if self.config.disable_json_ld {
@@ -466,8 +466,11 @@ impl Readability {
         //pre-filter
         grab::pre_filter_document(&self.doc, &mut metadata);
 
-        if  let Some(policy) = policy {
-            if self.attempt_grab_article(&self.doc, &policy.into()).is_none() {
+        if let Some(policy) = policy {
+            if self
+                .attempt_grab_article(&self.doc, &policy.into())
+                .is_none()
+            {
                 return Err(ReadabilityError::GrabFailed);
             }
         } else {
@@ -550,11 +553,10 @@ impl Readability {
         self.parse_impl(None)
     }
 
-
     /// Extracts the relevant content from the document and provides it as an [`Article`] object.
-    /// 
+    ///
     /// This method performs the same steps as [`Readability::parse`], but performs only one attempt with the specified [`ParsePolicy`].
-    /// The results of this method are likely to be worse than those of [`Readability::parse`], but it consumes significantly 
+    /// The results of this method are likely to be worse than those of [`Readability::parse`], but it consumes significantly
     /// less memory because it does not need to keep the best attempt.
     /// If you need more precise results, use [`Readability::parse`],  
     /// as it sequentially applies all policies, from strict to raw.

@@ -1,6 +1,9 @@
 use flagset::FlagSet;
 
-use crate::{glob::{MIN_CONTENT_LENGTH, MIN_SCORE}, grab_flags::GrabFlags};
+use crate::{
+    glob::{MIN_CONTENT_LENGTH, MIN_SCORE},
+    grab_flags::GrabFlags,
+};
 
 pub(crate) static DEFAULT_N_TOP_CANDIDATES: usize = 5;
 pub(crate) static DEFAULT_CHAR_THRESHOLD: usize = 500;
@@ -73,18 +76,22 @@ impl Default for Config {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Default, Clone, Copy)]
 /// `ParsePolicy` defines how scoring, content extraction, and cleaning should be performed.
-pub enum  ParsePolicy {
-    /// Strict policy -- removes unlikely elements before determining the elements score;
-    /// uses id and class attributes of the element to determine it's score; 
-    /// applies additional content cleaning after identifying the main content.
+pub enum ParsePolicy {
+    /// Strict policy
+    /// - removes unlikely elements before determining the elements score;
+    /// - uses `id` and `class` attributes of the element to determine it's score;
+    /// - applies additional content cleaning after identifying the main content.
     #[default]
     Strict,
-    /// Moderate policy, -- uses id and class attributes of the element to determine it's score; 
-    /// applies additional content cleaning after identifying the main content.
+    /// Moderate policy
+    /// - uses `id` and `class` attributes of the element to determine it's score;
+    /// - applies additional content cleaning after identifying the main content.
     Moderate,
-    /// Clean policy -- applies additional content cleaning after identifying the main content.
+    /// Clean policy
+    /// - applies additional content cleaning after identifying the main content.
     Clean,
-    /// Raw policy, applies no cleaning heuristics.
+    /// Raw policy
+    /// - applies no cleaning heuristics.
     Raw,
 }
 
