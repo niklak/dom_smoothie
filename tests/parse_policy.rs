@@ -34,3 +34,12 @@ pub(crate) fn test_parse_with_policy() {
     }
     assert_eq!(results.len(), policies.len());
 }
+
+#[test]
+pub(crate) fn test_parse_with_policy_fail() {
+    // this is a case when each policy produce a different result
+    let source_contents = include_str!("../test-pages/readability/lazy-image-3/source.html");
+    let mut r = Readability::new(source_contents, None, None).unwrap();
+    let article = r.parse_with_policy(ParsePolicy::Strict);
+    assert!(article.is_err());
+}
