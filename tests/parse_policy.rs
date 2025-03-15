@@ -12,7 +12,7 @@ fn hash_text<T: Hash>(text: &T) -> u64 {
 
 #[test]
 pub(crate) fn test_parse_with_policy() {
-    // this is a case when each policy produce a different result
+    // this is a case when each policy produces a different result
     let source_path = Path::new("./test-pages/ok/wikipedia-2/source.html");
     let source_contents = fs::read_to_string(source_path).unwrap();
 
@@ -37,9 +37,13 @@ pub(crate) fn test_parse_with_policy() {
 
 #[test]
 pub(crate) fn test_parse_with_policy_fail() {
-    // this is a case when each policy produce a different result
+    // Test that problematic HTML fails with Strict policy
     let source_contents = include_str!("../test-pages/readability/lazy-image-3/source.html");
     let mut r = Readability::new(source_contents, None, None).unwrap();
     let article = r.parse_with_policy(ParsePolicy::Strict);
     assert!(article.is_err());
+
+    let mut r = Readability::new(source_contents, None, None).unwrap();
+    let article = r.parse_with_policy(ParsePolicy::Raw);
+    assert!(article.is_ok());
 }
