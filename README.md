@@ -280,6 +280,45 @@ fn main() -> Result<(), Box<dyn Error>> {
 ```
 </details>
 
+
+<details>
+    <summary><b>Parsing with One Policy</b></summary>
+
+The `Readability::parse_with_policy` method allows parsing content with a specific policy.
+This method follows the same steps as `Readability::parse` but makes only a single attempt using the specified `ParsePolicy`.
+
+As a result, it doesn\`t store the best attempt, leading to significantly lower memory consumption. Some policies may also be faster than others.
+Typically, `ParsePolicy::Strict` is the slowest but provides the cleanest result. `ParsePolicy::Moderate` can also yield a good result, while the others may be less accurate.
+
+In some cases, using certain policies (e.g., `ParsePolicy::Strict`) may result in a `ReadabilityError::GrabFailed` error, whereas `Readability::parse` might succeed.
+This happens because `Readability::parse` attempts parsing with different policies (essentially a set of grab flags) until it either succeeds or exhausts all options.
+
+```rust
+use std::error::Error;
+use dom_smoothie::{ParsePolicy, Readability};
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let html = include_str!("../test-pages/readability/lazy-image-3/source.html");
+    
+    // Policy and expected success
+    let cases: [(ParsePolicy, bool); 4] = [
+        (ParsePolicy::Strict, false),
+        (ParsePolicy::Moderate, false),
+        (ParsePolicy::Clean, false),
+        (ParsePolicy::Raw, true),
+    ];
+
+    for (policy, expected) in cases {
+        let mut r = Readability::new(html, None, None).unwrap();
+        let article = r.parse_with_policy(policy);
+        assert_eq!(article.is_ok(), expected);
+    }
+    
+    Ok(())
+}
+```
+</details>
+
 ## Crate Features
 
 - `serde`: Enables the `serde::Serialize` and `serde::Deserialize` traits for the `Article`, `Metadata`, and `Config` structures.
