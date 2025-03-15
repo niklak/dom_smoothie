@@ -16,12 +16,12 @@ cfg_if! {
 pub enum ParsePolicy {
     /// Strict policy
     /// - removes unlikely elements before determining the elements score;
-    /// - uses `id` and `class` attributes of the element to determine it's score;
+    /// - uses `id` and `class` attributes of the element to determine its score;
     /// - applies additional content cleaning after identifying the main content.
     #[default]
     Strict,
     /// Moderate policy
-    /// - uses `id` and `class` attributes of the element to determine it's score;
+    /// - uses `id` and `class` attributes of the element to determine its score;
     /// - applies additional content cleaning after identifying the main content.
     Moderate,
     /// Clean policy

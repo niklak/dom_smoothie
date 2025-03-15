@@ -27,9 +27,9 @@ pub(crate) fn test_parse_with_policy() {
     for policy in policies {
         let mut r = Readability::new(source_contents.clone(), None, None).unwrap();
         let article = r.parse_with_policy(policy).unwrap();
-        let h = hash_text(&article.content.trim());
-        if !results.contains(&h) {
-            results.push(h);
+        let content_hash = hash_text(&article.content.trim());
+        if !results.contains(&content_hash) {
+            results.push(content_hash);
         }
     }
     assert_eq!(results.len(), policies.len());
