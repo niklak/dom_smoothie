@@ -49,6 +49,7 @@ pub(crate) static MATCHER_P: Lazy<Matcher> = lazy_matcher!("p");
 pub(crate) static MATCHER_EMBEDS: Lazy<Matcher> = lazy_matcher!("object,embed,iframe");
 pub(crate) static MATCHER_CLEAN: Lazy<Matcher> =
     lazy_matcher!("object,embed,footer,link,aside,iframe,input,textarea,select,button");
+pub(crate) static MATCHER_DATA_TABLE: Lazy<Matcher> = lazy_matcher!("table[data-readability-table]");
 
 pub(crate) static META_TITLE_KEYS: &[&str] = &[
     "dc:title",

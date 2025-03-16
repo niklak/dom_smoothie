@@ -55,7 +55,7 @@ fn clean_styles(n: &Node) {
 fn should_clean_conditionally(node: &Node, flags: &FlagSet<GrabFlags>) -> bool {
     let sel = Selection::from(node.clone());
     // keep element if it has a data tables
-    if sel.select_single("table[data-readability-table]").exists() {
+    if sel.select_single_matcher(&MATCHER_DATA_TABLE).exists() {
         return false;
     }
 
