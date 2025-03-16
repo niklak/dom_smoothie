@@ -1,4 +1,3 @@
-use dom_query::NodeData;
 use dom_query::{Node, Selection};
 use flagset::FlagSet;
 
@@ -56,26 +55,21 @@ fn clean_styles(n: &Node) {
 fn should_clean_conditionally(node: &Node, flags: &FlagSet<GrabFlags>) -> bool {
     let sel = Selection::from(node.clone());
     // keep element if it has a data tables
-    if sel.select("table[data-readability-table]").exists() {
+    if sel.select_single_matcher(&MATCHER_DATA_TABLE).exists() {
         return false;
     }
 
-    let is_data_table = |n: &Node| n.has_attr("data-readability-table");
+    let is_data_table = |n: &Node| n.has_name("table") && n.has_attr("data-readability-table");
 
-    let Some(qual_name) = node.qual_name_ref() else {
-        return false;
-    };
-    let tag = qual_name.local.as_ref();
-
-    if tag == "table" && is_data_table(node) {
+    if is_data_table(node) {
         return false;
     }
     // Next check if we're inside a data table, in which case don't remove it as well.
-    if has_ancestor_tag(node, "table", None, Some(is_data_table)) {
+    if has_ancestor(node, None, is_data_table) {
         return false;
     }
 
-    if has_ancestor_tag::<NodePredicate>(node, "code", Some(0), None) {
+    if has_ancestor(node, Some(0), |n| n.has_name("code")) {
         return false;
     }
 
@@ -113,7 +107,10 @@ fn should_clean_conditionally(node: &Node, flags: &FlagSet<GrabFlags>) -> bool {
         }
 
         let content_len = node.normalized_char_count();
-
+        let Some(qual_name) = node.qual_name_ref() else {
+            return false;
+        };
+        let tag = qual_name.local.as_ref();
         //TODO: tag "ol" unhandled
         let mut is_list = matches!(tag, "ul" | "ol");
         if !is_list {
@@ -129,7 +126,7 @@ fn should_clean_conditionally(node: &Node, flags: &FlagSet<GrabFlags>) -> bool {
         let img = node.find_descendants("img").len() as f32;
 
         let should_remove = || {
-            let is_figure_child = has_ancestor_tag::<NodePredicate>(node, "figure", None, None);
+            let is_figure_child = has_ancestor(node, None, |n| n.has_name("figure"));
             let p = node.find_descendants("p").len() as f32;
             // TODO: `li` looks suspicious
             let li = node.find_descendants("li").len() as f32 - 100.0;
@@ -413,7 +410,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
 
     // At this point, nasty iframes have been removed; only embedded video
     // ones remain.
-    for p_node in article_sel.select("p").nodes().iter() {
+    for p_node in article_sel.select("p").nodes() {
         let p_sel = Selection::from(p_node.clone());
         let content_el_count = p_sel.select("img,object,embed,iframe").length();
         if content_el_count == 0 && p_node.normalized_char_count() == 0 {
@@ -421,7 +418,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
         }
     }
 
-    for br_node in article_node.find_descendants("br").iter() {
+    for br_node in article_node.find_descendants("br") {
         if let Some(next_node) = br_node.next_element_sibling() {
             if next_node.has_name("p") {
                 br_node.remove_from_parent();
@@ -430,7 +427,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
     }
 
     // Remove single-cell tables
-    for table_node in article_sel.select("table").nodes().iter() {
+    for table_node in article_sel.select("table").nodes() {
         let tbody = if has_single_tag_inside_element(table_node, "tbody") {
             table_node.first_element_child().unwrap()
         } else {
@@ -456,24 +453,19 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
 }
 
 fn remove_share_elements(root_sel: &Selection, share_element_threshold: usize) {
-    for child in root_sel.select("*[class],*[id]").nodes().iter() {
+    for child in root_sel.select("*[class],*[id]").nodes() {
         let mut has_share_elements = false;
 
         if child.text().len() >= share_element_threshold {
             continue;
         }
 
-        child.query(|n| {
-            if let NodeData::Element(ref el) = n.data {
-                has_share_elements = el.class().map_or(false, |s| contains_share_elements(&s));
-
-                if has_share_elements {
-                    return;
-                }
+        if let Some(el) = child.element_ref() {
+            has_share_elements = el.class().map_or(false, |s| contains_share_elements(&s));
+            if !has_share_elements {
                 has_share_elements = el.id().map_or(false, |s| contains_share_elements(&s));
             }
-        });
-
+        }
         if has_share_elements {
             child.remove_from_parent();
         }

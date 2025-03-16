@@ -1,4 +1,3 @@
-use dom_query::NodeData;
 use dom_query::Tree;
 use foldhash::{HashMap, HashSet};
 use std::vec;
@@ -267,13 +266,12 @@ fn is_unlikely_candidate(node: &NodeRef) -> bool {
         return false;
     }
 
-    if has_ancestor_tag::<NodePredicate>(node, "table", Some(0), None) {
-        return false;
-    }
-    if has_ancestor_tag::<NodePredicate>(node, "code", Some(0), None) {
-        return false;
-    }
-    true
+    !has_ancestor(node, Some(0), |n| {
+        let Some(qual_name) = n.qual_name_ref() else {
+            return false;
+        };
+        matches!(qual_name.local.as_ref(), "table" | "code")
+    })
 }
 
 fn div_into_p(node: &NodeRef) {
@@ -309,13 +307,8 @@ fn div_into_p(node: &NodeRef) {
 
 fn has_child_block_element(node: &NodeRef) -> bool {
     node.descendants_it().any(|n| {
-        n.query_or(false, |tree_node| {
-            if let NodeData::Element(ref el) = tree_node.data {
-                BLOCK_ELEMS.contains(&el.name.local)
-            } else {
-                false
-            }
-        })
+        n.element_ref()
+            .map_or(false, |el| BLOCK_ELEMS.contains(&el.name.local))
     })
 }
 
