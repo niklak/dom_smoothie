@@ -124,7 +124,6 @@ impl Readability {
     /// as it sequentially applies all policies, from strict to raw.
     #[wasm_bindgen]
     pub fn parse_with_policy(&mut self, policy: ParsePolicy) -> Result<JsValue, JsError> {
-
         match self.0.parse_with_policy(policy.into()) {
             Ok(article) => {
                 serde_wasm_bindgen::to_value(&article).map_err(|e| JsError::new(&e.to_string()))
