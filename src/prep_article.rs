@@ -1,4 +1,3 @@
-use dom_query::NodeData;
 use dom_query::{Node, Selection};
 use flagset::FlagSet;
 
@@ -413,7 +412,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
 
     // At this point, nasty iframes have been removed; only embedded video
     // ones remain.
-    for p_node in article_sel.select("p").nodes().iter() {
+    for p_node in article_sel.select("p").nodes() {
         let p_sel = Selection::from(p_node.clone());
         let content_el_count = p_sel.select("img,object,embed,iframe").length();
         if content_el_count == 0 && p_node.normalized_char_count() == 0 {
@@ -421,7 +420,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
         }
     }
 
-    for br_node in article_node.find_descendants("br").iter() {
+    for br_node in article_node.find_descendants("br") {
         if let Some(next_node) = br_node.next_element_sibling() {
             if next_node.has_name("p") {
                 br_node.remove_from_parent();
@@ -430,7 +429,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
     }
 
     // Remove single-cell tables
-    for table_node in article_sel.select("table").nodes().iter() {
+    for table_node in article_sel.select("table").nodes() {
         let tbody = if has_single_tag_inside_element(table_node, "tbody") {
             table_node.first_element_child().unwrap()
         } else {
@@ -456,24 +455,19 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
 }
 
 fn remove_share_elements(root_sel: &Selection, share_element_threshold: usize) {
-    for child in root_sel.select("*[class],*[id]").nodes().iter() {
+    for child in root_sel.select("*[class],*[id]").nodes() {
         let mut has_share_elements = false;
 
         if child.text().len() >= share_element_threshold {
             continue;
         }
 
-        child.query(|n| {
-            if let NodeData::Element(ref el) = n.data {
-                has_share_elements = el.class().map_or(false, |s| contains_share_elements(&s));
-
-                if has_share_elements {
-                    return;
-                }
+        if let Some(el) = child.element_ref() {
+            has_share_elements = el.class().map_or(false, |s| contains_share_elements(&s));
+            if !has_share_elements {
                 has_share_elements = el.id().map_or(false, |s| contains_share_elements(&s));
             }
-        });
-
+        }
         if has_share_elements {
             child.remove_from_parent();
         }
