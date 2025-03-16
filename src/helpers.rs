@@ -63,7 +63,7 @@ pub(crate) fn is_whitespace(node: &Node) -> bool {
         return true;
     }
     // only an element node has a node_name
-    MINI_BR.match_node(node)
+    node.has_name("br")
 }
 
 pub(crate) fn has_ancestor<F>(node: &Node, max_depth: Option<usize>, filter_fn: F) -> bool

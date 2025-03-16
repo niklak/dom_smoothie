@@ -49,7 +49,8 @@ pub(crate) static MATCHER_P: Lazy<Matcher> = lazy_matcher!("p");
 pub(crate) static MATCHER_EMBEDS: Lazy<Matcher> = lazy_matcher!("object,embed,iframe");
 pub(crate) static MATCHER_CLEAN: Lazy<Matcher> =
     lazy_matcher!("object,embed,footer,link,aside,iframe,input,textarea,select,button");
-pub(crate) static MATCHER_DATA_TABLE: Lazy<Matcher> = lazy_matcher!("table[data-readability-table]");
+pub(crate) static MATCHER_DATA_TABLE: Lazy<Matcher> =
+    lazy_matcher!("table[data-readability-table]");
 
 pub(crate) static META_TITLE_KEYS: &[&str] = &[
     "dc:title",
@@ -225,7 +226,6 @@ pub(crate) static LOADING_WORDS: phf::Set<&'static str> = phf_set!(
 
 pub(crate) static SHARE_WORDS: phf::Set<&'static str> = phf_set!("share", "sharedaddy");
 
-pub(crate) static MINI_BR: Lazy<MiniSelector> = Lazy::new(|| MiniSelector::new(r#"br"#).unwrap());
 pub(crate) static MINI_FALLBACK_IMG: Lazy<MiniSelector> =
     Lazy::new(|| MiniSelector::new(r#"[class*="fallback-image"]"#).unwrap());
 pub(crate) static MINI_ARIA_HIDDEN: Lazy<MiniSelector> =
