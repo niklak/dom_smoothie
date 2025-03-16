@@ -55,26 +55,21 @@ fn clean_styles(n: &Node) {
 fn should_clean_conditionally(node: &Node, flags: &FlagSet<GrabFlags>) -> bool {
     let sel = Selection::from(node.clone());
     // keep element if it has a data tables
-    if sel.select("table[data-readability-table]").exists() {
+    if sel.select_single("table[data-readability-table]").exists() {
         return false;
     }
 
-    let is_data_table = |n: &Node| n.has_attr("data-readability-table");
+    let is_data_table = |n: &Node| n.has_name("table") && n.has_attr("data-readability-table");
 
-    let Some(qual_name) = node.qual_name_ref() else {
-        return false;
-    };
-    let tag = qual_name.local.as_ref();
-
-    if tag == "table" && is_data_table(node) {
+    if is_data_table(node) {
         return false;
     }
     // Next check if we're inside a data table, in which case don't remove it as well.
-    if has_ancestor_tag(node, "table", None, Some(is_data_table)) {
+    if has_ancestor(node, None, is_data_table) {
         return false;
     }
 
-    if has_ancestor_tag::<NodePredicate>(node, "code", Some(0), None) {
+    if has_ancestor(node, Some(0), |n| n.has_name("code")) {
         return false;
     }
 
@@ -112,7 +107,10 @@ fn should_clean_conditionally(node: &Node, flags: &FlagSet<GrabFlags>) -> bool {
         }
 
         let content_len = node.normalized_char_count();
-
+        let Some(qual_name) = node.qual_name_ref() else {
+            return false;
+        };
+        let tag = qual_name.local.as_ref();
         //TODO: tag "ol" unhandled
         let mut is_list = matches!(tag, "ul" | "ol");
         if !is_list {
@@ -128,7 +126,7 @@ fn should_clean_conditionally(node: &Node, flags: &FlagSet<GrabFlags>) -> bool {
         let img = node.find_descendants("img").len() as f32;
 
         let should_remove = || {
-            let is_figure_child = has_ancestor_tag::<NodePredicate>(node, "figure", None, None);
+            let is_figure_child = has_ancestor(node, None, |n| n.has_name("figure"));
             let p = node.find_descendants("p").len() as f32;
             // TODO: `li` looks suspicious
             let li = node.find_descendants("li").len() as f32 - 100.0;

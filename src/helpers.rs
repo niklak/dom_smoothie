@@ -66,22 +66,12 @@ pub(crate) fn is_whitespace(node: &Node) -> bool {
     MINI_BR.match_node(node)
 }
 
-pub(crate) type NodePredicate = fn(&Node) -> bool;
-
-pub(crate) fn has_ancestor_tag<F>(
-    node: &Node,
-    tag: &str,
-    max_depth: Option<usize>,
-    filter_fn: Option<F>,
-) -> bool
+pub(crate) fn has_ancestor<F>(node: &Node, max_depth: Option<usize>, filter_fn: F) -> bool
 where
     F: Fn(&Node) -> bool,
 {
     let max_depth = max_depth.map(|max_depth| if max_depth == 0 { 3 } else { max_depth });
-    match filter_fn {
-        Some(f) => node.ancestors_it(max_depth).any(|a| a.has_name(tag) && f(&a)),
-        None => node.ancestors_it(max_depth).any(|a| a.has_name(tag)),
-    }
+    node.ancestors_it(max_depth).any(|a| filter_fn(&a))
 }
 
 pub(crate) fn get_text_density(node: &Node, selector: &str, char_count: Option<usize>) -> f32 {

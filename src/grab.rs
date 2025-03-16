@@ -266,13 +266,12 @@ fn is_unlikely_candidate(node: &NodeRef) -> bool {
         return false;
     }
 
-    if has_ancestor_tag::<NodePredicate>(node, "table", Some(0), None) {
-        return false;
-    }
-    if has_ancestor_tag::<NodePredicate>(node, "code", Some(0), None) {
-        return false;
-    }
-    true
+    !has_ancestor(node, Some(0), |n| {
+        let Some(qual_name) = n.qual_name_ref() else {
+            return false;
+        };
+        matches!(qual_name.local.as_ref(), "table" | "code")
+    })
 }
 
 fn div_into_p(node: &NodeRef) {
