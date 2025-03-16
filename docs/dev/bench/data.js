@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1742045082095,
+  "lastUpdate": 1742139609725,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -671,6 +671,48 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large",
             "value": 53008646,
             "range": "± 363385",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f6b21b14e42c9b17d04e77827da8baf0421fb7e9",
+          "message": "Merge pull request #75 from niklak/feature/refactor-4\n\n- Revised `has_ancestor_tag`\n- Revised `should_clean_conditionally`\n- Adjusted `MATCHER_DIALOGS`\n- Minor changes",
+          "timestamp": "2025-03-16T17:39:12+02:00",
+          "tree_id": "dac0c4d44a4442f54c26ae29859328210b7204b0",
+          "url": "https://github.com/niklak/dom_smoothie/commit/f6b21b14e42c9b17d04e77827da8baf0421fb7e9"
+        },
+        "date": 1742139608814,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 3059810,
+            "range": "± 14298",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 11443722,
+            "range": "± 423273",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 51878776,
+            "range": "± 627293",
             "unit": "ns/iter"
           }
         ]
