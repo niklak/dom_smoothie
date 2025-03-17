@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1742198390254,
+  "lastUpdate": 1742203317052,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -755,6 +755,48 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large",
             "value": 52283708,
             "range": "± 1898342",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a4051a309a32ccaba035a3c1bb6381fedcb62e16",
+          "message": "Merge pull request #76 from niklak/feature/mark-data-tables\n\nsrc/prep_article.rs: revise `mark_data_tables`",
+          "timestamp": "2025-03-17T11:21:00+02:00",
+          "tree_id": "6b03e4ee2672a68034e40baf0778d9aee1b20603",
+          "url": "https://github.com/niklak/dom_smoothie/commit/a4051a309a32ccaba035a3c1bb6381fedcb62e16"
+        },
+        "date": 1742203316181,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 3065449,
+            "range": "± 56448",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 11434398,
+            "range": "± 291440",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 52037427,
+            "range": "± 535654",
             "unit": "ns/iter"
           }
         ]
