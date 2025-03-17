@@ -236,62 +236,48 @@ fn get_row_and_col_count(table: &Selection) -> (usize, usize) {
     (rows, cols)
 }
 
-fn mark_data_tables(sel: &Selection) {
-    // TODO: revise this
-    let table_sel = sel.select("table");
+fn mark_data_tables(base_sel: &Selection) {
 
-    for node in table_sel.nodes().iter() {
-        let sel = Selection::from(node.clone());
+    for table_node in base_sel.select_matcher(&MATCHER_TABLE).nodes() {
+        let sel = Selection::from(table_node.clone());
 
-        let role = node.attr_or("role", "");
-        if role.as_ref() == "presentation" {
-            set_data_readability_table(node, false);
+        if MINI_PRESENTATION.match_node(table_node) {
+            set_data_readability_table(table_node, false);
             continue;
         }
 
-        if node
-            .attr("datatable")
-            .filter(|s| s.as_ref() == "0")
-            .is_some()
-        {
-            set_data_readability_table(node, false);
+        if MINI_AINT_DATA_TABLE.match_node(table_node){
+            set_data_readability_table(table_node, false);
             continue;
         }
 
-        if node.has_attr("summary") {
-            set_data_readability_table(node, true);
-            continue;
-        }
-        let caption_sel = sel.select_single("caption");
-        if caption_sel.exists() {
-            set_data_readability_table(node, true);
+        if table_node.has_attr("summary") {
+            set_data_readability_table(table_node, true);
             continue;
         }
 
-        let descendants_sel = sel.select_single("col,colgroup,tfoot,thead,th");
-
-        if descendants_sel.exists() {
-            set_data_readability_table(node, true);
+        if sel.select_single_matcher(&MATCHER_TABLE_MEMBERS).exists() {
+            set_data_readability_table(table_node, true);
             continue;
         }
 
         // nested tables indicate a layout table
-        if sel.select_single("table").exists() {
-            set_data_readability_table(node, false);
+        if sel.select_single_matcher(&MATCHER_TABLE).exists() {
+            set_data_readability_table(table_node, false);
             continue;
         }
 
         let (rows, cols) = get_row_and_col_count(&sel);
         if rows == 1 || cols == 1 {
-            set_data_readability_table(node, false);
+            set_data_readability_table(table_node, false);
             continue;
         }
 
         if rows >= 10 || cols > 4 {
-            set_data_readability_table(node, true);
+            set_data_readability_table(table_node, true);
             continue;
         }
-        set_data_readability_table(node, (rows * cols) > 10);
+        set_data_readability_table(table_node, (rows * cols) > 10);
     }
 }
 
