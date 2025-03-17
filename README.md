@@ -309,7 +309,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     ];
 
     for (policy, expected) in cases {
-        let mut r = Readability::new(html, None, None).unwrap();
+        let mut r = Readability::new(html, None, None)?;
         let article = r.parse_with_policy(policy);
         assert_eq!(article.is_ok(), expected);
     }
