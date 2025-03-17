@@ -2,7 +2,7 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
-## [Unreleased]
+## [0.9.0] - 2025-03-17
 
 ### Added
 - Added `Readability::parse_with_policy` method, which performs one attempt to extract relevant content from an HTML document with `ParsePolicy`. This method consumes **significantly** less memory than `Readability::parse` but it is also less precise, as `Readability::parse` is able to perform more than one attempt.
