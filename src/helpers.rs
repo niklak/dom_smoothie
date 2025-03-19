@@ -129,11 +129,7 @@ pub(crate) fn link_density(node: &Node, char_count: Option<usize>) -> f32 {
         return 0.0;
     }
 
-    let text_length = if let Some(c) = char_count {
-        c as f32
-    } else {
-        node.normalized_char_count() as f32
-    };
+    let text_length = char_count.unwrap_or_else(|| node.normalized_char_count()) as f32;
     if text_length == 0.0 {
         return 0.0;
     }
@@ -197,12 +193,11 @@ pub(crate) fn is_probably_visible(node: &Node) -> bool {
     if is_invisible_style(node) {
         return false;
     }
-    if MINI_FALLBACK_IMG.match_node(node) {
-        return true;
-    }
-    if MINI_ARIA_HIDDEN.match_node(node) {
+
+    if MINI_ARIA_HIDDEN.match_node(node) && !MINI_FALLBACK_IMG.match_node(node) {
         return false;
     }
+
     true
 }
 
