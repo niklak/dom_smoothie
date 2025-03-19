@@ -237,7 +237,6 @@ fn get_row_and_col_count(table: &Selection) -> (usize, usize) {
 }
 
 fn mark_data_tables(base_sel: &Selection) {
-
     for table_node in base_sel.select_matcher(&MATCHER_TABLE).nodes() {
         let sel = Selection::from(table_node.clone());
 
@@ -246,7 +245,7 @@ fn mark_data_tables(base_sel: &Selection) {
             continue;
         }
 
-        if MINI_AINT_DATA_TABLE.match_node(table_node){
+        if MINI_AINT_DATA_TABLE.match_node(table_node) {
             set_data_readability_table(table_node, false);
             continue;
         }

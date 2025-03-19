@@ -10,7 +10,7 @@ fn hash_text<T: Hash>(text: &T) -> u64 {
 }
 
 #[test]
-pub(crate) fn test_parse_with_policy()-> Result<(), Box<dyn Error>> {
+pub(crate) fn test_parse_with_policy() -> Result<(), Box<dyn Error>> {
     // this is a case when each policy produces a different result
     let source_contents = include_str!("../test-pages/ok/wikipedia-2/source.html");
 
