@@ -74,7 +74,7 @@ where
     node.ancestors_it(max_depth).any(|a| filter_fn(&a))
 }
 
-pub(crate) fn get_text_density(node: &Node, selector: &str, char_count: Option<usize>) -> f32 {
+pub(crate) fn text_density(node: &Node, selector: &str, char_count: Option<usize>) -> f32 {
     let sel = Selection::from(node.clone()).select(selector);
     let sel_nodes = sel.nodes();
 
