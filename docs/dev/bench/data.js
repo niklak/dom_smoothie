@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1742203962234,
+  "lastUpdate": 1742567004703,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -839,6 +839,48 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large",
             "value": 54682401,
             "range": "± 1539597",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c77f6f4d951681cde23283f7376fe3adec50bde6",
+          "message": "Merge pull request #77 from niklak/feature/refactor-5\n\nInternal code changes",
+          "timestamp": "2025-03-21T16:21:41+02:00",
+          "tree_id": "0b0a56fcd4d16ad7754e19d03fe0751307a38f5c",
+          "url": "https://github.com/niklak/dom_smoothie/commit/c77f6f4d951681cde23283f7376fe3adec50bde6"
+        },
+        "date": 1742567004287,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2855075,
+            "range": "± 42273",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 11123794,
+            "range": "± 273466",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 52409578,
+            "range": "± 905572",
             "unit": "ns/iter"
           }
         ]
