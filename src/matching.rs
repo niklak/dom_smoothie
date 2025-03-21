@@ -38,10 +38,9 @@ fn style_has_kv(style: &str, key: &str, val: &str) -> bool {
 
 pub(crate) fn strip_cdata(content: &StrTendril) -> &str {
     if let Some(rest) = content.trim_start().strip_prefix("<![CDATA[") {
-        rest.split("]]>").next().unwrap_or(rest)
-    } else {
-        content
+        return rest.split("]]>").next().unwrap_or(rest);
     }
+    content
 }
 
 pub(crate) fn is_schema_org_url(url: &str) -> bool {
