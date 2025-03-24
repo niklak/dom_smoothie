@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1742567004703,
+  "lastUpdate": 1742850771852,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -881,6 +881,48 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large",
             "value": 52409578,
             "range": "± 905572",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "91ac9c1b4ef2be7ae1347b81b452ac86f24a2142",
+          "message": "Merge pull request #78 from niklak/feature/refactor-6\n\n- Updated the internal function `fix_lazy_images` to improve how it checks whether an element's class attribute contains the word `lazy`.",
+          "timestamp": "2025-03-24T23:11:52+02:00",
+          "tree_id": "254f61621af6b100fdf9589c7f8a056823f870d0",
+          "url": "https://github.com/niklak/dom_smoothie/commit/91ac9c1b4ef2be7ae1347b81b452ac86f24a2142"
+        },
+        "date": 1742850770900,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2848193,
+            "range": "± 17090",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 11097349,
+            "range": "± 340380",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 51332900,
+            "range": "± 514549",
             "unit": "ns/iter"
           }
         ]
