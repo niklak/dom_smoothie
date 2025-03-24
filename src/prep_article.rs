@@ -309,7 +309,7 @@ fn fix_lazy_images(sel: &Selection) {
             }
         }
 
-        if (node.has_attr("src") || node.has_attr("srcset")) && !node.has_class("lazy") {
+        if (node.has_attr("src") || node.has_attr("srcset")) && !MINI_LAZY.match_node(node) {
             continue;
         }
 
