@@ -2,6 +2,11 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+- Updated the internal function `fix_lazy_images` to improve how it checks whether an element's class attribute contains the word `lazy`.
+
 ## [0.9.0] - 2025-03-17
 
 ### Added

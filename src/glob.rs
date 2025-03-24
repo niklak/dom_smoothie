@@ -237,3 +237,5 @@ pub(crate) static MINI_PRESENTATION: Lazy<MiniSelector> =
     Lazy::new(|| MiniSelector::new(r#"[role="presentation"]"#).unwrap());
 pub(crate) static MINI_AINT_DATA_TABLE: Lazy<MiniSelector> =
     Lazy::new(|| MiniSelector::new(r#"[datatable="0"]"#).unwrap());
+pub(crate) static MINI_LAZY: Lazy<MiniSelector> =
+    Lazy::new(|| MiniSelector::new(r#"[class*="lazy"]"#).unwrap());
