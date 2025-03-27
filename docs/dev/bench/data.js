@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1742850771852,
+  "lastUpdate": 1743073709703,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -923,6 +923,48 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large",
             "value": 51332900,
             "range": "± 514549",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "morgenpurple@gmail.com",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "morgenpurple@gmail.com",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "distinct": true,
+          "id": "ae62e4b0b8fdb07c1a0561c8ea0a3c5f14681638",
+          "message": "CHANGELOG.md: update",
+          "timestamp": "2025-03-27T13:07:12+02:00",
+          "tree_id": "7685e425d6075fda5f3ac22bdc0848df4e756609",
+          "url": "https://github.com/niklak/dom_smoothie/commit/ae62e4b0b8fdb07c1a0561c8ea0a3c5f14681638"
+        },
+        "date": 1743073708994,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2857018,
+            "range": "± 80131",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 11166360,
+            "range": "± 319968",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 51521911,
+            "range": "± 314339",
             "unit": "ns/iter"
           }
         ]
