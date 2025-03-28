@@ -1,10 +1,10 @@
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use std::hint::black_box;
 
-use dom_smoothie::{Article, Readability, ReadabilityError};
+use dom_smoothie::{Article, Config, Readability, ReadabilityError};
 
-fn dom_smoothie_parse(contents: &str) -> Result<Article, ReadabilityError> {
-    let mut readability = Readability::new(contents, None, None)?;
+fn dom_smoothie_parse(contents: &str, cfg: &Config) -> Result<Article, ReadabilityError> {
+    let mut readability = Readability::new(contents, None, Some(cfg.clone()))?;
     readability.parse()
 }
 
@@ -25,8 +25,12 @@ fn bench_dom_smoothie_parse(c: &mut Criterion) {
     ];
 
     for (name, contents) in test_cases {
+        let cfg = Config {
+            min_score_to_adjust: 10.0,
+            ..Default::default()
+        };
         group.bench_with_input(BenchmarkId::new("parse", name), contents, |b, contents| {
-            b.iter(|| dom_smoothie_parse(black_box(contents)))
+            b.iter(|| dom_smoothie_parse(black_box(contents), black_box(&cfg)))
         });
     }
     group.finish();

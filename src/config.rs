@@ -7,6 +7,7 @@ use crate::{
 
 pub(crate) static DEFAULT_N_TOP_CANDIDATES: usize = 5;
 pub(crate) static DEFAULT_CHAR_THRESHOLD: usize = 500;
+pub(crate) static DEFAULT_MIN_SCORE_TO_ADJUST: f32 = 5.0;
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Default, Clone, Copy)]
@@ -42,6 +43,10 @@ pub struct Config {
     pub n_top_candidates: usize,
     /// Character threshold for content extraction
     pub char_threshold: usize,
+    /// The minimum score required for a node to be adjusted during scoring. Defaults to 5.0.  
+    /// The higher this value, the faster the node scoring process, as link density calculations are performed less frequently.  
+    /// A value between 5 and 10 is usually enough to yield good results.
+    pub min_score_to_adjust: f32,
     /// The minimum score required for the document to be considered readable. Defaults to 20.0.
     /// Used only for [`crate::Readability::is_probably_readable`].
     pub readable_min_score: f32,
@@ -65,6 +70,7 @@ impl Default for Config {
             disable_json_ld: false,
             n_top_candidates: DEFAULT_N_TOP_CANDIDATES,
             char_threshold: DEFAULT_CHAR_THRESHOLD,
+            min_score_to_adjust: DEFAULT_MIN_SCORE_TO_ADJUST,
             readable_min_score: MIN_SCORE,
             readable_min_content_length: MIN_CONTENT_LENGTH,
             candidate_select_mode: CandidateSelectMode::Readability,
