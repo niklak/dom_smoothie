@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1743073709703,
+  "lastUpdate": 1743157106677,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -965,6 +965,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large",
             "value": 51521911,
             "range": "± 314339",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4a89db687b8e2918c5acb9899d9dc04d03f86256",
+          "message": "Merge pull request #79 from niklak/feature/min-score-adjust\n\n- Added the `Config::min_score_to_adjust` option, which allows controlling the minimum score required for adjustment during the scoring process. Only nodes with a score higher than this value will be adjusted by their link density. Thus, the higher the value, the faster the scoring process.",
+          "timestamp": "2025-03-28T12:16:44+02:00",
+          "tree_id": "427a1bb9087b1c8273a7b508910d6686adae120a",
+          "url": "https://github.com/niklak/dom_smoothie/commit/4a89db687b8e2918c5acb9899d9dc04d03f86256"
+        },
+        "date": 1743157105598,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2860551,
+            "range": "± 17471",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 11086272,
+            "range": "± 256829",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 51988377,
+            "range": "± 1430109",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2868622,
+            "range": "± 17786",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 9775631,
+            "range": "± 437769",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 54364680,
+            "range": "± 2018945",
             "unit": "ns/iter"
           }
         ]
