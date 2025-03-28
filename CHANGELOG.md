@@ -4,6 +4,9 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Added the `Config::min_score_to_adjust` option, which allows controlling the minimum score required for adjustment during the scoring process. Only nodes with a score higher than this value will be adjusted by their link density. Thus, the higher the value, the faster the scoring process.
+
 ### Changed
 - Improved the internal function `fix_lazy_images` to better detect occurrences of `lazy` as a substring within an element's `class` attribute.
 - Optimized the internal function `should_clean_conditionally` to improve performance.

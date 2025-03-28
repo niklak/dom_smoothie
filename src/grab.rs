@@ -13,6 +13,7 @@ use crate::helpers::*;
 use crate::matching::*;
 use crate::prep_article::prep_article;
 use crate::score::*;
+use crate::Config;
 use crate::Metadata;
 use crate::Readability;
 
@@ -81,8 +82,7 @@ impl Readability {
     ) -> Option<NodeRef<'a>> {
         let tree = body_node.tree;
         let weigh_class = flags.contains(GrabFlags::WeightClasses);
-        let top_candidates =
-            score_elements(elements_to_score, tree, self.config.n_top_candidates, flags);
+        let top_candidates = score_elements(elements_to_score, tree, &self.config, flags);
 
         let mut top_candidate = top_candidates.first().cloned();
 
@@ -315,7 +315,7 @@ fn has_child_block_element(node: &NodeRef) -> bool {
 fn score_elements<'a>(
     elements_to_score: &Vec<NodeRef<'a>>,
     tree: &'a Tree,
-    top_n: usize,
+    cfg: &Config,
     flags: &FlagSet<GrabFlags>,
 ) -> Vec<NodeRef<'a>> {
     let mut score_map: HashMap<NodeId, f32> = HashMap::default();
@@ -377,7 +377,7 @@ fn score_elements<'a>(
         .map(|(node_id, prev_score)| {
             let candidate = NodeRef::new(node_id, tree);
             // Skipping adjustment of low score
-            let score = if prev_score > 5.0 {
+            let score = if prev_score > cfg.min_score_to_adjust {
                 prev_score * (1.0 - link_density(&candidate, None))
             } else {
                 prev_score
@@ -391,7 +391,7 @@ fn score_elements<'a>(
 
     scored_candidates
         .into_iter()
-        .take(top_n)
+        .take(cfg.n_top_candidates)
         .map(move |c| c.0)
         .collect()
 }
