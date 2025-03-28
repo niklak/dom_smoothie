@@ -11,22 +11,23 @@ fn dom_smoothie_parse(contents: &str, cfg: &Config) -> Result<Article, Readabili
 fn bench_dom_smoothie_parse(c: &mut Criterion) {
     let mut group = c.benchmark_group("dom_smoothie");
 
+    let small = include_str!("../test-pages/ok/ehow-1/source.html");
+    let medium = include_str!("../test-pages/ok/engadget/source.html");
+    let large = include_str!("../test-pages/ok/wikipedia-2/source.html");
+
     // Test different sizes/types of content
     let test_cases = vec![
-        ("small", include_str!("../test-pages/ok/ehow-1/source.html")),
-        (
-            "medium",
-            include_str!("../test-pages/ok/engadget/source.html"),
-        ),
-        (
-            "large",
-            include_str!("../test-pages/ok/wikipedia-2/source.html"),
-        ),
+        ("small", small, 5.0f32),
+        ("medium", medium, 5.0f32),
+        ("large", large, 5.0f32),
+        ("small, min score to adjust 10", small, 10.0f32),
+        ("medium, min score to adjust 10", medium, 10.0f32),
+        ("large, min score to adjust 10", large, 10.0f32),
     ];
 
-    for (name, contents) in test_cases {
+    for (name, contents, min_score_to_adjust) in test_cases {
         let cfg = Config {
-            min_score_to_adjust: 10.0,
+            min_score_to_adjust,
             ..Default::default()
         };
         group.bench_with_input(BenchmarkId::new("parse", name), contents, |b, contents| {
