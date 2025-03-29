@@ -66,8 +66,8 @@ pub(crate) fn is_sentence(text: &str) -> bool {
     text.ends_with('.') || text.contains(". ")
 }
 
-pub(crate) fn contains_one_of_words(haystack: &str, words: &phf::Set<&str>) -> bool {
-    haystack.split_whitespace().any(|word| words.contains(word))
+pub(crate) fn contains_one_of_words(haystack: &str, words: &[&str]) -> bool {
+    haystack.split_whitespace().any(|word| words.contains(&word))
 }
 
 #[inline]

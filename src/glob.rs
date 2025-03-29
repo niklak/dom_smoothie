@@ -212,7 +212,7 @@ pub(crate) static CLASSES_POSITIVE: &[&str] = &[
 ];
 
 #[rustfmt::skip]
-pub(crate) static CLASSES_NEGATIVE_WORDS: phf::Set<&'static str> = phf_set!("hid");
+pub(crate) static CLASSES_NEGATIVE_WORDS: &[&str] = &["hid"];
 
 
 pub(crate) static DEPRECATED_SIZE_ATTRIBUTE_ELEMS: phf::Set<&'static str> =
