@@ -233,19 +233,19 @@ mod tests {
     fn test_contains_one_of_words() {
         assert!(contains_one_of_words(
             "something hid",
-            &CLASSES_NEGATIVE_WORDS
+            CLASSES_NEGATIVE_WORDS
         ));
         assert!(contains_one_of_words(
             "something hid another",
-            &CLASSES_NEGATIVE_WORDS
+            CLASSES_NEGATIVE_WORDS
         ));
         assert!(contains_one_of_words(
             "hid something",
-            &CLASSES_NEGATIVE_WORDS
+            CLASSES_NEGATIVE_WORDS
         ));
         assert!(!contains_one_of_words(
             "something hidden",
-            &CLASSES_NEGATIVE_WORDS
+            CLASSES_NEGATIVE_WORDS
         ));
     }
 
