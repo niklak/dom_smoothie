@@ -198,21 +198,21 @@ pub(crate) static PHRASING_ELEMS: phf::Set<&'static str> = phf_set!(
 );
 
 #[rustfmt::skip]
-pub(crate) static CLASSES_NEGATIVE: phf::Set<&'static str> = phf_set!(
+pub(crate) static CLASSES_NEGATIVE: &[&str] = &[
     "-ad-", "hidden", "banner", "combx", "comment", "com-", "contact", "footer",
     "gdpr", "masthead", "media", "meta", "outbrain", "promo", "related", "scroll",
     "share", "shoutbox", "sidebar", "skyscraper", "sponsor", "shopping", "tags",
     "widget"
-);
+];
 
 #[rustfmt::skip]
-pub(crate) static CLASSES_NEGATIVE_WORDS: phf::Set<&'static str> = phf_set!("hid");
-
-#[rustfmt::skip]
-pub(crate) static CLASSES_POSITIVE: phf::Set<&'static str> = phf_set!(
+pub(crate) static CLASSES_POSITIVE: &[&str] = &[
     "article", "body", "content", "entry", "hentry", "h-entry", "main", "page",
     "pagination", "post", "text", "blog", "story",
-);
+];
+
+#[rustfmt::skip]
+pub(crate) static CLASSES_NEGATIVE_WORDS: &[&str] = &["hid"];
 
 pub(crate) static DEPRECATED_SIZE_ATTRIBUTE_ELEMS: phf::Set<&'static str> =
     phf_set!("table", "th", "td", "hr", "pre");

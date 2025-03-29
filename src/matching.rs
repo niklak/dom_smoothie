@@ -66,8 +66,10 @@ pub(crate) fn is_sentence(text: &str) -> bool {
     text.ends_with('.') || text.contains(". ")
 }
 
-pub(crate) fn contains_one_of_words(haystack: &str, words: &phf::Set<&str>) -> bool {
-    haystack.split_whitespace().any(|word| words.contains(word))
+pub(crate) fn contains_one_of_words(haystack: &str, words: &[&str]) -> bool {
+    haystack
+        .split_whitespace()
+        .any(|word| words.contains(&word))
 }
 
 #[inline]
@@ -231,19 +233,19 @@ mod tests {
     fn test_contains_one_of_words() {
         assert!(contains_one_of_words(
             "something hid",
-            &CLASSES_NEGATIVE_WORDS
+            CLASSES_NEGATIVE_WORDS
         ));
         assert!(contains_one_of_words(
             "something hid another",
-            &CLASSES_NEGATIVE_WORDS
+            CLASSES_NEGATIVE_WORDS
         ));
         assert!(contains_one_of_words(
             "hid something",
-            &CLASSES_NEGATIVE_WORDS
+            CLASSES_NEGATIVE_WORDS
         ));
         assert!(!contains_one_of_words(
             "something hidden",
-            &CLASSES_NEGATIVE_WORDS
+            CLASSES_NEGATIVE_WORDS
         ));
     }
 

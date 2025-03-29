@@ -65,7 +65,7 @@ pub(crate) fn get_class_weight(node: &Node, weigh_classes: bool) -> f32 {
 fn determine_attr_weight(attr: &str) -> f32 {
     let mut weight: f32 = 0.0;
     if CLASSES_NEGATIVE.iter().any(|pat| attr.contains(pat))
-        || contains_one_of_words(attr, &CLASSES_NEGATIVE_WORDS)
+        || contains_one_of_words(attr, CLASSES_NEGATIVE_WORDS)
     {
         weight -= 25.0;
     }
