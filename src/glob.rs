@@ -214,7 +214,6 @@ pub(crate) static CLASSES_POSITIVE: &[&str] = &[
 #[rustfmt::skip]
 pub(crate) static CLASSES_NEGATIVE_WORDS: &[&str] = &["hid"];
 
-
 pub(crate) static DEPRECATED_SIZE_ATTRIBUTE_ELEMS: phf::Set<&'static str> =
     phf_set!("table", "th", "td", "hr", "pre");
 
@@ -240,5 +239,3 @@ pub(crate) static MINI_AINT_DATA_TABLE: Lazy<MiniSelector> =
     Lazy::new(|| MiniSelector::new(r#"[datatable="0"]"#).unwrap());
 pub(crate) static MINI_LAZY: Lazy<MiniSelector> =
     Lazy::new(|| MiniSelector::new(r#"[class*="lazy"]"#).unwrap());
-
-

@@ -67,7 +67,9 @@ pub(crate) fn is_sentence(text: &str) -> bool {
 }
 
 pub(crate) fn contains_one_of_words(haystack: &str, words: &[&str]) -> bool {
-    haystack.split_whitespace().any(|word| words.contains(&word))
+    haystack
+        .split_whitespace()
+        .any(|word| words.contains(&word))
 }
 
 #[inline]
