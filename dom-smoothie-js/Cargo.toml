@@ -18,7 +18,7 @@ wasm-bindgen = "0.2.84"
 dom_smoothie = { path = "./..", features = ["serde"] }
 
 serde-wasm-bindgen = "0.6.5"
-alloc_cat  = {version = "1.0.0", optional = true}
+lol_alloc = {version = "0.4.1", optional = true}
 cfg-if = "1.0.0"
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
@@ -37,6 +37,6 @@ wasm-opt = ['-Oz']
 
 
 [features]
-default = ["console_error_panic_hook", "alloc_cat"]
-alloc_cat = ["dep:alloc_cat"]
+default = ["console_error_panic_hook", "lol_alloc"]
+lol_alloc = ["dep:lol_alloc"]
 console_error_panic_hook = ["dep:console_error_panic_hook"]

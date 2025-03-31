@@ -11,6 +11,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 - Improved the internal function `fix_lazy_images` to better detect occurrences of `lazy` as a substring within an element's `class` attribute.
 - Optimized the internal function `should_clean_conditionally` to improve performance.
 - Minor internal code changes.
+- Changed the default allocator for `dom-smoothie-js` from `alloc_cat` to `lol_alloc` because `lol_alloc` is licensed under **MIT**, whereas `alloc_cat` is not.
 
 ## [0.9.0] - 2025-03-17
 
