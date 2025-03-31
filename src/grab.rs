@@ -6,6 +6,8 @@ use dom_query::{Document, NodeId, NodeRef, Selection};
 use flagset::FlagSet;
 use tendril::StrTendril;
 
+use crate::aho::AC_MAYBE;
+use crate::aho::AC_UNLIKELY;
 use crate::config::CandidateSelectMode;
 use crate::glob::*;
 use crate::grab_flags::GrabFlags;
@@ -258,11 +260,11 @@ fn is_unlikely_candidate(node: &NodeRef) -> bool {
         return false;
     }
 
-    if !UNLIKELY_CANDIDATES.iter().any(|p| match_string.contains(p)) {
+    if !AC_UNLIKELY.is_match(&match_string.as_ref()) {
         return false;
     }
 
-    if MAYBE_CANDIDATES.iter().any(|p| match_string.contains(p)) {
+    if AC_MAYBE.is_match(&match_string.as_ref()) {
         return false;
     }
 

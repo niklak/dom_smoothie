@@ -1,3 +1,4 @@
+mod aho;
 mod config;
 mod glob;
 mod grab;
@@ -8,7 +9,6 @@ mod prep_article;
 mod readability;
 mod readable;
 mod score;
-
 #[cfg(feature = "serde")]
 mod serde_helpers;
 
