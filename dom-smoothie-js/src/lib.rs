@@ -4,9 +4,10 @@ use cfg_if::cfg_if;
 use wasm_bindgen::prelude::*;
 
 cfg_if! {
-    if #[cfg(feature="alloc_cat")] {
+    if #[cfg(all(feature = "lol_alloc", target_arch = "wasm32"))]{
+        use lol_alloc::{FreeListAllocator, LockedAllocator};
         #[global_allocator]
-        pub static GLOBAL_ALLOCATOR: &alloc_cat::AllocCat = &alloc_cat::ALLOCATOR;
+        static ALLOCATOR: LockedAllocator<FreeListAllocator> = LockedAllocator::new(FreeListAllocator::new());
     }
 }
 
