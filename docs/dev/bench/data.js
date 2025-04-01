@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1743426926081,
+  "lastUpdate": 1743510317953,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -1145,6 +1145,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 52457271,
             "range": "± 1983001",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "65c1fa23dd39d61f40e636c1e95128e8e9c8866a",
+          "message": "Merge pull request #83 from niklak/feature/aho-corasick\n\n- Implemented the `aho-corasick` feature, enabling the use of the `aho-corasick` crate for defining unlikely candidates and for the node scoring process. This can speed up the overall parsing process by 5-10% in some cases, at the cost of slightly higher memory usage and an increase in binary size.",
+          "timestamp": "2025-04-01T15:23:34+03:00",
+          "tree_id": "a8274394f9ccae31d994b7916cc0d6f32cc879f4",
+          "url": "https://github.com/niklak/dom_smoothie/commit/65c1fa23dd39d61f40e636c1e95128e8e9c8866a"
+        },
+        "date": 1743510316923,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2849433,
+            "range": "± 19421",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 11120643,
+            "range": "± 67625",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 55120115,
+            "range": "± 1086066",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2871437,
+            "range": "± 39658",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 9821078,
+            "range": "± 79784",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 55001541,
+            "range": "± 914260",
             "unit": "ns/iter"
           }
         ]
