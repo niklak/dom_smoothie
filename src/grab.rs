@@ -723,7 +723,7 @@ fn match_unlikely(haystack: &str) -> bool {
 }
 
 #[cfg(feature = "aho-corasick")]
-pub(crate) fn match_unlikely(haystack: &str) -> bool {
+fn match_unlikely(haystack: &str) -> bool {
     if !crate::ac_automat::AC_UNLIKELY.is_match(haystack) {
         return false;
     }
