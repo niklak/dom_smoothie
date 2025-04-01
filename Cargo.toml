@@ -35,6 +35,7 @@ unicode-segmentation = "1.12.0"
 thiserror = "2.0"
 phf = { version = "0.11", features = ["macros"] }
 foldhash = "0.1.4"
+aho-corasick = { version = "1.1.3", optional = true}
 
 [dev-dependencies]
 serde_json = {version = "1.0"}
@@ -44,6 +45,7 @@ criterion = { version = "0.5", features = ["html_reports"] }
 
 [features]
 serde = ["dep:serde"]
+aho-corasick = ["dep:aho-corasick"]
 
 [workspace]
 members = [

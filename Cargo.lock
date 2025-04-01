@@ -355,6 +355,7 @@ dependencies = [
 name = "dom_smoothie"
 version = "0.9.0"
 dependencies = [
+ "aho-corasick",
  "criterion",
  "dom_query",
  "flagset",

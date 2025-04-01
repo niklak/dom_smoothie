@@ -6,6 +6,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ### Added
 - Added the `Config::min_score_to_adjust` option, which allows controlling the minimum score required for adjustment during the scoring process. Only nodes with a score higher than this value will be adjusted by their link density. Thus, the higher the value, the faster the scoring process.
+- Implemented the `aho-corasick` feature, enabling the use of the `aho-corasick` crate for defining unlikely candidates and for the node scoring process. This can speed up the overall parsing process by 5-10% in some cases, at the cost of slightly higher memory usage and an increase in binary size.
 
 ### Changed
 - Improved the internal function `fix_lazy_images` to better detect occurrences of `lazy` as a substring within an element's `class` attribute.

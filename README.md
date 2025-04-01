@@ -322,6 +322,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 ## Crate Features
 
 - `serde`: Enables the `serde::Serialize` and `serde::Deserialize` traits for the `Article`, `Metadata`, and `Config` structures.
+- `aho-corasick`: Enables the use of the `aho-corasick` crate for defining unlikely candidates and for the node scoring process. 
+This can speed up the parsing by 5-10% in some cases, at the cost of slightly higher memory usage and a larger binary size.
 
 
 ## See Also

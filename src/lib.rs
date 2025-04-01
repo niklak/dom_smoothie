@@ -8,9 +8,11 @@ mod prep_article;
 mod readability;
 mod readable;
 mod score;
-
 #[cfg(feature = "serde")]
 mod serde_helpers;
+
+#[cfg(feature = "aho-corasick")]
+mod ac_automat;
 
 pub use config::{CandidateSelectMode, Config, ParsePolicy, TextMode};
 pub use readability::Article;

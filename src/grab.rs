@@ -258,11 +258,7 @@ fn is_unlikely_candidate(node: &NodeRef) -> bool {
         return false;
     }
 
-    if !UNLIKELY_CANDIDATES.iter().any(|p| match_string.contains(p)) {
-        return false;
-    }
-
-    if MAYBE_CANDIDATES.iter().any(|p| match_string.contains(p)) {
+    if !match_unlikely(&match_string) {
         return false;
     }
 
@@ -713,6 +709,28 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
         .iter()
         .map(|n| NodeRef::new(*n, tree))
         .collect()
+}
+
+#[cfg(not(feature = "aho-corasick"))]
+fn match_unlikely(haystack: &str) -> bool {
+    if !UNLIKELY_CANDIDATES.iter().any(|p| haystack.contains(p)) {
+        return false;
+    }
+    if MAYBE_CANDIDATES.iter().any(|p| haystack.contains(p)) {
+        return false;
+    }
+    true
+}
+
+#[cfg(feature = "aho-corasick")]
+fn match_unlikely(haystack: &str) -> bool {
+    if !crate::ac_automat::AC_UNLIKELY.is_match(haystack) {
+        return false;
+    }
+    if crate::ac_automat::AC_MAYBE.is_match(haystack) {
+        return false;
+    }
+    true
 }
 
 #[cfg(test)]

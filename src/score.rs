@@ -62,6 +62,7 @@ pub(crate) fn get_class_weight(node: &Node, weigh_classes: bool) -> f32 {
     weight
 }
 
+#[cfg(not(feature = "aho-corasick"))]
 fn determine_attr_weight(attr: &str) -> f32 {
     let mut weight: f32 = 0.0;
     if CLASSES_NEGATIVE.iter().any(|pat| attr.contains(pat))
@@ -70,6 +71,20 @@ fn determine_attr_weight(attr: &str) -> f32 {
         weight -= 25.0;
     }
     if CLASSES_POSITIVE.iter().any(|pat| attr.contains(pat)) {
+        weight += 25.0;
+    }
+    weight
+}
+
+#[cfg(feature = "aho-corasick")]
+fn determine_attr_weight(attr: &str) -> f32 {
+    let mut weight: f32 = 0.0;
+    if crate::ac_automat::AC_CLASSES_NEGATIVE.is_match(attr)
+        || contains_one_of_words(attr, CLASSES_NEGATIVE_WORDS)
+    {
+        weight -= 25.0;
+    }
+    if crate::ac_automat::AC_CLASSES_POSITIVE.is_match(attr) {
         weight += 25.0;
     }
     weight
