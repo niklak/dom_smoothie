@@ -2,7 +2,7 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
-## [Unreleased]
+## [0.10.0] - 2024-04-01
 
 ### Added
 - Added the `Config::min_score_to_adjust` option, which allows controlling the minimum score required for adjustment during the scoring process. Only nodes with a score higher than this value will be adjusted by their link density. Thus, the higher the value, the faster the scoring process.

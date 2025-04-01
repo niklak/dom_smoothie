@@ -324,7 +324,7 @@ dependencies = [
 
 [[package]]
 name = "dom-smoothie-js"
-version = "0.9.0"
+version = "0.10.0"
 dependencies = [
  "cfg-if",
  "console_error_panic_hook",
@@ -353,7 +353,7 @@ dependencies = [
 
 [[package]]
 name = "dom_smoothie"
-version = "0.9.0"
+version = "0.10.0"
 dependencies = [
  "aho-corasick",
  "criterion",
@@ -374,7 +374,7 @@ dependencies = [
 
 [[package]]
 name = "dom_smoothie_cli"
-version = "0.9.0"
+version = "0.10.0"
 dependencies = [
  "clap",
  "dom_smoothie",
