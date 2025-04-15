@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1744700595562,
+  "lastUpdate": 1744708363382,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -1385,6 +1385,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 51521402,
             "range": "± 678439",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "distinct": true,
+          "id": "0e3fe92a058ecb32b6ae6bd605876826a279cd89",
+          "message": "build(deps): bump flagset from 0.4.6 to 0.4.7\n\nBumps [flagset](https://github.com/enarx/flagset) from 0.4.6 to 0.4.7.\n- [Commits](https://github.com/enarx/flagset/compare/v0.4.6...v0.4.7)\n\n---\nupdated-dependencies:\n- dependency-name: flagset\n  dependency-version: 0.4.7\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>",
+          "timestamp": "2025-04-15T12:11:00+03:00",
+          "tree_id": "dccee7206b737d3b3987cf960dfea189d95cac41",
+          "url": "https://github.com/niklak/dom_smoothie/commit/0e3fe92a058ecb32b6ae6bd605876826a279cd89"
+        },
+        "date": 1744708362659,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2810594,
+            "range": "± 7289",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 10955914,
+            "range": "± 292132",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 50723397,
+            "range": "± 584139",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2807653,
+            "range": "± 11404",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 9553544,
+            "range": "± 81663",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 50365229,
+            "range": "± 351816",
             "unit": "ns/iter"
           }
         ]
