@@ -7,7 +7,7 @@ use common::test_metadata;
 #[test]
 fn test_metadata_last_fail() {
     test_metadata(
-        "./test-pages/alt/arstechnica",
+        "./test-pages/readability/title-en-dash",
         Some("http://fakehost/test/"),
     );
 }

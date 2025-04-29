@@ -256,7 +256,6 @@ impl Readability {
         let mut cur_title = orig_title;
         let char_count = orig_title.chars().count();
         let mut has_hierarchy_sep = false;
-        //TODO: handle `—` or not?
         if orig_title.chars().any(|c| TITLE_SEPARATORS.contains(&c)) {
             has_hierarchy_sep = orig_title.chars().any(|c| TITLE_HIERARCHY_SEP.contains(&c));
             if let Some(title_part) = truncate_title_last(orig_title) {

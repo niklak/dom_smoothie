@@ -105,7 +105,7 @@ pub(crate) static UNLIKELY_CANDIDATES: &[&str] = &[
 ];
 
 pub(crate) static MAYBE_CANDIDATES: &[&str] = &[
-    "and", "article", "body", "column", "content", "main", "shadow", "layout",
+    "and", "article", "body", "column", "content", "layout", "main", "mathjax", "shadow",
 ];
 
 pub(crate) static BYLINE_PATTERNS: &[&str] =
@@ -142,6 +142,8 @@ pub(crate) static VIDEO_DOMAINS: &[&str] = &[
     "archive.org",
     "upload.wikimedia.org",
     "player.twitch.tv",
+    "bilibili.com",
+    "live.bilibili.com",
 ];
 
 pub(crate) static COMMAS: &[char] = &[
@@ -149,7 +151,7 @@ pub(crate) static COMMAS: &[char] = &[
     '\u{FF0C}',
 ];
 
-pub(crate) static TITLE_SEPARATORS: &[char] = &['|', '-', '\\', '/', '>', '»'];
+pub(crate) static TITLE_SEPARATORS: &[char] = &['|', '-', '–', '—', '\\', '/', '>', '»'];
 pub(crate) static TITLE_HIERARCHY_SEP: &[char] = &['\\', '/', '>', '»'];
 pub(crate) static IMG_EXT: &[&str] = &[".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif"];
 

@@ -98,27 +98,30 @@ pub(crate) fn is_img_attr_to_src(s: &str) -> bool {
         .any(|part| IMG_EXT.iter().any(|ext| part.starts_with(&ext[1..])))
 }
 
-pub(crate) fn truncate_title_last(orig_title: &str) -> Option<&str> {
+pub(crate) fn truncate_title_last(title: &str) -> Option<&str> {
     // This is not a perfect, but behaves as like RX_TITLE_W_LAST
-    if let Some(delimiter_pos) = orig_title.rfind(|c| TITLE_SEPARATORS.contains(&c)) {
-        let next_char = &orig_title
-            .get(delimiter_pos + 1..)
-            .and_then(|s| s.chars().next());
-        if &Some(' ') == next_char {
-            return orig_title.get(..delimiter_pos).map(|s| s.trim());
+    if let Some((delim_pos, sep)) = title
+        .char_indices()
+        .rev()
+        .find(|(_, c)| TITLE_SEPARATORS.contains(c))
+    {
+        let next_char = title.get(delim_pos + sep.len_utf8()..)?.chars().next()?;
+        if next_char == ' ' {
+            return title.get(..delim_pos).map(str::trim);
         }
     }
     None
 }
 
-pub(crate) fn truncate_title_first(orig_title: &str) -> Option<&str> {
-    // This is not a perfect, but behaves as like RX_TITLE_W_FIRST
-    if let Some(delimiter_pos) = orig_title.find(|c| TITLE_SEPARATORS.contains(&c)) {
-        let next_char = &orig_title
-            .get(delimiter_pos + 1..)
-            .and_then(|s| s.chars().next());
-        if &Some(' ') == next_char {
-            return orig_title.get(delimiter_pos + 1..).map(|s| s.trim());
+pub(crate) fn truncate_title_first(title: &str) -> Option<&str> {
+    // This is not a perfect, but behaves as like RX_TITLE_W_LAST
+    if let Some((delim_pos, sep)) = title
+        .char_indices()
+        .find(|(_, c)| TITLE_SEPARATORS.contains(c))
+    {
+        let next_char = title.get(delim_pos + sep.len_utf8()..)?.chars().next()?;
+        if next_char == ' ' {
+            return title.get(delim_pos + sep.len_utf8()..).map(str::trim);
         }
     }
     None
@@ -334,5 +337,10 @@ mod tests {
         // Test missing base64 marker
         let src = "data:image/gif,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
         assert!(split_base64_url(src).is_none());
+    }
+
+    #[test]
+    fn test_bad_string() {
+        let s = "Lorem ipsum dolor sit amet – My website";
     }
 }

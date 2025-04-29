@@ -2,6 +2,13 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
+## [Unreleased]
+
+### Changes
+- Updated `dom_query` version to `0.18.0`.
+- Updated codebase to match latest changes (a07e62c) in [mozilla/readability](https://github.com/mozilla/readability) library.
+
+
 ## [0.10.0] - 2024-04-01
 
 ### Added
