@@ -338,9 +338,4 @@ mod tests {
         let src = "data:image/gif,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
         assert!(split_base64_url(src).is_none());
     }
-
-    #[test]
-    fn test_bad_string() {
-        let s = "Lorem ipsum dolor sit amet – My website";
-    }
 }
