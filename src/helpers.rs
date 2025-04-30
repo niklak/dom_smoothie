@@ -193,10 +193,7 @@ pub(crate) fn is_probably_visible(node: &Node) -> bool {
     if is_invisible_style(node) {
         return false;
     }
-    if MINI_ARIA_HIDDEN.match_node(node) && !MINI_FALLBACK_IMG.match_node(node) {
-        return false;
-    }
-    true
+    !MINI_ARIA_HIDDEN.match_node(node) || MINI_FALLBACK_IMG.match_node(node)
 }
 
 #[cfg(test)]

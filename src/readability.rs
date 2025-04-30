@@ -252,7 +252,7 @@ impl Readability {
         let title = self.doc.select_single_matcher(&MATCHER_TITLE).text();
         let orig_title = title.trim();
         let mut h1: Option<StrTendril> = None;
-        //let orig_title = normalize_spaces(&orig_title);
+
         let mut cur_title = orig_title;
         let char_count = orig_title.chars().count();
         let mut has_hierarchy_sep = false;
@@ -388,18 +388,12 @@ impl Readability {
     fn remove_empty_imgs(&mut self) {
         for sel in self.doc.select_matcher(&MATCHER_IMG).iter() {
             let attrs = sel.attrs();
-            if attrs
-                .iter()
-                .map(|a| &a.name.local)
-                .any(|k| matches!(k.as_ref(), "src" | "data-src" | "data-srcset" | "srcset"))
-            {
-                continue;
-            }
-            //TODO: These two conditions can be combined.
-            if attrs
-                .iter()
-                .any(|a| IMG_EXT.iter().any(|p| a.value.contains(p)))
-            {
+            if attrs.iter().any(|a| {
+                matches!(
+                    a.name.local.as_ref(),
+                    "src" | "data-src" | "data-srcset" | "srcset"
+                ) || IMG_EXT.iter().any(|p| a.value.contains(p))
+            }) {
                 continue;
             }
 

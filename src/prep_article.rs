@@ -12,8 +12,8 @@ fn clean(root_sel: &Selection) {
     for node in root_sel.select_matcher(&MATCHER_CLEAN).nodes().iter() {
         // Allow youtube and vimeo videos through as people usually want to see those.
         let mut should_remove = true;
-        let is_embed = node_name_in(node, &EMBED_ELEMENTS);
-        if is_embed {
+
+        if node_name_in(node, &EMBED_ELEMENTS) {
             for attr in node.attrs().iter() {
                 if is_video_url(&attr.value) {
                     should_remove = false;
@@ -111,16 +111,10 @@ fn should_clean_conditionally(node: &Node, flags: &FlagSet<GrabFlags>) -> bool {
             return false;
         };
         let tag = qual_name.local.as_ref();
-        //TODO: tag "ol" unhandled
         let mut is_list = matches!(tag, "ul" | "ol");
         if !is_list {
-            let list_length: usize = sel
-                .select("ul, ol")
-                .nodes()
-                .iter()
-                .map(|n| n.normalized_char_count())
-                .sum();
-            is_list = (list_length as f32 / char_count as f32) > 0.9;
+            let list_density = text_density(node, "ul,ol", Some(char_count));
+            is_list = list_density > 0.9;
         }
 
         let img = node.find_descendants("img").len() as f32;
@@ -189,12 +183,12 @@ fn should_clean_conditionally(node: &Node, flags: &FlagSet<GrabFlags>) -> bool {
     false
 }
 
-fn clean_conditionally(node: &Node, tags: &str, flags: &FlagSet<GrabFlags>) {
+fn clean_conditionally(sel: &Selection, tags: &str, flags: &FlagSet<GrabFlags>) {
     if !flags.contains(GrabFlags::CleanConditionally) {
         return;
     }
 
-    let tag_sel = Selection::from(node.clone()).select(tags);
+    let tag_sel = sel.select(tags);
     // traversing tag nodes in reverse order,
     // so that how children nodes will appear before parent nodes
     for tag_node in tag_sel.nodes().iter().rev() {
@@ -223,7 +217,6 @@ fn get_row_and_col_count(table: &Selection) -> (usize, usize) {
         let mut columns_in_this_row = 0;
 
         for cell in tr.select("td").iter() {
-            // TODO: this also may take no sense
             let colspan = cell.attr_or("colspan", "1");
             columns_in_this_row += colspan.parse::<usize>().unwrap_or(1);
         }
@@ -372,7 +365,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
 
     fix_lazy_images(&article_sel);
 
-    clean_conditionally(article_node, "form,fieldset", flags);
+    clean_conditionally(&article_sel, "form,fieldset", flags);
 
     // Clean out junk from the article content
     clean(&article_sel);
@@ -381,7 +374,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
 
     // Do these last as the previous stuff may have removed junk
     // that will affect these
-    clean_conditionally(article_node, "table,ul,div", flags);
+    clean_conditionally(&article_sel, "table,ul,div", flags);
 
     // replace H1 with H2 as H1 should be only title that is displayed separately
     article_sel.select("h1").rename("h2");
