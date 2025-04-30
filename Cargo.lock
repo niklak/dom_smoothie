@@ -1401,9 +1401,9 @@ dependencies = [
 
 [[package]]
 name = "web_atoms"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "954c5a41f2bcb7314344079d0891505458cc2f4b422bdea1d5bfbe6d1a04903b"
+checksum = "08bcbdcad8fb2e316072ba6bbe09419afdb550285668ac2534f4230a6f2da0ee"
 dependencies = [
  "phf",
  "phf_codegen",

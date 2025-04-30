@@ -3,11 +3,9 @@ use dom_query::Node;
 use crate::{glob::*, matching::contains_one_of_words};
 
 pub(crate) fn get_node_score(node: &Node) -> f32 {
-    let score = node.attr(SCORE_ATTR);
-    if let Some(Ok(score)) = score.map(|s| s.parse::<f32>()) {
-        return score;
-    }
-    0.0
+    node.attr(SCORE_ATTR)
+        .and_then(|s| s.parse::<f32>().ok())
+        .unwrap_or(0.0)
 }
 
 pub(crate) fn has_node_score(node: &Node) -> bool {
