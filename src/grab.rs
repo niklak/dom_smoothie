@@ -163,25 +163,22 @@ pub(crate) fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
     let body_sel = doc.select_single("body");
     // html5ever always puts body element, even if it wasn't in the document's contents
     let body_node = body_sel.nodes().first().unwrap();
-    let tree = &doc.tree;
     let mut should_remove_title_header = !metadata.title.is_empty();
-    let mut next_node_id = get_child_or_sibling_id(body_node, false);
-    while let Some(node_id) = next_node_id {
-        let node = NodeRef::new(node_id, tree);
-
+    let mut next_node = next_child_or_sibling(body_node, false);
+    while let Some(node) = next_node {
         if !is_probably_visible(&node) {
-            next_node_id = get_child_or_sibling_id(&node, true);
+            next_node = next_child_or_sibling(&node, true);
             node.remove_from_parent();
             continue;
         }
 
         if node.has_name("svg") {
-            next_node_id = get_child_or_sibling_id(&node, true);
+            next_node = next_child_or_sibling(&node, true);
             continue;
         }
 
         if MATCHER_DIALOGS.match_element(&node) {
-            next_node_id = get_child_or_sibling_id(&node, true);
+            next_node = next_child_or_sibling(&node, true);
             node.remove_from_parent();
             continue;
         }
@@ -191,7 +188,7 @@ pub(crate) fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
             && text_similarity(&metadata.title, &node.text()) > 0.75
         {
             should_remove_title_header = false;
-            next_node_id = get_child_or_sibling_id(&node, true);
+            next_node = next_child_or_sibling(&node, true);
             node.remove_from_parent();
             continue;
         }
@@ -208,11 +205,11 @@ pub(crate) fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
             };
 
             metadata.byline = Some(normalize_spaces(&byline));
-            next_node_id = get_child_or_sibling_id(&node, true);
+            next_node = next_child_or_sibling(&node, true);
             node.remove_from_parent();
             continue;
         }
-        next_node_id = get_child_or_sibling_id(&node, false);
+        next_node = next_child_or_sibling(&node, false);
     }
 }
 
@@ -618,20 +615,20 @@ fn adjust_top_candidate_by_parent(
     top_candidate
 }
 
-fn get_child_or_sibling_id<'a>(node: &'a NodeRef<'a>, ignore_self: bool) -> Option<NodeId> {
+fn next_child_or_sibling<'a>(node: &NodeRef<'a>, ignore_self: bool) -> Option<NodeRef<'a>> {
     if !ignore_self {
         if let Some(first_child) = node.first_element_child() {
-            return Some(first_child.id);
+            return Some(first_child);
         }
     }
 
     if let Some(sibling) = node.next_element_sibling() {
-        Some(sibling.id)
+        Some(sibling)
     } else {
         let mut parent = node.parent();
         while let Some(parent_node) = parent {
             if let Some(next_sibling) = parent_node.next_element_sibling() {
-                return Some(next_sibling.id);
+                return Some(next_sibling);
             } else {
                 parent = parent_node.parent()
             }
@@ -643,25 +640,23 @@ fn get_child_or_sibling_id<'a>(node: &'a NodeRef<'a>, ignore_self: bool) -> Opti
 fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -> Vec<NodeRef<'a>> {
     let tree = &root_node.tree;
     let mut elements_id_to_score: Vec<NodeId> = vec![];
-    let mut next_node_id = get_child_or_sibling_id(root_node, false);
-    while let Some(node_id) = next_node_id {
-        let mut node = NodeRef::new(node_id, tree);
-
+    let mut next_node = next_child_or_sibling(root_node, false);
+    while let Some(mut node) = next_node {
         if node.has_name("svg") {
-            next_node_id = get_child_or_sibling_id(&node, true);
+            next_node = next_child_or_sibling(&node, true);
             continue;
         }
 
         if strip_unlikely {
             if is_unlikely_candidate(&node) {
-                next_node_id = get_child_or_sibling_id(&node, true);
+                next_node = next_child_or_sibling(&node, true);
                 node.remove_from_parent();
                 continue;
             }
 
             if let Some(role) = node.attr("role") {
                 if UNLIKELY_ROLES.contains(&role) {
-                    next_node_id = get_child_or_sibling_id(&node, true);
+                    next_node = next_child_or_sibling(&node, true);
                     node.remove_from_parent();
                     continue;
                 }
@@ -674,7 +669,7 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
             // then parent will be a new top candidate.
 
             if is_element_without_content(&node) {
-                next_node_id = get_child_or_sibling_id(&node, true);
+                next_node = next_child_or_sibling(&node, true);
                 node.remove_from_parent();
                 continue;
             }
@@ -703,7 +698,7 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
                 elements_id_to_score.push(node.id);
             }
         }
-        next_node_id = get_child_or_sibling_id(&node, false);
+        next_node = next_child_or_sibling(&node, false);
     }
     elements_id_to_score
         .iter()
