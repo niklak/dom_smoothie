@@ -5,7 +5,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ## [0.11.1] - 2024-07-08
 
 ### Changes
-- Updated `dom_query` version fromm `0.18.0` to `0.19.2`.
+- Updated `dom_query` version from `0.18.0` to `0.19.2`.
 
 
 ## [0.11.0] - 2024-04-30
