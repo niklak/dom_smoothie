@@ -878,14 +878,14 @@ impl Readability {
 
         let class_selector = classes_to_preserve
             .iter()
-            .map(|s| format!(".{}", s))
+            .map(|s| format!(".{s}"))
             .collect::<Vec<String>>()
             .join(",");
 
-        let other_class_sel = sel.select(&format!(".page *[class]:not({})", class_selector));
+        let other_class_sel = sel.select(&format!(".page *[class]:not({class_selector})"));
         other_class_sel.remove_attr("class");
 
-        let class_sel = sel.select(&format!(".page {}", class_selector));
+        let class_sel = sel.select(&format!(".page {class_selector}"));
 
         for node in class_sel.nodes().iter() {
             let Some(class_string) = node.class() else {
@@ -962,7 +962,7 @@ impl Readability {
                         .map(|s| {
                             if let Some((src, cond)) = s.split_once(" ") {
                                 let abs_src = to_absolute_url(src.trim(), &base_url);
-                                format!("{} {}", abs_src, cond)
+                                format!("{abs_src} {cond}")
                             } else {
                                 s.to_string()
                             }

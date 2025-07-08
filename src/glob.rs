@@ -25,7 +25,7 @@ pub(crate) static PROTOCOL_PFX_LEN: usize = PROTOCOL_PFX.len();
 pub(crate) static WWW_PFX: &str = "//www.";
 pub(crate) static WWW_PFX_LEN: usize = WWW_PFX.len();
 
-pub(crate) static MATCHER_CONTENT_ID: Lazy<Matcher> = lazy_matcher!(&format!("#{}", CONTENT_ID));
+pub(crate) static MATCHER_CONTENT_ID: Lazy<Matcher> = lazy_matcher!(&format!("#{CONTENT_ID}"));
 pub(crate) static MATCHER_LI_P: Lazy<Matcher> = lazy_matcher!("li p");
 pub(crate) static MATCHER_TITLE: Lazy<Matcher> = lazy_matcher!("head title");
 pub(crate) static MATCHER_SCRIPT: Lazy<Matcher> = lazy_matcher!("script, noscript");
