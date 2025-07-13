@@ -1265,6 +1265,29 @@ mod tests {
     }
 
     #[test]
+    fn test_get_article_metadata_without_json_ld() {
+        let contents = include_str!("../test-pages/rustwiki_2024.html");
+        let config = Config {
+            disable_json_ld: true,
+            ..Default::default()
+        };
+        let ra = Readability::new(contents, None, Some(config)).unwrap();
+        let metadata = ra.get_article_metadata(None);
+
+        assert_eq!("Rust (programming language) - Wikipedia", metadata.title);
+        assert!(metadata.byline.is_none());
+        assert!(metadata.excerpt.is_none());
+        assert!(metadata.site_name.is_none());
+        assert!(metadata.published_time.is_none());
+        assert!(metadata.modified_time.is_none());
+        assert!(metadata.image.is_some());
+        assert!(metadata.favicon.is_none());
+        assert_eq!(Some("en".to_string()), metadata.lang);
+        assert!(metadata.url.is_none());
+        assert!(metadata.dir.is_none());
+    }
+
+    #[test]
     fn test_base_uri() {
         let contents = r#"<!DOCTYPE>
         <html>

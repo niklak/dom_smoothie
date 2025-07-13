@@ -170,7 +170,7 @@ pub(crate) static META_PROPERTY_PREFIXES: &[&str] = &["article", "dc", "dcterm",
 
 #[rustfmt::skip]
 pub(crate) static META_PROPERTY_KEYS: &[&str] = &[
-    "author", "creator", "description", "published_time", "title", "site_name",
+    "author", "creator", "description", "published_time", "title", "site_name", "image"
 ];
 
 #[rustfmt::skip]
