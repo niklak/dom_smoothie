@@ -6,5 +6,6 @@
   "excerpt": "It’s easier than ever to personalize Firefox and make it work the way\n                                you do.\n                                No other browser gives you so much choice and flexibility.",
   "siteName": "Mozilla",
   "publishedTime": null,
-  "readerable": true
+  "readerable": true,
+  "image": "https://mozorg.cdn.mozilla.net/media/img/firefox/template/page-image.af8027a425de.png"
 }

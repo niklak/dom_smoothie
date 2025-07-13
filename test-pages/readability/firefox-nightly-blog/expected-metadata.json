@@ -6,5 +6,6 @@
   "excerpt": "Highlights Here's our Firefox Year in Review! Here’s our Performance Year in Review! We've just landed Bug 1553982, which aims to prevent starting an update while another Firefox instance ...",
   "siteName": "Firefox Nightly News",
   "publishedTime": null,
-  "readerable": true
+  "readerable": true,
+  "image": "https://blog.nightly.mozilla.org/files/2019/07/nightly-blog-header.jpg"
 }
