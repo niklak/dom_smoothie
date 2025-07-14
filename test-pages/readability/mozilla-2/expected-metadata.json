@@ -6,5 +6,6 @@
   "excerpt": "Built for those who build the Web. Introducing the only browser made for developers.",
   "siteName": "Mozilla",
   "publishedTime": null,
-  "readerable": false
+  "readerable": false,
+  "image": "https://mozorg.cdn.mozilla.net/media/img/firefox/developer/page-image.03bbe7da3199.png"
 }

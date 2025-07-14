@@ -6,5 +6,6 @@
   "excerpt": "Two-year-old bug exposes thousands of servers to crippling attack.",
   "siteName": "Ars Technica",
   "publishedTime": null,
-  "readerable": true
+  "readerable": true,
+  "image": "https://cdn.arstechnica.net/wp-content/uploads/2015/04/server-crash-640x215.jpg"
 }
