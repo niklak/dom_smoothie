@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1752440142772,
+  "lastUpdate": 1752482239740,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -785,6 +785,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 50805236,
             "range": "± 260002",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9adefeee1ceedd92392f7251d48bcfa448b96131",
+          "message": "Merge pull request #100 from justahero/add-image-urls-to-expected-metadata\n\nAdd image URLs to expected metadata of HTML pages",
+          "timestamp": "2025-07-14T11:35:43+03:00",
+          "tree_id": "ca8e4d56a93c9c39e934787e82096664fd954d36",
+          "url": "https://github.com/niklak/dom_smoothie/commit/9adefeee1ceedd92392f7251d48bcfa448b96131"
+        },
+        "date": 1752482239325,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2814895,
+            "range": "± 14202",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 11706623,
+            "range": "± 83822",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 50910762,
+            "range": "± 822722",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2815924,
+            "range": "± 7556",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 9535131,
+            "range": "± 59549",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 50675792,
+            "range": "± 359475",
             "unit": "ns/iter"
           }
         ]
