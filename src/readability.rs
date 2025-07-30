@@ -407,17 +407,17 @@ impl Readability {
             let Some(prev_sibling) = noscript_node.prev_element_sibling() else {
                 continue;
             };
-            let prev_sel = Selection::from(prev_sibling.clone());
+            let prev_sel = Selection::from(prev_sibling);
             let prev_img: NodeRef;
             if prev_sel.is("img") {
                 prev_img = prev_sibling;
             } else if prev_sel.is("*:has( > img:only-child)") {
                 let prev_sel_img = prev_sel.select("img:only-child");
-                prev_img = prev_sel_img.nodes()[0].clone();
+                prev_img = prev_sel_img.nodes()[0];
             } else {
                 continue;
             }
-            let noscript_img_sel = Selection::from(noscript_node.clone()).select("img");
+            let noscript_img_sel = Selection::from(*noscript_node).select("img");
             // at this point noscript_img_sel always has one element
             let new_img = &noscript_img_sel.nodes()[0];
 
@@ -1031,7 +1031,7 @@ fn remove_comments(n: &Node) {
     while let Some(node) = ops.pop() {
         node.query(|n| match n.data {
             NodeData::Comment { .. } => {
-                comments.push(node.clone());
+                comments.push(node);
             }
             NodeData::Element(_) => {
                 ops.extend(node.children());

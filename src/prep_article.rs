@@ -53,7 +53,7 @@ fn clean_styles(n: &Node) {
 }
 
 fn should_clean_conditionally(node: &Node, flags: &FlagSet<GrabFlags>) -> bool {
-    let sel = Selection::from(node.clone());
+    let sel = Selection::from(*node);
     // keep element if it has a data tables
     if sel.select_single_matcher(&MATCHER_DATA_TABLE).exists() {
         return false;
@@ -228,7 +228,7 @@ fn get_row_and_col_count(table: &Selection) -> (usize, usize) {
 
 fn mark_data_tables(base_sel: &Selection) {
     for table_node in base_sel.select_matcher(&MATCHER_TABLE).nodes() {
-        let sel = Selection::from(table_node.clone());
+        
 
         if MINI_PRESENTATION.match_node(table_node) {
             set_data_readability_table(table_node, false);
@@ -244,6 +244,8 @@ fn mark_data_tables(base_sel: &Selection) {
             set_data_readability_table(table_node, true);
             continue;
         }
+
+        let sel = Selection::from(*table_node);
 
         if sel.select_single_matcher(&MATCHER_TABLE_MEMBERS).exists() {
             set_data_readability_table(table_node, true);
@@ -327,7 +329,7 @@ fn fix_lazy_images(sel: &Selection) {
                 if matches!(tag_name.as_ref(), "img" | "picture") {
                     node.set_attr(copy_to, &attr.value);
                 } else if tag_name.as_ref() == "figure" {
-                    let figure_sel = Selection::from(node.clone());
+                    let figure_sel = Selection::from(*node);
                     if !figure_sel.select("img, picture").exists() {
                         //if the item is a <figure> that does not contain an image or picture, create one and place it inside the figure
                         //see the nytimes-3 testcase for an example
@@ -350,7 +352,7 @@ fn clean_headers(sel: &Selection, flags: &FlagSet<GrabFlags>) {
 }
 
 pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg: &Config) {
-    let article_sel = Selection::from(article_node.clone());
+    let article_sel = Selection::from(*article_node);
     // *Important*: Currently the order of calling 'cleaning' functions is matters.
     // It shouldn't be but it is.
 
@@ -386,7 +388,7 @@ pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg:
     // At this point, nasty iframes have been removed; only embedded video
     // ones remain.
     for p_node in article_sel.select("p").nodes() {
-        let p_sel = Selection::from(p_node.clone());
+        let p_sel = Selection::from(*p_node);
         let content_el_count = p_sel.select("img,object,embed,iframe").length();
         if content_el_count == 0 && p_node.normalized_char_count() == 0 {
             p_sel.remove();

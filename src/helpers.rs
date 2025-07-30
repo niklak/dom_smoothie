@@ -75,7 +75,7 @@ where
 }
 
 pub(crate) fn text_density(node: &Node, selector: &str, char_count: Option<usize>) -> f32 {
-    let sel = Selection::from(node.clone()).select(selector);
+    let sel = Selection::from(*node).select(selector);
     let sel_nodes = sel.nodes();
 
     if sel_nodes.is_empty() {
