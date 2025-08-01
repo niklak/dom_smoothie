@@ -121,7 +121,7 @@ impl Readability {
                     if tc_parent.element_children().len() != 1 {
                         break;
                     }
-                    top_candidate = parent_of_top_candidate.clone();
+                    top_candidate = parent_of_top_candidate;
                     parent_of_top_candidate = tc_parent.parent();
                 }
             }
@@ -194,7 +194,7 @@ pub(crate) fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
         }
 
         if metadata.byline.is_none() && is_valid_byline(&node) {
-            let byline = if let Some(item_prop_name) = Selection::from(node.clone())
+            let byline = if let Some(item_prop_name) = Selection::from(node)
                 .select_single("[itemprop=name]")
                 .nodes()
                 .first()
