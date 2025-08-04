@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1754070439063,
+  "lastUpdate": 1754341676684,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -1085,6 +1085,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 51910961,
             "range": "± 543172",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "140ea69c24c6e9fa1aa229b442d2cc020a27303e",
+          "message": "Merge pull request #105 from niklak/chore/refactor-8\n\nMinor code changes",
+          "timestamp": "2025-08-05T00:06:20+03:00",
+          "tree_id": "464a2b933289c9c7e98acfac0a93b2100051acc1",
+          "url": "https://github.com/niklak/dom_smoothie/commit/140ea69c24c6e9fa1aa229b442d2cc020a27303e"
+        },
+        "date": 1754341675624,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2775111,
+            "range": "± 9746",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 11648359,
+            "range": "± 726350",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 51231849,
+            "range": "± 286178",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2779987,
+            "range": "± 22086",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 9720823,
+            "range": "± 38594",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 50920897,
+            "range": "± 146174",
             "unit": "ns/iter"
           }
         ]
