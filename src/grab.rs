@@ -214,21 +214,21 @@ pub(crate) fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
 }
 
 fn get_node_matching_string(node: &NodeRef) -> StrTendril {
-    let mut matched_buf = StrTendril::new();
+    let mut buf = StrTendril::new();
     let Some(el) = node.element_ref() else {
-        return matched_buf;
+        return buf;
     };
 
-    if let Some(class) = el.class() {
-        matched_buf.push_tendril(&class);
-        matched_buf.push_char(' ');
-    };
-    if let Some(id_attr) = el.id() {
-        matched_buf.push_tendril(&id_attr);
+    for attr in &el.attrs {
+        if !matches!(attr.name.local.as_ref(), "class" | "id") {
+            continue;
+        }
+        buf.push_tendril(&attr.value);
+        buf.push_char(' ');
     }
 
-    matched_buf.make_ascii_lowercase();
-    matched_buf
+    buf.make_ascii_lowercase();
+    buf
 }
 
 fn is_valid_byline(node: &NodeRef) -> bool {
