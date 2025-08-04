@@ -127,7 +127,7 @@ fn should_clean_conditionally(node: &Node, flags: &FlagSet<GrabFlags>) -> bool {
                 return true;
             }
 
-            // TODO: this is no working, useless
+            // TODO: this is not working, useless
             let li = node.find_descendants("li").len() as f32 - 100.0;
             if !is_list && li > p {
                 return true;
@@ -228,8 +228,6 @@ fn get_row_and_col_count(table: &Selection) -> (usize, usize) {
 
 fn mark_data_tables(base_sel: &Selection) {
     for table_node in base_sel.select_matcher(&MATCHER_TABLE).nodes() {
-        
-
         if MINI_PRESENTATION.match_node(table_node) {
             set_data_readability_table(table_node, false);
             continue;
@@ -436,7 +434,7 @@ fn remove_share_elements(root_sel: &Selection, share_element_threshold: usize) {
     for child in root_sel.select("*[class],*[id]").nodes() {
         let mut has_share_elements = false;
 
-        if child.text().len() >= share_element_threshold {
+        if child.normalized_char_count() >= share_element_threshold {
             continue;
         }
 
