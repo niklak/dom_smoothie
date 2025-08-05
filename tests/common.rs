@@ -139,5 +139,8 @@ where
     );
     assert_eq!(article.lang, expected.lang, "lang does not match expected");
     assert_eq!(article.dir, expected.dir, "dirs does not match expected");
-    assert_eq!(article.image, expected.image, "image does not match expected");
+    assert_eq!(
+        article.image, expected.image,
+        "image does not match expected"
+    );
 }
