@@ -1,6 +1,6 @@
 
 [workspace.package]
-version = "0.11.1"
+version = "0.11.2"
 edition = "2021"
 license = "MIT"
 rust-version = "1.66"
@@ -56,6 +56,3 @@ members = [
 [[bench]]
 name = "parse"
 harness = false
-
-[profile.release]
-debug = true
