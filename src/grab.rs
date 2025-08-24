@@ -317,8 +317,7 @@ fn score_elements<'a>(
         if element.parent().is_none() {
             continue;
         }
-        let inner_text = normalize_spaces(&element.text());
-        let content_len = inner_text.chars().count();
+        let content_len = element.normalized_char_count();
         if content_len < 25 {
             continue;
         }
@@ -327,9 +326,10 @@ fn score_elements<'a>(
         if ancestors.is_empty() {
             continue;
         }
-
-        let mut content_score = inner_text.split(COMMAS).count() + 1;
-
+        
+        // Count commas in the element's text content without allocating a new StrTendril.
+        // Equivalent to `1 + element.text().split(COMMAS).count()`, but more efficient.
+        let mut content_score = 2 + score_text_content(element);
         content_score += std::cmp::min(content_len / 100, 3);
         for (level, ancestor) in ancestors.iter().enumerate() {
             if !ancestor.is_element() || ancestor.parent().is_none() {
