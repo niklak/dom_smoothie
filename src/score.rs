@@ -93,12 +93,11 @@ pub(crate) fn score_text_content(node: &Node) -> usize {
         .filter_map(|n| {
             n.query(|tree_node| {
                 if let NodeData::Text { ref contents } = tree_node.data {
-                    Some(contents.chars().filter(|c| COMMAS.contains(c)).count())
+                    contents.chars().filter(|c| COMMAS.contains(c)).count()
                 } else {
-                    None
+                    0
                 }
             })
         })
-        .flatten()
         .sum()
 }
