@@ -4,23 +4,23 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ## [Unreleased]
 ### Changed
-- Optimized internal implementation of `grab::score_elements`.
+- Optimized internal implementation of `grab::score_elements`. No public API changes.
 
 ## [0.11.2] - 2024-08-09
 
-### Changes
+### Changed
 - Minor internal code changes.
 - Updated `dom_query` version from `0.19.2` to `0.20.1`.
 
 ## [0.11.1] - 2024-07-08
 
-### Changes
+### Changed
 - Updated `dom_query` version from `0.18.0` to `0.19.2`.
 
 
 ## [0.11.0] - 2024-04-30
 
-### Changes
+### Changed
 - Updated `dom_query` version to `0.18.0`.
 - Updated codebase to match latest changes (a07e62c) in [mozilla/readability](https://github.com/mozilla/readability) library.
 - Minor internal code changes.
