@@ -1,4 +1,4 @@
-use dom_query::Node;
+use dom_query::{Node, NodeData};
 
 use crate::{glob::*, matching::contains_one_of_words};
 
@@ -86,4 +86,18 @@ fn determine_attr_weight(attr: &str) -> f32 {
         weight += 25.0;
     }
     weight
+}
+
+pub(crate) fn score_text_content(node: &Node) -> usize {
+    node.descendants_it()
+        .filter_map(|n| {
+            n.query(|tree_node| {
+                if let NodeData::Text { ref contents } = tree_node.data {
+                    contents.chars().filter(|c| COMMAS.contains(c)).count()
+                } else {
+                    0
+                }
+            })
+        })
+        .sum()
 }
