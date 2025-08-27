@@ -349,7 +349,7 @@ checksum = "f2646c2bb4993c86006961293208b69d86a2b254356889ddad826e9df3f684f9"
 dependencies = [
  "bit-set",
  "cssparser",
- "foldhash",
+ "foldhash 0.1.5",
  "html5ever",
  "nom",
  "precomputed-hash",
@@ -365,7 +365,7 @@ dependencies = [
  "criterion",
  "dom_query",
  "flagset",
- "foldhash",
+ "foldhash 0.2.0",
  "gjson",
  "html-escape",
  "once_cell",
@@ -426,6 +426,12 @@ name = "foldhash"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9c4f5dac5e15c24eb999c26181a6ca40b39fe946cbe4c263c7209467bc83af2"
+
+[[package]]
+name = "foldhash"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77ce24cb58228fbb8aa041425bb1050850ac19177686ea6e0f41a70416f56fdb"
 
 [[package]]
 name = "form_urlencoded"
