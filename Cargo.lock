@@ -343,9 +343,9 @@ dependencies = [
 
 [[package]]
 name = "dom_query"
-version = "0.20.2"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2646c2bb4993c86006961293208b69d86a2b254356889ddad826e9df3f684f9"
+checksum = "9fc25c730f9f0fcb1d55876e58971ff450d81308b6e65140a5af2b76207e105a"
 dependencies = [
  "bit-set",
  "cssparser",
@@ -1045,9 +1045,9 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "selectors"
-version = "0.30.0"
+version = "0.31.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3df44ba8a7ca7a4d28c589e04f526266ed76b6cc556e33fe69fa25de31939a65"
+checksum = "5685b6ae43bfcf7d2e7dfcfb5d8e8f61b46442c902531e41a32a9a8bf0ee0fb6"
 dependencies = [
  "bitflags",
  "cssparser",
