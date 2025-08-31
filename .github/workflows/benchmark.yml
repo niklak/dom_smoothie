@@ -25,7 +25,7 @@ jobs:
 
       # Run benchmark
       - name: Run benchmark
-        run: cargo bench --bench parse -- --output-format bencher | tee benchmark-results.txt
+        run: cargo bench -p dom-smoothie-bench --bench parse -- --output-format bencher | tee benchmark-results.txt
 
       # Store benchmark results
       - name: Store benchmark result
