@@ -11,9 +11,9 @@ fn dom_smoothie_parse(contents: &str, cfg: &Config) -> Result<Article, Readabili
 fn bench_dom_smoothie_parse(c: &mut Criterion) {
     let mut group = c.benchmark_group("dom_smoothie");
 
-    let small = include_str!("../test-pages/ok/ehow-1/source.html");
-    let medium = include_str!("../test-pages/ok/engadget/source.html");
-    let large = include_str!("../test-pages/ok/wikipedia-2/source.html");
+    let small = include_str!("../../test-pages/ok/ehow-1/source.html");
+    let medium = include_str!("../../test-pages/ok/engadget/source.html");
+    let large = include_str!("../../test-pages/ok/wikipedia-2/source.html");
 
     // Test different sizes/types of content
     let test_cases = vec![
@@ -31,7 +31,10 @@ fn bench_dom_smoothie_parse(c: &mut Criterion) {
             ..Default::default()
         };
         group.bench_with_input(BenchmarkId::new("parse", name), contents, |b, contents| {
-            b.iter(|| dom_smoothie_parse(black_box(contents), black_box(&cfg)))
+            b.iter(|| {
+                let res = dom_smoothie_parse(black_box(contents), black_box(&cfg)).expect("Parsing failed");
+                black_box(res)
+            })
         });
     }
     group.finish();
