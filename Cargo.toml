@@ -54,7 +54,7 @@ members = [
 ]
 
 
-[profile.release]
+[profile.bench]
 codegen-units = 1
 lto = "fat"
 incremental = false
