@@ -6,9 +6,10 @@ license.workspace = true
 rust-version.workspace = true
 repository.workspace = true
 authors.workspace = true
+publish = false
 
 [dependencies]
-dom_smoothie = { path = "./.." }
+dom_smoothie = { path = ".." }
 
 
 [dev-dependencies]

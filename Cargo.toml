@@ -52,3 +52,10 @@ members = [
     "dom-smoothie-js", 
     "dom-smoothie-bench"
 ]
+
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
+incremental = false
+opt-level = 3
