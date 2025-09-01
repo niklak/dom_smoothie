@@ -196,6 +196,23 @@ pub(crate) fn is_probably_visible(node: &Node) -> bool {
     !MINI_ARIA_HIDDEN.match_node(node) || MINI_FALLBACK_IMG.match_node(node)
 }
 
+pub(crate) fn is_absolute_url(s: &str) -> bool {
+    let s = s.trim();
+    if let Some(pos) = s.find("://") {
+        let scheme = &s[..pos];
+        // scheme: [a-zA-Z][a-zA-Z0-9+.-]*
+        let mut chars = scheme.chars();
+        if let Some(first) = chars.next() {
+            if first.is_ascii_alphabetic()
+                && chars.all(|c| c.is_ascii_alphanumeric() || "+-.".contains(c))
+            {
+                return s.len() > pos + 3;
+            }
+        }
+    }
+    false
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -223,5 +240,23 @@ mod tests {
         let text_b = "DeepMind新电脑已可利用记忆自学 人工智能迈上新台阶";
         let similarity = text_similarity(text_a, text_b);
         assert_eq!(similarity, 1.0);
+    }
+
+    #[test]
+    fn test_valid_urls() {
+        assert!(is_absolute_url("http://example.com"));
+        assert!(is_absolute_url("https://example.com"));
+        assert!(is_absolute_url("git+ssh://example.com"));
+        assert!(is_absolute_url("a-b://x"));
+        assert!(is_absolute_url("x.y://zzz"));
+    }
+
+    #[test]
+    fn test_invalid_urls() {
+        assert!(!is_absolute_url("://example.com"));
+        assert!(!is_absolute_url("1http://example.com"));
+        assert!(!is_absolute_url("-abc://test"));
+        assert!(!is_absolute_url("mailto:foo@bar.com"));
+        assert!(!is_absolute_url("   "));
     }
 }

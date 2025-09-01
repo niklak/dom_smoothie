@@ -326,7 +326,7 @@ fn score_elements<'a>(
         if ancestors.is_empty() {
             continue;
         }
-        
+
         // Count commas in the element's text content without allocating a new StrTendril.
         // Equivalent to `1 + element.text().split(COMMAS).count()`, but more efficient.
         let mut content_score = 2 + score_text_content(element);

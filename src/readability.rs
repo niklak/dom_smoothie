@@ -786,7 +786,7 @@ impl Readability {
             // if metadata is still none
             if metadata.byline.is_none() {
                 if let Some(v) = values.get("article:author") {
-                    if url::Url::parse(v).is_err() {
+                    if !is_absolute_url(v) {
                         metadata.byline = Some(v.to_string());
                     }
                 }
