@@ -149,10 +149,6 @@ impl<T: Into<StrTendril>> From<T> for Readability {
 impl Readability {
     /// Create a new `Readability` instance
     ///
-    /// # Panics
-    ///
-    /// Panics if `document_url` is not a valid URL
-    ///
     /// # Arguments
     ///
     /// - `html` -- HTML content
@@ -165,7 +161,7 @@ impl Readability {
     ///
     /// # Errors
     ///
-    /// Returns [`ReadabilityError::BadDocumentURL`] if `document_url` is not a valid URL
+    /// Returns [`ReadabilityError::BadDocumentURL`] if `document_url` is not a absolute URL
     pub fn new<T: Into<StrTendril>>(
         html: T,
         document_url: Option<&str>,
@@ -848,8 +844,7 @@ impl Readability {
     }
 
     fn post_process_content(&self, root_sel: &Selection) {
-        // Readability cannot open relative uris so we convert them to absolute uris.
-
+        // Link cleanup only; absolute-URL rewriting is performed later in `fix_relative_uris`.
         self.fix_links(root_sel);
 
         simplify_nested_elements(root_sel);
@@ -1323,5 +1318,22 @@ mod tests {
         assert!(
             matches!(result, Err(e) if e.to_string().contains("the document URL must be absolute"))
         );
+    }
+
+    #[test]
+    fn test_parse_base_url_with_doc_and_base() {
+        let contents = r#"<!DOCTYPE>
+    <html>
+      <head>
+        <base href="/blog/">
+        <title>Test</title>
+      </head>
+      <body></body>
+    </html>"#;
+        let mut ra =
+            Readability::new(contents, Some("https://example.com/news/page.html"), None).unwrap();
+        // Ensure fix in parse_base_url wraps in Some(...)
+        let base_url = ra.parse_base_url().expect("base url");
+        assert_eq!(base_url, "https://example.com/blog/");
     }
 }
