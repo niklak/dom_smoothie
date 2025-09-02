@@ -14,18 +14,21 @@ env:
 jobs:
   test-wasm:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - name: Install stable rust
       uses: dtolnay/rust-toolchain@master
       with:
-        toolchain: 1.83.0
+        toolchain: stable
         targets: wasm32-unknown-unknown
     - name: Install wasm-bindgen-cli
       uses: taiki-e/install-action@v2
       with:
-        tool: wasm-pack       
+        tool: wasm-pack
+    - uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: .       
     - name: Run tests
       working-directory: dom-smoothie-js
       run: wasm-pack test --node

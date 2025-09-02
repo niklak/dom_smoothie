@@ -14,6 +14,11 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
   from building on older Rust versions, and disabling these dependencies is cumbersome.
 - **Breaking**: `ReadabilityError::BadDocumentURL` is now a unit variant (`BadDocumentURL`) instead of a tuple variant. Update downstream pattern matches accordingly.
 - **Breaking**: `Readability::doc_url` type changed from `Option<url::Url>` to `Option<String>`. Update code accessing this public field.
+- Set MSRV to 1.75.
+
+### Fixed
+- Fixed `Readability::fix_relative_uris` behavior when handling srcset\'s item without a condition (e.g., `image.jpg` instead of `image.jpg 2x`).
+
 ## [0.11.2] - 2024-08-09
 
 ### Changed

@@ -88,7 +88,7 @@ impl Readability {
 
         let mut needed_to_create_top_candidate = false;
 
-        if top_candidate.is_none() || top_candidate.as_ref().map_or(false, |n| n.has_name("body")) {
+        if top_candidate.is_none() || top_candidate.as_ref().is_some_and(|n| n.has_name("body")) {
             needed_to_create_top_candidate = true;
             let tc = tree.new_element("div");
 
@@ -301,7 +301,7 @@ fn div_into_p(node: &NodeRef) {
 fn has_child_block_element(node: &NodeRef) -> bool {
     node.descendants_it().any(|n| {
         n.element_ref()
-            .map_or(false, |el| BLOCK_ELEMS.contains(&el.name.local))
+            .is_some_and(|el| BLOCK_ELEMS.contains(&el.name.local))
     })
 }
 
@@ -450,7 +450,7 @@ fn assign_article_node(tc: &NodeRef, article_content: &NodeRef) {
 /// Find a better top candidate across other candidates in a way that `mozilla/readability` does.
 fn find_common_candidate<'a>(
     mut top_candidate: Option<NodeRef<'a>>,
-    top_candidates: &Vec<NodeRef<'a>>,
+    top_candidates: &[NodeRef<'a>],
     weigh_class: bool,
 ) -> Option<NodeRef<'a>> {
     let Some(ref tc) = top_candidate else {

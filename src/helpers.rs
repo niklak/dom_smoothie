@@ -144,7 +144,7 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
         return false;
     }
 
-    if !children.first().map_or(false, |child| child.has_name(tag)) {
+    if !children.first().is_some_and(|child| child.has_name(tag)) {
         return false;
     }
 
@@ -183,7 +183,7 @@ pub(crate) fn get_dir_attr(node: &Node) -> Option<String> {
 
 pub(crate) fn node_name_in(node: &Node, names: &phf::Set<&str>) -> bool {
     node.qual_name_ref()
-        .map_or(false, |name| names.contains(name.local.as_ref()))
+        .is_some_and(|name| names.contains(name.local.as_ref()))
 }
 
 pub(crate) fn is_probably_visible(node: &Node) -> bool {

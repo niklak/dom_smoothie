@@ -3,7 +3,7 @@
 version = "0.11.2"
 edition = "2021"
 license = "MIT"
-rust-version = "1.66"
+rust-version = "1.75"
 repository = "https://github.com/niklak/dom_smoothie"
 authors = ["niklak <morgenpurple@gmail.com>"]
 
