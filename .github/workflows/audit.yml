@@ -11,14 +11,19 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
+
   audit:
-
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - name: Run clippy
       run: cargo clippy --verbose --all-targets --all-features -- -D warnings
+    - name: Install cargo msrv
+      uses: taiki-e/install-action@v2
+      with:
+        tool: cargo-msrv
+    - name: Verify MSRV
+      run: cargo msrv verify
     - name: Install cargo audit
       uses: taiki-e/install-action@cargo-audit
     - name: Run audit
