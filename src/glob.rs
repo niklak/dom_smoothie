@@ -44,7 +44,7 @@ pub(crate) static MATCHER_DIALOGS: Lazy<Matcher> =
 pub(crate) static MATCHER_BYLINE: Lazy<Matcher> =
     lazy_matcher!(r#"[rel="author"],[itemprop*="author"]"#);
 pub(crate) static MATCHER_SOURCES: Lazy<Matcher> =
-    lazy_matcher!("img,picture,figure,video,audio,sources");
+    lazy_matcher!("img,picture,figure,video,audio,source");
 pub(crate) static MATCHER_P: Lazy<Matcher> = lazy_matcher!("p");
 pub(crate) static MATCHER_EMBEDS: Lazy<Matcher> = lazy_matcher!("object,embed,iframe");
 pub(crate) static MATCHER_CLEAN: Lazy<Matcher> =

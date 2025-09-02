@@ -1,8 +1,8 @@
 use dom_smoothie::{ParsePolicy, Readability};
 
+use std::collections::hash_map::DefaultHasher;
 use std::error::Error;
 use std::hash::{Hash, Hasher};
-use std::collections::hash_map::DefaultHasher;
 
 fn hash_text<T: Hash>(text: &T) -> u64 {
     let mut hasher = DefaultHasher::new();

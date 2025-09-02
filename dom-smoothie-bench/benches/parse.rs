@@ -32,7 +32,8 @@ fn bench_dom_smoothie_parse(c: &mut Criterion) {
         };
         group.bench_with_input(BenchmarkId::new("parse", name), contents, |b, contents| {
             b.iter(|| {
-                let res = dom_smoothie_parse(black_box(contents), black_box(&cfg)).expect("Parsing failed");
+                let res = dom_smoothie_parse(black_box(contents), black_box(&cfg))
+                    .expect("Parsing failed");
                 black_box(res)
             })
         });
