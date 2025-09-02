@@ -1330,7 +1330,7 @@ mod tests {
       </head>
       <body></body>
     </html>"#;
-        let mut ra =
+        let ra =
             Readability::new(contents, Some("https://example.com/news/page.html"), None).unwrap();
         // Ensure fix in parse_base_url wraps in Some(...)
         let base_url = ra.parse_base_url().expect("base url");
