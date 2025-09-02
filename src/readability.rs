@@ -1339,16 +1339,28 @@ mod tests {
 
     #[test]
     fn test_fix_relative_uris_srcset_without_descriptor() {
-        let contents = r#"<!DOCTYPE html>
-        <html><head><base href="https://example.com/"></head>
-        <body><img src="/img/a.jpg" srcset="img/a.jpg, img/b.jpg 2x"></body></html>"#;
+        let contents = r#"
+        <!DOCTYPE html>
+        <html> 
+            <head><base href="https://example.com/"></head>
+            <body>
+                 <video width="320" height="240" controls>
+                    <source src="clip.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video> 
+                <img src="/img/a.jpg" srcset="img/a.jpg, img/b.jpg 2x">
+            </body>
+        </html>"#;
         let ra = Readability::new(contents, None, None).unwrap();
         let body = ra.doc.select("body");
+
         ra.fix_relative_uris(&body);
-        let got = ra.doc.select("img").attr("srcset").unwrap();
+        let got_img = ra.doc.select("img").attr("srcset").unwrap();
         assert_eq!(
-            got,
+            got_img,
             "https://example.com/img/a.jpg, https://example.com/img/b.jpg 2x".into()
         );
+        let got_video = ra.doc.select("video source").attr("src").unwrap();
+        assert_eq!(got_video, "https://example.com/clip.mp4".into());
     }
 }
