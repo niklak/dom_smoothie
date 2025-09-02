@@ -18,6 +18,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ### Fixed
 - Fixed `Readability::fix_relative_uris` behavior when handling srcset\'s item without a condition (e.g., `image.jpg` instead of `image.jpg 2x`).
+- Fixed `MATCHER_SOURCES`, which previously contained a typo (`sources` instead of `source`).
 
 ## [0.11.2] - 2024-08-09
 
