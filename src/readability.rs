@@ -2,7 +2,6 @@ use foldhash::HashMap;
 
 use dom_query::{Document, Node, NodeData, NodeRef, Selection};
 use tendril::StrTendril;
-use url::Url;
 
 use crate::config::ParsePolicy;
 use crate::config::TextMode;
@@ -11,6 +10,7 @@ use crate::grab;
 use crate::helpers::*;
 use crate::is_probably_readable;
 use crate::matching::*;
+use crate::url_helpers::*;
 use crate::Config;
 use crate::ReadabilityError;
 
@@ -130,8 +130,8 @@ impl Metadata {
 pub struct Readability {
     /// The [Document] to be processed
     pub doc: Document,
-    /// The base URL of the document
-    pub doc_url: Option<url::Url>,
+    /// The absolute URL of the document
+    pub doc_url: Option<String>,
     /// Configuration options for the readability
     pub config: Config,
 }
@@ -149,14 +149,10 @@ impl<T: Into<StrTendril>> From<T> for Readability {
 impl Readability {
     /// Create a new `Readability` instance
     ///
-    /// # Panics
-    ///
-    /// Panics if `document_url` is not a valid URL
-    ///
     /// # Arguments
     ///
     /// - `html` -- HTML content
-    /// - `document_url` -- a base URL of the page
+    /// - `document_url` -- an absolute URL of the page
     /// - `cfg` -- an optional `Config` instance
     ///
     /// # Returns
@@ -165,7 +161,7 @@ impl Readability {
     ///
     /// # Errors
     ///
-    /// Returns [`ReadabilityError::BadDocumentURL`] if `document_url` is not a valid URL
+    /// Returns [`ReadabilityError::BadDocumentURL`] if `document_url` is not an absolute URL
     pub fn new<T: Into<StrTendril>>(
         html: T,
         document_url: Option<&str>,
@@ -179,7 +175,7 @@ impl Readability {
     /// # Arguments
     ///
     /// - `document` -- a `dom_query::Document` instance
-    /// - `document_url` -- a base URL of the page
+    /// - `document_url` -- a document (absolute) URL of the page
     /// - `cfg` -- an optional `Config` instance
     ///
     /// # Returns
@@ -188,14 +184,17 @@ impl Readability {
     ///
     /// # Errors
     ///
-    /// Returns [`ReadabilityError::BadDocumentURL`] if `document_url` is not a valid URL
+    /// Returns [`ReadabilityError::BadDocumentURL`] if `document_url` is not an absolute URL
     pub fn with_document(
         document: dom_query::Document,
         document_url: Option<&str>,
         cfg: Option<Config>,
     ) -> Result<Self, ReadabilityError> {
-        let doc_url = if let Some(u) = document_url {
-            Some(Url::parse(u)?)
+        let doc_url = if let Some(url) = document_url {
+            if !is_absolute_url(url, true) {
+                return Err(ReadabilityError::BadDocumentURL);
+            }
+            Some(url.to_string())
         } else {
             None
         };
@@ -485,10 +484,9 @@ impl Readability {
 
         metadata.dir = get_dir_attr(root_node);
 
-        // Getting a base uri from the Readability.document,
-        // which wasn't changed after the grabbing the article
-        let base_url = self.parse_base_url();
-        self.post_process_content(&root_sel, base_url);
+        self.post_process_content(&root_sel);
+
+        self.fix_relative_uris(&root_sel);
 
         // If we haven't found an excerpt in the article's metadata, use the article's
         // first paragraph as the excerpt. This is used for displaying a preview of
@@ -786,7 +784,7 @@ impl Readability {
             // if metadata is still none
             if metadata.byline.is_none() {
                 if let Some(v) = values.get("article:author") {
-                    if !is_absolute_url(v) {
+                    if !is_absolute_url(v, true) {
                         metadata.byline = Some(v.to_string());
                     }
                 }
@@ -845,12 +843,9 @@ impl Readability {
         }
     }
 
-    fn post_process_content(&self, root_sel: &Selection, base_url: Option<url::Url>) {
-        // Readability cannot open relative uris so we convert them to absolute uris.
-
+    fn post_process_content(&self, root_sel: &Selection) {
+        // Link cleanup only; absolute-URL rewriting is performed later in `fix_relative_uris`.
         self.fix_links(root_sel);
-
-        self.fix_relative_uris(root_sel, base_url);
 
         simplify_nested_elements(root_sel);
 
@@ -929,63 +924,6 @@ impl Readability {
         }
     }
 
-    fn fix_relative_uris(&self, root_sel: &Selection, base_url: Option<url::Url>) {
-        let url_sel =
-            if base_url.as_ref().map(|u| u.as_str()) == self.doc_url.as_ref().map(|u| u.as_str()) {
-                r##"a[href]:not([href^="#"]):not([href^="http"])"##
-            } else {
-                r##"a[href]:not([href^="http"])"##
-            };
-        if let Some(base_url) = base_url {
-            for a in root_sel.select(url_sel).nodes().iter() {
-                let Some(href) = a.attr("href") else {
-                    unreachable!();
-                };
-                let abs_url = to_absolute_url(&href, &base_url);
-                a.set_attr("href", abs_url.as_str());
-            }
-
-            for media in root_sel.select_matcher(&MATCHER_SOURCES).nodes().iter() {
-                if let Some(src) = media.attr("src") {
-                    let abs_src = to_absolute_url(&src, &base_url);
-                    media.set_attr("src", abs_src.as_str());
-                }
-
-                if let Some(poster) = media.attr("poster") {
-                    let abs_poster = to_absolute_url(&poster, &base_url);
-                    media.set_attr("poster", abs_poster.as_str());
-                }
-
-                if let Some(srcset) = media.attr("srcset") {
-                    let abs_srcset: Vec<String> = srcset
-                        .split(", ")
-                        .map(|s| {
-                            if let Some((src, cond)) = s.split_once(" ") {
-                                let abs_src = to_absolute_url(src.trim(), &base_url);
-                                format!("{abs_src} {cond}")
-                            } else {
-                                s.to_string()
-                            }
-                        })
-                        .collect();
-                    media.set_attr("srcset", abs_srcset.join(", ").as_str());
-                }
-            }
-        }
-    }
-
-    fn parse_base_url(&self) -> Option<url::Url> {
-        let Some(base_uri) = self.doc.base_uri() else {
-            return self.doc_url.clone();
-        };
-
-        if let Some(doc_url) = self.doc_url.clone() {
-            doc_url.join(&base_uri).ok()
-        } else {
-            url::Url::parse(&base_uri).ok()
-        }
-    }
-
     fn verify_doc(&self) -> Result<(), ReadabilityError> {
         if self.config.max_elements_to_parse > 0 {
             let total_elements = self
@@ -1017,6 +955,69 @@ impl Readability {
             Some(self.config.readable_min_score),
             Some(self.config.readable_min_content_length),
         )
+    }
+}
+
+// Methods related to URL handling
+impl Readability {
+    fn parse_base_url(&self) -> Option<String> {
+        let Some(base_uri) = self.doc.base_uri() else {
+            return self.doc_url.clone();
+        };
+
+        if let Some(doc_url) = self.doc_url.as_ref() {
+            url_join(doc_url, &base_uri).into()
+        } else {
+            Some(base_uri.to_string())
+        }
+    }
+
+    fn fix_relative_uris(&self, root_sel: &Selection) {
+        // Getting a base uri from the Readability.document,
+        // which wasn't changed after the grabbing the article
+        let Some(base_url) = self.parse_base_url() else {
+            return;
+        };
+
+        let url_sel = if self.doc_url.as_ref() == Some(&base_url) {
+            r##"a[href]:not([href^="#"]):not([href^="http"])"##
+        } else {
+            r##"a[href]:not([href^="http"])"##
+        };
+        for a in root_sel.select(url_sel).nodes().iter() {
+            let Some(href) = a.attr("href") else {
+                unreachable!();
+            };
+            let abs_url = to_absolute_url(&href, &base_url);
+            a.set_attr("href", abs_url.as_str());
+        }
+
+        for media in root_sel.select_matcher(&MATCHER_SOURCES).nodes().iter() {
+            if let Some(src) = media.attr("src") {
+                let abs_src = to_absolute_url(&src, &base_url);
+                media.set_attr("src", abs_src.as_str());
+            }
+
+            if let Some(poster) = media.attr("poster") {
+                let abs_poster = to_absolute_url(&poster, &base_url);
+                media.set_attr("poster", abs_poster.as_str());
+            }
+
+            if let Some(srcset) = media.attr("srcset") {
+                let abs_srcset: Vec<String> = srcset
+                    .split(", ")
+                    .map(|s| {
+                        if let Some((src, cond)) = s.split_once(" ") {
+                            let abs_src = to_absolute_url(src.trim(), &base_url);
+                            format!("{abs_src} {cond}")
+                        } else {
+                            to_absolute_url(s.trim(), &base_url)
+                        }
+                    })
+                    .collect();
+                media.set_attr("srcset", abs_srcset.join(", ").as_str());
+            }
+        }
     }
 }
 
@@ -1109,16 +1110,6 @@ fn get_json_ld_string_value(value: &gjson::Value, path: &str) -> Option<String> 
         }
     }
     None
-}
-
-fn to_absolute_url(raw_url: &str, base_uri: &Url) -> String {
-    let u = if raw_url.starts_with("file://") {
-        raw_url.replace("|/", ":/")
-    } else {
-        raw_url.to_string()
-    };
-
-    base_uri.join(&u).map_or(u, |uri| uri.to_string())
 }
 
 #[cfg(test)]
@@ -1313,5 +1304,49 @@ mod tests {
         let readability = Readability::from(contents);
         let title = readability.get_article_title();
         assert_eq!(title, "/".into());
+    }
+
+    #[test]
+    fn test_bad_document_url() {
+        let contents = r#"<!DOCTYPE html>
+    <html>
+        <head><title>Title</title></head>
+        <body>Content</body>
+    </html>"#;
+
+        let result = Readability::new(contents, Some("example.com"), None);
+        assert!(
+            matches!(result, Err(e) if e.to_string().contains("the document URL must be absolute"))
+        );
+    }
+
+    #[test]
+    fn test_parse_base_url_with_doc_and_base() {
+        let contents = r#"<!DOCTYPE>
+    <html>
+      <head>
+        <base href="/blog/">
+        <title>Test</title>
+      </head>
+      <body></body>
+    </html>"#;
+        let ra =
+            Readability::new(contents, Some("https://example.com/news/page.html"), None).unwrap();
+        // Ensure fix in parse_base_url wraps in Some(...)
+        let base_url = ra.parse_base_url().expect("base url");
+        assert_eq!(base_url, "https://example.com/blog/");
+    }
+
+
+    #[test]
+    fn test_fix_relative_uris_srcset_without_descriptor() {
+        let contents = r#"<!DOCTYPE html>
+        <html><head><base href="https://example.com/"></head>
+        <body><img src="/img/a.jpg" srcset="img/a.jpg, img/b.jpg 2x"></body></html>"#;
+        let ra = Readability::new(contents, None, None).unwrap();
+        let body = ra.doc.select("body");
+        ra.fix_relative_uris(&body);
+        let got = ra.doc.select("img").attr("srcset").unwrap();
+        assert_eq!(got, "https://example.com/img/a.jpg, https://example.com/img/b.jpg 2x".into());
     }
 }

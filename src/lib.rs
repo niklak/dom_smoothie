@@ -10,6 +10,7 @@ mod readable;
 mod score;
 #[cfg(feature = "serde")]
 mod serde_helpers;
+mod url_helpers;
 
 #[cfg(feature = "aho-corasick")]
 mod ac_automat;
@@ -24,8 +25,8 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum ReadabilityError {
-    #[error(transparent)]
-    BadDocumentURL(#[from] url::ParseError),
+    #[error("the document URL must be absolute")]
+    BadDocumentURL,
     #[error("failed to grab the article")]
     GrabFailed,
     #[error("too many elements in the document to parse (found {0}, maximum {1})")]
