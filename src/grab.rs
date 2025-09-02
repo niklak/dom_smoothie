@@ -450,7 +450,7 @@ fn assign_article_node(tc: &NodeRef, article_content: &NodeRef) {
 /// Find a better top candidate across other candidates in a way that `mozilla/readability` does.
 fn find_common_candidate<'a>(
     mut top_candidate: Option<NodeRef<'a>>,
-    top_candidates: &Vec<NodeRef<'a>>,
+    top_candidates: &[NodeRef<'a>],
     weigh_class: bool,
 ) -> Option<NodeRef<'a>> {
     let Some(ref tc) = top_candidate else {

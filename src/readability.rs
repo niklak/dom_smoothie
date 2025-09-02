@@ -275,18 +275,18 @@ impl Readability {
 
             if !matched {
                 if let Some(tmp_title) = orig_title
-                    .rfind(":")
+                    .rfind(':')
                     .map(|idx| orig_title[idx + 1..].trim())
                 {
                     cur_title = tmp_title;
                     if cur_title.split_whitespace().count() < 3 {
                         if let Some(tmp_title) =
-                            orig_title.find(":").map(|idx| orig_title[idx + 1..].trim())
+                            orig_title.find(':').map(|idx| orig_title[idx + 1..].trim())
                         {
                             cur_title = tmp_title
                         }
                     } else if orig_title
-                        .find(":")
+                        .find(':')
                         .map_or(0, |idx| orig_title[0..idx + 1].split_whitespace().count())
                         > 5
                     {
@@ -1007,7 +1007,7 @@ impl Readability {
                 let abs_srcset: Vec<String> = srcset
                     .split(", ")
                     .map(|s| {
-                        if let Some((src, cond)) = s.split_once(" ") {
+                        if let Some((src, cond)) = s.split_once(' ') {
                             let abs_src = to_absolute_url(src.trim(), &base_url);
                             format!("{abs_src} {cond}")
                         } else {
