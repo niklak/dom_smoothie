@@ -1337,7 +1337,6 @@ mod tests {
         assert_eq!(base_url, "https://example.com/blog/");
     }
 
-
     #[test]
     fn test_fix_relative_uris_srcset_without_descriptor() {
         let contents = r#"<!DOCTYPE html>
@@ -1347,6 +1346,9 @@ mod tests {
         let body = ra.doc.select("body");
         ra.fix_relative_uris(&body);
         let got = ra.doc.select("img").attr("srcset").unwrap();
-        assert_eq!(got, "https://example.com/img/a.jpg, https://example.com/img/b.jpg 2x".into());
+        assert_eq!(
+            got,
+            "https://example.com/img/a.jpg, https://example.com/img/b.jpg 2x".into()
+        );
     }
 }
