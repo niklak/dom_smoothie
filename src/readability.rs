@@ -152,7 +152,7 @@ impl Readability {
     /// # Arguments
     ///
     /// - `html` -- HTML content
-    /// - `document_url` -- a base URL of the page
+    /// - `document_url` -- an absolute URL of the page
     /// - `cfg` -- an optional `Config` instance
     ///
     /// # Returns
@@ -161,7 +161,7 @@ impl Readability {
     ///
     /// # Errors
     ///
-    /// Returns [`ReadabilityError::BadDocumentURL`] if `document_url` is not a absolute URL
+    /// Returns [`ReadabilityError::BadDocumentURL`] if `document_url` is not an absolute URL
     pub fn new<T: Into<StrTendril>>(
         html: T,
         document_url: Option<&str>,
@@ -184,7 +184,7 @@ impl Readability {
     ///
     /// # Errors
     ///
-    /// Returns [`ReadabilityError::BadDocumentURL`] if `document_url` is not a valid URL
+    /// Returns [`ReadabilityError::BadDocumentURL`] if `document_url` is not an absolute URL
     pub fn with_document(
         document: dom_query::Document,
         document_url: Option<&str>,
