@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1756735220835,
+  "lastUpdate": 1756818481696,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -2045,6 +2045,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 48584491,
             "range": "± 602189",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "27d9bd34f684421531a58e9692259325da11a08b",
+          "message": "Merge pull request #128 from niklak/feature/url-join\n\n- Absolute URL transformation is now performed internally by `dom_smoothie`.\n\n- The `url` dependency has been removed from `dom_smoothie` for the following reasons:\n  - Although an excellent crate, its features are excessive for `dom_smoothie`. We only need `is_absolute_url` and `to_absolute_url`.\n  - MSRV issues: `url` requires Rust 1.63, but its `idna` dependencies require 1.82. This would prevent `dom_smoothie` \n  from building on older Rust versions, and disabling these dependencies is cumbersome.\n- **Breaking**: `ReadabilityError::BadDocumentURL` is now a unit variant (`BadDocumentURL`) instead of a tuple variant. Update downstream pattern matches accordingly.\n- **Breaking**: `Readability::doc_url` type changed from `Option<url::Url>` to `Option<String>`. Update code accessing this public field.",
+          "timestamp": "2025-09-02T16:05:37+03:00",
+          "tree_id": "540bbbda6b5050b5cd6fdc4107a38c0326d30141",
+          "url": "https://github.com/niklak/dom_smoothie/commit/27d9bd34f684421531a58e9692259325da11a08b"
+        },
+        "date": 1756818481207,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2562820,
+            "range": "± 47694",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 10751791,
+            "range": "± 123720",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 49173067,
+            "range": "± 514138",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2574154,
+            "range": "± 17811",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 9288462,
+            "range": "± 148629",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 48859364,
+            "range": "± 439231",
             "unit": "ns/iter"
           }
         ]
