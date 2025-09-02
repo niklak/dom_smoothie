@@ -175,7 +175,7 @@ impl Readability {
     /// # Arguments
     ///
     /// - `document` -- a `dom_query::Document` instance
-    /// - `document_url` -- a base URL of the page
+    /// - `document_url` -- a document (absolute) URL of the page
     /// - `cfg` -- an optional `Config` instance
     ///
     /// # Returns
@@ -1011,7 +1011,7 @@ impl Readability {
                             let abs_src = to_absolute_url(src.trim(), &base_url);
                             format!("{abs_src} {cond}")
                         } else {
-                            s.to_string()
+                            to_absolute_url(s.trim(), &base_url)
                         }
                     })
                     .collect();
@@ -1335,5 +1335,18 @@ mod tests {
         // Ensure fix in parse_base_url wraps in Some(...)
         let base_url = ra.parse_base_url().expect("base url");
         assert_eq!(base_url, "https://example.com/blog/");
+    }
+
+
+    #[test]
+    fn test_fix_relative_uris_srcset_without_descriptor() {
+        let contents = r#"<!DOCTYPE html>
+        <html><head><base href="https://example.com/"></head>
+        <body><img src="/img/a.jpg" srcset="img/a.jpg, img/b.jpg 2x"></body></html>"#;
+        let ra = Readability::new(contents, None, None).unwrap();
+        let body = ra.doc.select("body");
+        ra.fix_relative_uris(&body);
+        let got = ra.doc.select("img").attr("srcset").unwrap();
+        assert_eq!(got, "https://example.com/img/a.jpg, https://example.com/img/b.jpg 2x".into());
     }
 }
