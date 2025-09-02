@@ -1310,4 +1310,18 @@ mod tests {
         let title = readability.get_article_title();
         assert_eq!(title, "/".into());
     }
+
+    #[test]
+    fn test_bad_document_url() {
+        let contents = r#"<!DOCTYPE html>
+    <html>
+        <head><title>Title</title></head>
+        <body>Content</body>
+    </html>"#;
+
+        let result = Readability::new(contents, Some("example.com"), None);
+        assert!(
+            matches!(result, Err(e) if e.to_string().contains("the document URL must be absolute"))
+        );
+    }
 }

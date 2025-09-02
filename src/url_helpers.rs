@@ -21,15 +21,18 @@ fn delimiter(s: &str) -> &str {
 ///   (e.g. `mailto:`, `data:`, `blob:`).
 pub(crate) fn is_absolute_url(s: &str, strict: bool) -> bool {
     let s = s.trim();
-    if let Some(pos) = s.find(':') {
+    let delim = if strict { "://" } else { ":" };
+    if let Some(pos) = s.find(delim) {
         let scheme = &s[..pos];
         let mut chars = scheme.chars();
         if let Some(first) = chars.next() {
             if first.is_ascii_alphabetic()
                 && chars.all(|c| c.is_ascii_alphanumeric() || "+-.".contains(c))
             {
-                let delim = if strict { "://" } else { delimiter(&s[pos..]) };
-                return s.len() > pos + delim.len();
+                if strict {
+                    return s.len() > pos + delim.len() && !s.ends_with(delim);
+                }
+                return s.len() > pos + delimiter(&s[pos..]).len();
             }
         }
     }
@@ -139,7 +142,7 @@ mod tests {
         assert!(!is_absolute_url("-abc://test", true));
         assert!(!is_absolute_url("   ", true));
         assert!(!is_absolute_url("   ", false));
-        assert!(is_absolute_url("mailto:foo@bar.com", true));
+        assert!(!is_absolute_url("mailto:foo@bar.com", true));
         assert!(!is_absolute_url("https://", true));
         assert!(!is_absolute_url("http://", false));
         assert!(!is_absolute_url("mailto:", false));
