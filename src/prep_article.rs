@@ -439,9 +439,9 @@ fn remove_share_elements(root_sel: &Selection, share_element_threshold: usize) {
         }
 
         if let Some(el) = child.element_ref() {
-            has_share_elements = el.class().map_or(false, |s| contains_share_elements(&s));
+            has_share_elements = el.class().is_some_and(|s| contains_share_elements(&s));
             if !has_share_elements {
-                has_share_elements = el.id().map_or(false, |s| contains_share_elements(&s));
+                has_share_elements = el.id().is_some_and(|s| contains_share_elements(&s));
             }
         }
         if has_share_elements {

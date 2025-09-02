@@ -88,7 +88,7 @@ impl Readability {
 
         let mut needed_to_create_top_candidate = false;
 
-        if top_candidate.is_none() || top_candidate.as_ref().map_or(false, |n| n.has_name("body")) {
+        if top_candidate.is_none() || top_candidate.as_ref().is_some_and(|n| n.has_name("body")) {
             needed_to_create_top_candidate = true;
             let tc = tree.new_element("div");
 
@@ -301,7 +301,7 @@ fn div_into_p(node: &NodeRef) {
 fn has_child_block_element(node: &NodeRef) -> bool {
     node.descendants_it().any(|n| {
         n.element_ref()
-            .map_or(false, |el| BLOCK_ELEMS.contains(&el.name.local))
+            .is_some_and(|el| BLOCK_ELEMS.contains(&el.name.local))
     })
 }
 
