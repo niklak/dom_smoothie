@@ -9,12 +9,14 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 - Absolute URL transformation is now performed internally by `dom_smoothie`.
 
 - The `url` dependency has been removed from `dom_smoothie` for the following reasons:
-  - Although an excellent crate, its features are excessive for `dom_smoothie`. We only need `is_absolute_url` and `to_absolute_url`.
+  - Although an excellent crate, its features are excessive for `dom_smoothie`. It requires only `is_absolute_url` and `to_absolute_url` functionality.
   - MSRV issues: `url` requires Rust 1.63, but its `idna` dependencies require 1.82. This would prevent `dom_smoothie` 
   from building on older Rust versions, and disabling these dependencies is cumbersome.
 - **Breaking**: `ReadabilityError::BadDocumentURL` is now a unit variant (`BadDocumentURL`) instead of a tuple variant. Update downstream pattern matches accordingly.
 - **Breaking**: `Readability::doc_url` type changed from `Option<url::Url>` to `Option<String>`. Update code accessing this public field.
 - Set MSRV to 1.75.
+- Downgraded `phf` to `0.11.3` to prevent duplicate dependencies (`cssparser`, `selectors`, `web_atoms`).
+- Updated `dom_query` version from `0.21.0` to `0.22.0`.
 
 ### Fixed
 - Fixed `Readability::fix_relative_uris` behavior when handling srcset\'s item without a condition (e.g., `image.jpg` instead of `image.jpg 2x`).
