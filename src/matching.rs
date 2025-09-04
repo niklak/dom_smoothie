@@ -161,10 +161,9 @@ pub(crate) fn is_loading_word(text: &str) -> bool {
 }
 
 pub(crate) fn contains_share_elements(value: &str) -> bool {
-    let lower_value = value.to_ascii_lowercase();
-    lower_value
+    value
         .split([' ', '_'])
-        .any(|word| SHARE_WORDS.contains(word))
+        .any(|part| SHARE_WORDS.iter().any(|&w| part.eq_ignore_ascii_case(w)))
 }
 
 pub(crate) fn split_base64_url(src: &str) -> Option<(&str, &str)> {

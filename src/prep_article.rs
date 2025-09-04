@@ -432,19 +432,22 @@ fn fix_single_cell_tables(sel: &Selection) {
 
 fn remove_share_elements(root_sel: &Selection, share_element_threshold: usize) {
     for child in root_sel.select("*[class],*[id]").nodes() {
-        let mut has_share_elements = false;
-
-        if child.normalized_char_count() >= share_element_threshold {
+        let Some(el) = child.element_ref() else {
             continue;
+        };
+        let attrs = &el.attrs;
+        let mut has_share_elements = attrs
+            .iter()
+            .find(|a| a.name.local.as_ref() == "class")
+            .is_some_and(|s| contains_share_elements(&s.value));
+        if !has_share_elements {
+            has_share_elements = attrs
+                .iter()
+                .find(|a| a.name.local.as_ref() == "id")
+                .is_some_and(|s| contains_share_elements(&s.value));
         }
 
-        if let Some(el) = child.element_ref() {
-            has_share_elements = el.class().is_some_and(|s| contains_share_elements(&s));
-            if !has_share_elements {
-                has_share_elements = el.id().is_some_and(|s| contains_share_elements(&s));
-            }
-        }
-        if has_share_elements {
+        if has_share_elements && child.normalized_char_count() < share_element_threshold {
             child.remove_from_parent();
         }
     }
