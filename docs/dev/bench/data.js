@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1756979162934,
+  "lastUpdate": 1756991435048,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -2345,6 +2345,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 46128495,
             "range": "± 969872",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "33b004d492e7983395219c45e96a74e3c14e9dcc",
+          "message": "Merge pull request #133 from niklak/chore/glob-minor-adjustment\n\nsrc/glob.rs: minor adjustment;\n- Fixed metadata key typos:\n  - `META_MOD_TIME_KEYS`: \"dcterms.modifie\" -> \"dcterms.modified\"\n  - `META_TITLE_KEYS`: \"dcterm:title\" -> \"dcterms:title\"\n  - `META_EXCERPT_KEYS`: \"dcterm:description\" -> \"dcterms:description\"\n  - `META_PROPERTY_PREFIXES`: \"dcterm\" -> \"dcterms\"\n  - `META_NAME_PREFIXES`: \"dcterm\" -> \"dcterms\"",
+          "timestamp": "2025-09-04T16:08:24+03:00",
+          "tree_id": "c89f99c8b66df35ab7c1423a3fa5bba1e0b59214",
+          "url": "https://github.com/niklak/dom_smoothie/commit/33b004d492e7983395219c45e96a74e3c14e9dcc"
+        },
+        "date": 1756991434536,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2553881,
+            "range": "± 41616",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 11371919,
+            "range": "± 577679",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 45933099,
+            "range": "± 1300699",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2557632,
+            "range": "± 14297",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8942685,
+            "range": "± 231685",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 45887329,
+            "range": "± 1078219",
             "unit": "ns/iter"
           }
         ]
