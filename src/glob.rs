@@ -57,6 +57,7 @@ pub(crate) static MATCHER_DATA_TABLE: Lazy<Matcher> =
 pub(crate) static MATCHER_TABLE: Lazy<Matcher> = lazy_matcher!("table");
 pub(crate) static MATCHER_TABLE_MEMBERS: Lazy<Matcher> =
     lazy_matcher!("caption,col,colgroup,tfoot,thead,th");
+pub(crate) static MATCHER_LAZY_IMG: Lazy<Matcher> = lazy_matcher!(r#"[class*="lazy"],img[loading="lazy"]"#);
 
 // --- Mini matchers ---
 
@@ -68,8 +69,7 @@ pub(crate) static MINI_PRESENTATION: Lazy<MiniSelector> =
     Lazy::new(|| MiniSelector::new(r#"[role="presentation"]"#).unwrap());
 pub(crate) static MINI_AINT_DATA_TABLE: Lazy<MiniSelector> =
     Lazy::new(|| MiniSelector::new(r#"[datatable="0"]"#).unwrap());
-pub(crate) static MINI_LAZY: Lazy<MiniSelector> =
-    Lazy::new(|| MiniSelector::new(r#"[class*="lazy"],img[loading="lazy"]"#).unwrap());
+
 
 pub(crate) static TEXTISH_TAGS: &str = "blockquote,dl,div,img,ol,p,pre,table,ul,span,li,td";
 
