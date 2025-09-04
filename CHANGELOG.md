@@ -2,7 +2,8 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
-## [Unreleased]
+## [0.12.0] - 2024-09-04
+
 ### Changed
 - Optimized internal implementation of `grab::score_elements`. No public API changes.
 
