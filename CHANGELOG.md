@@ -21,6 +21,11 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ### Fixed
 - Fixed `Readability::fix_relative_uris` behavior when handling srcset\'s item without a condition (e.g., `image.jpg` instead of `image.jpg 2x`).
 - Fixed `MATCHER_SOURCES`, which previously contained a typo (`sources` instead of `source`).
+- Fixed `META_MOD_TIME_KEYS` ("dcterms.modifie" -> "dcterms.modified").
+- Fixed `META_TITLE_KEYS` ("dcterm:title" -> "dcterms:title").
+- Fixed `META_EXCERPT_KEYS` ("dcterm:description" -> "dcterms:description").
+- Fixed `META_PROPERTY_PREFIXES` ("dcterm" -> "dcterms").
+- Fixed `META_NAME_PREFIXES` ("dcterm" -> "dcterms").
 
 ## [0.11.2] - 2024-08-09
 

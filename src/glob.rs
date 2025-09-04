@@ -69,13 +69,13 @@ pub(crate) static MINI_PRESENTATION: Lazy<MiniSelector> =
 pub(crate) static MINI_AINT_DATA_TABLE: Lazy<MiniSelector> =
     Lazy::new(|| MiniSelector::new(r#"[datatable="0"]"#).unwrap());
 pub(crate) static MINI_LAZY: Lazy<MiniSelector> =
-    Lazy::new(|| MiniSelector::new(r#"[class*="lazy"]"#).unwrap());
+    Lazy::new(|| MiniSelector::new(r#"[class*="lazy"],img[loading="lazy"]"#).unwrap());
 
 pub(crate) static TEXTISH_TAGS: &str = "blockquote,dl,div,img,ol,p,pre,table,ul,span,li,td";
 
 pub(crate) static META_TITLE_KEYS: &[&str] = &[
     "dc:title",
-    "dcterm:title",
+    "dcterms:title",
     "og:title",
     "weibo:article:title",
     "weibo:webpage:title",
@@ -84,7 +84,7 @@ pub(crate) static META_TITLE_KEYS: &[&str] = &[
     "parsely-title",
 ];
 pub(crate) static META_IMAGE_KEYS: &[&str] = &["og:image", "image", "twitter:image"];
-pub(crate) static META_MOD_TIME_KEYS: &[&str] = &["article:modified_time", "dcterms.modifie"];
+pub(crate) static META_MOD_TIME_KEYS: &[&str] = &["article:modified_time", "dcterms.modified"];
 pub(crate) static META_PUB_TIME_KEYS: &[&str] = &[
     "article:published_time",
     "dcterms.available",
@@ -97,7 +97,7 @@ pub(crate) static META_BYLINE_KEYS: &[&str] =
     &["dc:creator", "dcterms:creator", "author", "parsely-author"];
 pub(crate) static META_EXCERPT_KEYS: &[&str] = &[
     "dc:description",
-    "dcterm:description",
+    "dcterms:description",
     "og:description",
     "weibo:article:description",
     "weibo:webpage:description",
@@ -173,7 +173,7 @@ pub(crate) static IMG_EXT: &[&str] = &[".jpg", ".jpeg", ".png", ".webp", ".avif"
 
 #[rustfmt::skip]
 pub(crate) static META_NAME_PREFIXES: &[&str] = &[
-    "article", "dc", "dcterm", "og", "twitter", "parsely", "weibo:article", "weibo:webpage",
+    "article", "dc", "dcterms", "og", "twitter", "parsely", "weibo:article", "weibo:webpage",
 ];
 
 #[rustfmt::skip]
@@ -182,7 +182,7 @@ pub(crate) static META_NAME_KEYS: &[&str] = &[
 ];
 
 pub(crate) static META_NAME_SEP: &[char] = &['-', '.', ':'];
-pub(crate) static META_PROPERTY_PREFIXES: &[&str] = &["article", "dc", "dcterm", "og", "twitter"];
+pub(crate) static META_PROPERTY_PREFIXES: &[&str] = &["article", "dc", "dcterms", "og", "twitter"];
 
 #[rustfmt::skip]
 pub(crate) static META_PROPERTY_KEYS: &[&str] = &[
@@ -202,7 +202,7 @@ pub(crate) static CLASSES_NEGATIVE: &[&str] = &[
 #[rustfmt::skip]
 pub(crate) static CLASSES_POSITIVE: &[&str] = &[
     "article", "body", "content", "entry", "hentry", "h-entry", "main", "page",
-    "pagination", "post", "text", "blog", "story",
+    "post", "text", "blog", "story",
 ];
 
 pub(crate) static CLASSES_NEGATIVE_WORDS: &[&str] = &["hid"];
