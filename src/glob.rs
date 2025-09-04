@@ -117,7 +117,7 @@ pub(crate) static UNLIKELY_CANDIDATES: &[&str] = &[
     "cover-wrap", "disqus", "extra", "footer", "gdpr", "header", "legends", "menu",
     "related", "remark", "replies", "rss", "shoutbox", "sidebar", "skyscraper",
     "social", "sponsor", "supplemental", "ad-break", "agegate", "pagination", 
-    "pager", "popup","yom-remote",
+    "pager", "popup", "yom-remote",
 ];
 
 pub(crate) static MAYBE_CANDIDATES: &[&str] = &[
