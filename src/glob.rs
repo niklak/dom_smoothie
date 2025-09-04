@@ -7,6 +7,7 @@ macro_rules! lazy_matcher {
         Lazy::new(|| Matcher::new($pattern).unwrap())
     };
 }
+
 pub(crate) static CONTENT_ID: &str = "readability-page-1";
 pub(crate) static MIN_COMMON_ANCESTORS: usize = 3;
 pub(crate) static SCORE_ATTR: &str = "data-readability-score";
@@ -24,6 +25,8 @@ pub(crate) static PROTOCOL_PFX: &str = "//";
 pub(crate) static PROTOCOL_PFX_LEN: usize = PROTOCOL_PFX.len();
 pub(crate) static WWW_PFX: &str = "//www.";
 pub(crate) static WWW_PFX_LEN: usize = WWW_PFX.len();
+
+// --- Matchers ---
 
 pub(crate) static MATCHER_CONTENT_ID: Lazy<Matcher> = lazy_matcher!("#readability-page-1");
 pub(crate) static MATCHER_LI_P: Lazy<Matcher> = lazy_matcher!("li p");
@@ -54,6 +57,21 @@ pub(crate) static MATCHER_DATA_TABLE: Lazy<Matcher> =
 pub(crate) static MATCHER_TABLE: Lazy<Matcher> = lazy_matcher!("table");
 pub(crate) static MATCHER_TABLE_MEMBERS: Lazy<Matcher> =
     lazy_matcher!("caption,col,colgroup,tfoot,thead,th");
+
+// --- Mini matchers ---
+
+pub(crate) static MINI_FALLBACK_IMG: Lazy<MiniSelector> =
+    Lazy::new(|| MiniSelector::new(r#"[class*="fallback-image"]"#).unwrap());
+pub(crate) static MINI_ARIA_HIDDEN: Lazy<MiniSelector> =
+    Lazy::new(|| MiniSelector::new(r#"[aria-hidden="true"]"#).unwrap());
+pub(crate) static MINI_PRESENTATION: Lazy<MiniSelector> =
+    Lazy::new(|| MiniSelector::new(r#"[role="presentation"]"#).unwrap());
+pub(crate) static MINI_AINT_DATA_TABLE: Lazy<MiniSelector> =
+    Lazy::new(|| MiniSelector::new(r#"[datatable="0"]"#).unwrap());
+pub(crate) static MINI_LAZY: Lazy<MiniSelector> =
+    Lazy::new(|| MiniSelector::new(r#"[class*="lazy"]"#).unwrap());
+
+pub(crate) static TEXTISH_TAGS: &str = "blockquote,dl,div,img,ol,p,pre,table,ul,span,li,td";
 
 pub(crate) static META_TITLE_KEYS: &[&str] = &[
     "dc:title",
@@ -86,8 +104,6 @@ pub(crate) static META_EXCERPT_KEYS: &[&str] = &[
     "description",
     "twitter:description",
 ];
-
-pub(crate) static TEXTISH_TAGS: &str = "blockquote,dl,div,img,ol,p,pre,table,ul,span,li,td";
 
 #[rustfmt::skip]
 pub(crate) static PRESENTATIONAL_ATTRIBUTES: &[&str] = &[
@@ -176,9 +192,22 @@ pub(crate) static META_PROPERTY_KEYS: &[&str] = &[
 pub(crate) static SHARE_WORDS: &[&str] = &["share", "sharedaddy"];
 
 #[rustfmt::skip]
-pub(crate) static BLOCK_ELEMS: phf::Set<&'static str> = phf_set!(
-    "blockquote", "dl", "div", "img", "ol", "p", "pre", "table", "ul",
-);
+pub(crate) static CLASSES_NEGATIVE: &[&str] = &[
+    "-ad-", "hidden", "banner", "combx", "comment", "com-", "contact", "footer",
+    "gdpr", "masthead", "media", "meta", "outbrain", "promo", "related", "scroll",
+    "share", "shoutbox", "sidebar", "skyscraper", "sponsor", "shopping", "tags",
+    "widget"
+];
+
+#[rustfmt::skip]
+pub(crate) static CLASSES_POSITIVE: &[&str] = &[
+    "article", "body", "content", "entry", "hentry", "h-entry", "main", "page",
+    "pagination", "post", "text", "blog", "story",
+];
+
+pub(crate) static CLASSES_NEGATIVE_WORDS: &[&str] = &["hid"];
+
+// ---phf sets ---
 
 pub(crate) static ALTER_TO_DIV_EXCEPTIONS: phf::Set<&'static str> =
     phf_set!("article", "section", "p", "ol", "ul");
@@ -186,6 +215,12 @@ pub(crate) static DEFAULT_TAGS_TO_SCORE: phf::Set<&'static str> =
     phf_set!("section", "h2", "h3", "h4", "h5", "h6", "p", "td", "pre");
 pub(crate) static TAGS_WITH_CONTENT: phf::Set<&'static str> =
     phf_set!("div", "section", "header", "h1", "h2", "h3", "h4", "h5", "h6");
+
+#[rustfmt::skip]
+pub(crate) static BLOCK_ELEMS: phf::Set<&'static str> = phf_set!(
+    "blockquote", "dl", "div", "img", "ol", "p", "pre", "table", "ul",
+);
+
 pub(crate) static EMBED_ELEMENTS: phf::Set<&'static str> = phf_set!("object", "embed", "iframe");
 
 #[rustfmt::skip]
@@ -201,23 +236,6 @@ pub(crate) static PHRASING_ELEMS: phf::Set<&'static str> = phf_set!(
     "sub", "sup", "textarea", "time", "var", "wbr"
 );
 
-#[rustfmt::skip]
-pub(crate) static CLASSES_NEGATIVE: &[&str] = &[
-    "-ad-", "hidden", "banner", "combx", "comment", "com-", "contact", "footer",
-    "gdpr", "masthead", "media", "meta", "outbrain", "promo", "related", "scroll",
-    "share", "shoutbox", "sidebar", "skyscraper", "sponsor", "shopping", "tags",
-    "widget"
-];
-
-#[rustfmt::skip]
-pub(crate) static CLASSES_POSITIVE: &[&str] = &[
-    "article", "body", "content", "entry", "hentry", "h-entry", "main", "page",
-    "pagination", "post", "text", "blog", "story",
-];
-
-#[rustfmt::skip]
-pub(crate) static CLASSES_NEGATIVE_WORDS: &[&str] = &["hid"];
-
 pub(crate) static DEPRECATED_SIZE_ATTRIBUTE_ELEMS: phf::Set<&'static str> =
     phf_set!("table", "th", "td", "hr", "pre");
 
@@ -230,14 +248,3 @@ pub(crate) static AD_WORDS: phf::Set<&'static str> = phf_set!(
 pub(crate) static LOADING_WORDS: phf::Set<&'static str> = phf_set!(
     "loading", "正在加载", "загрузка", "chargement", "cargando"
 );
-
-pub(crate) static MINI_FALLBACK_IMG: Lazy<MiniSelector> =
-    Lazy::new(|| MiniSelector::new(r#"[class*="fallback-image"]"#).unwrap());
-pub(crate) static MINI_ARIA_HIDDEN: Lazy<MiniSelector> =
-    Lazy::new(|| MiniSelector::new(r#"[aria-hidden="true"]"#).unwrap());
-pub(crate) static MINI_PRESENTATION: Lazy<MiniSelector> =
-    Lazy::new(|| MiniSelector::new(r#"[role="presentation"]"#).unwrap());
-pub(crate) static MINI_AINT_DATA_TABLE: Lazy<MiniSelector> =
-    Lazy::new(|| MiniSelector::new(r#"[datatable="0"]"#).unwrap());
-pub(crate) static MINI_LAZY: Lazy<MiniSelector> =
-    Lazy::new(|| MiniSelector::new(r#"[class*="lazy"]"#).unwrap());
