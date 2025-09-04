@@ -25,7 +25,7 @@ pub(crate) static PROTOCOL_PFX_LEN: usize = PROTOCOL_PFX.len();
 pub(crate) static WWW_PFX: &str = "//www.";
 pub(crate) static WWW_PFX_LEN: usize = WWW_PFX.len();
 
-pub(crate) static MATCHER_CONTENT_ID: Lazy<Matcher> = lazy_matcher!(&format!("#{CONTENT_ID}"));
+pub(crate) static MATCHER_CONTENT_ID: Lazy<Matcher> = lazy_matcher!("#readability-page-1");
 pub(crate) static MATCHER_LI_P: Lazy<Matcher> = lazy_matcher!("li p");
 pub(crate) static MATCHER_TITLE: Lazy<Matcher> = lazy_matcher!("head title");
 pub(crate) static MATCHER_SCRIPT: Lazy<Matcher> = lazy_matcher!("script, noscript");
@@ -173,6 +173,8 @@ pub(crate) static META_PROPERTY_KEYS: &[&str] = &[
     "author", "creator", "description", "published_time", "title", "site_name", "image"
 ];
 
+pub(crate) static SHARE_WORDS: &[&str] = &["share", "sharedaddy"];
+
 #[rustfmt::skip]
 pub(crate) static BLOCK_ELEMS: phf::Set<&'static str> = phf_set!(
     "blockquote", "dl", "div", "img", "ol", "p", "pre", "table", "ul",
@@ -228,8 +230,6 @@ pub(crate) static AD_WORDS: phf::Set<&'static str> = phf_set!(
 pub(crate) static LOADING_WORDS: phf::Set<&'static str> = phf_set!(
     "loading", "正在加载", "загрузка", "chargement", "cargando"
 );
-
-pub(crate) static SHARE_WORDS: phf::Set<&'static str> = phf_set!("share", "sharedaddy");
 
 pub(crate) static MINI_FALLBACK_IMG: Lazy<MiniSelector> =
     Lazy::new(|| MiniSelector::new(r#"[class*="fallback-image"]"#).unwrap());
