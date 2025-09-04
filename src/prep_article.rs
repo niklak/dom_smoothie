@@ -302,7 +302,8 @@ fn fix_lazy_images(sel: &Selection) {
             }
         }
 
-        if (node.has_attr("src") || node.has_attr("srcset")) && !MINI_LAZY.match_node(node) {
+        if (node.has_attr("src") || node.has_attr("srcset")) && !node.is_match(&MATCHER_LAZY_IMG) {
+            // TODO: Looks like it has no effect
             continue;
         }
 
