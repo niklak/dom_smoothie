@@ -7,6 +7,7 @@ macro_rules! lazy_matcher {
         Lazy::new(|| Matcher::new($pattern).unwrap())
     };
 }
+
 pub(crate) static CONTENT_ID: &str = "readability-page-1";
 pub(crate) static MIN_COMMON_ANCESTORS: usize = 3;
 pub(crate) static SCORE_ATTR: &str = "data-readability-score";
@@ -24,6 +25,8 @@ pub(crate) static PROTOCOL_PFX: &str = "//";
 pub(crate) static PROTOCOL_PFX_LEN: usize = PROTOCOL_PFX.len();
 pub(crate) static WWW_PFX: &str = "//www.";
 pub(crate) static WWW_PFX_LEN: usize = WWW_PFX.len();
+
+// --- Matchers ---
 
 pub(crate) static MATCHER_CONTENT_ID: Lazy<Matcher> = lazy_matcher!("#readability-page-1");
 pub(crate) static MATCHER_LI_P: Lazy<Matcher> = lazy_matcher!("li p");
@@ -55,9 +58,24 @@ pub(crate) static MATCHER_TABLE: Lazy<Matcher> = lazy_matcher!("table");
 pub(crate) static MATCHER_TABLE_MEMBERS: Lazy<Matcher> =
     lazy_matcher!("caption,col,colgroup,tfoot,thead,th");
 
+// --- Mini matchers ---
+
+pub(crate) static MINI_FALLBACK_IMG: Lazy<MiniSelector> =
+    Lazy::new(|| MiniSelector::new(r#"[class*="fallback-image"]"#).unwrap());
+pub(crate) static MINI_ARIA_HIDDEN: Lazy<MiniSelector> =
+    Lazy::new(|| MiniSelector::new(r#"[aria-hidden="true"]"#).unwrap());
+pub(crate) static MINI_PRESENTATION: Lazy<MiniSelector> =
+    Lazy::new(|| MiniSelector::new(r#"[role="presentation"]"#).unwrap());
+pub(crate) static MINI_AINT_DATA_TABLE: Lazy<MiniSelector> =
+    Lazy::new(|| MiniSelector::new(r#"[datatable="0"]"#).unwrap());
+pub(crate) static MINI_LAZY: Lazy<MiniSelector> =
+    Lazy::new(|| MiniSelector::new(r#"[class*="lazy"],img[loading="lazy"]"#).unwrap());
+
+pub(crate) static TEXTISH_TAGS: &str = "blockquote,dl,div,img,ol,p,pre,table,ul,span,li,td";
+
 pub(crate) static META_TITLE_KEYS: &[&str] = &[
     "dc:title",
-    "dcterm:title",
+    "dcterms:title",
     "og:title",
     "weibo:article:title",
     "weibo:webpage:title",
@@ -66,7 +84,7 @@ pub(crate) static META_TITLE_KEYS: &[&str] = &[
     "parsely-title",
 ];
 pub(crate) static META_IMAGE_KEYS: &[&str] = &["og:image", "image", "twitter:image"];
-pub(crate) static META_MOD_TIME_KEYS: &[&str] = &["article:modified_time", "dcterms.modifie"];
+pub(crate) static META_MOD_TIME_KEYS: &[&str] = &["article:modified_time", "dcterms.modified"];
 pub(crate) static META_PUB_TIME_KEYS: &[&str] = &[
     "article:published_time",
     "dcterms.available",
@@ -79,15 +97,13 @@ pub(crate) static META_BYLINE_KEYS: &[&str] =
     &["dc:creator", "dcterms:creator", "author", "parsely-author"];
 pub(crate) static META_EXCERPT_KEYS: &[&str] = &[
     "dc:description",
-    "dcterm:description",
+    "dcterms:description",
     "og:description",
     "weibo:article:description",
     "weibo:webpage:description",
     "description",
     "twitter:description",
 ];
-
-pub(crate) static TEXTISH_TAGS: &str = "blockquote,dl,div,img,ol,p,pre,table,ul,span,li,td";
 
 #[rustfmt::skip]
 pub(crate) static PRESENTATIONAL_ATTRIBUTES: &[&str] = &[
@@ -101,7 +117,7 @@ pub(crate) static UNLIKELY_CANDIDATES: &[&str] = &[
     "cover-wrap", "disqus", "extra", "footer", "gdpr", "header", "legends", "menu",
     "related", "remark", "replies", "rss", "shoutbox", "sidebar", "skyscraper",
     "social", "sponsor", "supplemental", "ad-break", "agegate", "pagination", 
-    "pager", "popup","yom-remote",
+    "pager", "popup", "yom-remote",
 ];
 
 pub(crate) static MAYBE_CANDIDATES: &[&str] = &[
@@ -157,7 +173,7 @@ pub(crate) static IMG_EXT: &[&str] = &[".jpg", ".jpeg", ".png", ".webp", ".avif"
 
 #[rustfmt::skip]
 pub(crate) static META_NAME_PREFIXES: &[&str] = &[
-    "article", "dc", "dcterm", "og", "twitter", "parsely", "weibo:article", "weibo:webpage",
+    "article", "dc", "dcterms", "og", "twitter", "parsely", "weibo:article", "weibo:webpage",
 ];
 
 #[rustfmt::skip]
@@ -166,7 +182,7 @@ pub(crate) static META_NAME_KEYS: &[&str] = &[
 ];
 
 pub(crate) static META_NAME_SEP: &[char] = &['-', '.', ':'];
-pub(crate) static META_PROPERTY_PREFIXES: &[&str] = &["article", "dc", "dcterm", "og", "twitter"];
+pub(crate) static META_PROPERTY_PREFIXES: &[&str] = &["article", "dc", "dcterms", "og", "twitter"];
 
 #[rustfmt::skip]
 pub(crate) static META_PROPERTY_KEYS: &[&str] = &[
@@ -176,9 +192,22 @@ pub(crate) static META_PROPERTY_KEYS: &[&str] = &[
 pub(crate) static SHARE_WORDS: &[&str] = &["share", "sharedaddy"];
 
 #[rustfmt::skip]
-pub(crate) static BLOCK_ELEMS: phf::Set<&'static str> = phf_set!(
-    "blockquote", "dl", "div", "img", "ol", "p", "pre", "table", "ul",
-);
+pub(crate) static CLASSES_NEGATIVE: &[&str] = &[
+    "-ad-", "hidden", "banner", "combx", "comment", "com-", "contact", "footer",
+    "gdpr", "masthead", "media", "meta", "outbrain", "promo", "related", "scroll",
+    "share", "shoutbox", "sidebar", "skyscraper", "sponsor", "shopping", "tags",
+    "widget"
+];
+
+#[rustfmt::skip]
+pub(crate) static CLASSES_POSITIVE: &[&str] = &[
+    "article", "body", "content", "entry", "hentry", "h-entry", "main", "page",
+    "post", "text", "blog", "story",
+];
+
+pub(crate) static CLASSES_NEGATIVE_WORDS: &[&str] = &["hid"];
+
+// ---phf sets ---
 
 pub(crate) static ALTER_TO_DIV_EXCEPTIONS: phf::Set<&'static str> =
     phf_set!("article", "section", "p", "ol", "ul");
@@ -186,6 +215,12 @@ pub(crate) static DEFAULT_TAGS_TO_SCORE: phf::Set<&'static str> =
     phf_set!("section", "h2", "h3", "h4", "h5", "h6", "p", "td", "pre");
 pub(crate) static TAGS_WITH_CONTENT: phf::Set<&'static str> =
     phf_set!("div", "section", "header", "h1", "h2", "h3", "h4", "h5", "h6");
+
+#[rustfmt::skip]
+pub(crate) static BLOCK_ELEMS: phf::Set<&'static str> = phf_set!(
+    "blockquote", "dl", "div", "img", "ol", "p", "pre", "table", "ul",
+);
+
 pub(crate) static EMBED_ELEMENTS: phf::Set<&'static str> = phf_set!("object", "embed", "iframe");
 
 #[rustfmt::skip]
@@ -201,23 +236,6 @@ pub(crate) static PHRASING_ELEMS: phf::Set<&'static str> = phf_set!(
     "sub", "sup", "textarea", "time", "var", "wbr"
 );
 
-#[rustfmt::skip]
-pub(crate) static CLASSES_NEGATIVE: &[&str] = &[
-    "-ad-", "hidden", "banner", "combx", "comment", "com-", "contact", "footer",
-    "gdpr", "masthead", "media", "meta", "outbrain", "promo", "related", "scroll",
-    "share", "shoutbox", "sidebar", "skyscraper", "sponsor", "shopping", "tags",
-    "widget"
-];
-
-#[rustfmt::skip]
-pub(crate) static CLASSES_POSITIVE: &[&str] = &[
-    "article", "body", "content", "entry", "hentry", "h-entry", "main", "page",
-    "pagination", "post", "text", "blog", "story",
-];
-
-#[rustfmt::skip]
-pub(crate) static CLASSES_NEGATIVE_WORDS: &[&str] = &["hid"];
-
 pub(crate) static DEPRECATED_SIZE_ATTRIBUTE_ELEMS: phf::Set<&'static str> =
     phf_set!("table", "th", "td", "hr", "pre");
 
@@ -230,14 +248,3 @@ pub(crate) static AD_WORDS: phf::Set<&'static str> = phf_set!(
 pub(crate) static LOADING_WORDS: phf::Set<&'static str> = phf_set!(
     "loading", "正在加载", "загрузка", "chargement", "cargando"
 );
-
-pub(crate) static MINI_FALLBACK_IMG: Lazy<MiniSelector> =
-    Lazy::new(|| MiniSelector::new(r#"[class*="fallback-image"]"#).unwrap());
-pub(crate) static MINI_ARIA_HIDDEN: Lazy<MiniSelector> =
-    Lazy::new(|| MiniSelector::new(r#"[aria-hidden="true"]"#).unwrap());
-pub(crate) static MINI_PRESENTATION: Lazy<MiniSelector> =
-    Lazy::new(|| MiniSelector::new(r#"[role="presentation"]"#).unwrap());
-pub(crate) static MINI_AINT_DATA_TABLE: Lazy<MiniSelector> =
-    Lazy::new(|| MiniSelector::new(r#"[datatable="0"]"#).unwrap());
-pub(crate) static MINI_LAZY: Lazy<MiniSelector> =
-    Lazy::new(|| MiniSelector::new(r#"[class*="lazy"]"#).unwrap());
