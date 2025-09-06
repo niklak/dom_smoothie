@@ -8,5 +8,5 @@ repository.workspace = true
 authors.workspace = true
 
 [dependencies]
-dom_smoothie = { path = ".." }
-mlua = { version = "0.9", features = ["lua54", "module"] }
+dom_smoothie = { path = ".." , features = ["serde"]}
+mlua = { version = "0.11.3", features = ["lua54", "module", "serde"] }
