@@ -49,8 +49,9 @@ aho-corasick = ["dep:aho-corasick"]
 members = [
     "dom_smoothie_cli",
     "dom-smoothie-js", 
-    "dom-smoothie-bench"
-]
+    "dom-smoothie-bench", 
+    "dom-smoothie-lua",
+    ]
 
 
 [profile.bench]
