@@ -43,7 +43,7 @@ impl LuaUserData for Readability {
 }
 
 #[mlua::lua_module(name = "dom_smoothie")]
-fn dom_smoothie_lua(lua: &'_ Lua) -> LuaResult<LuaTable> {
+fn dom_smoothie_module(lua: &'_ Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
 
     let readability_ctor = lua.create_function(
@@ -51,38 +51,38 @@ fn dom_smoothie_lua(lua: &'_ Lua) -> LuaResult<LuaTable> {
             let mut cfg = dom_smoothie::Config::default();
 
             if let Some(opts) = config {
-                if let Ok(v) = opts.get("keep_classes") {
+                if let Some(v) = opts.get::<Option<bool>>("keep_classes")? {
                     cfg.keep_classes = v;
                 }
-                if let Ok(v) = opts.get("classes_to_preserve") {
+                if let Some(v) = opts.get::<Option<Vec<String>>>("classes_to_preserve")? {
                     cfg.classes_to_preserve = v;
                 }
-                if let Ok(v) = opts.get("max_elements_to_parse") {
+                if let Some(v) = opts.get::<Option<usize>>("max_elements_to_parse")? {
                     cfg.max_elements_to_parse = v;
                 }
-                if let Ok(v) = opts.get("disable_json_ld") {
+                if let Some(v) = opts.get::<Option<bool>>("disable_json_ld")? {
                     cfg.disable_json_ld = v;
                 }
-                if let Ok(v) = opts.get("n_top_candidates") {
+                if let Some(v) = opts.get::<Option<usize>>("n_top_candidates")? {
                     cfg.n_top_candidates = v;
                 }
-                if let Ok(v) = opts.get("char_threshold") {
+                if let Some(v) = opts.get::<Option<usize>>("char_threshold")? {
                     cfg.char_threshold = v;
                 }
-                if let Ok(v) = opts.get("min_score_to_adjust") {
+                if let Some(v) = opts.get::<Option<f32>>("min_score_to_adjust")? {
                     cfg.min_score_to_adjust = v;
                 }
-                if let Ok(v) = opts.get("readable_min_score") {
+                if let Some(v) = opts.get::<Option<f32>>("readable_min_score")? {
                     cfg.readable_min_score = v;
                 }
-                if let Ok(v) = opts.get("readable_min_content_length") {
+                if let Some(v) = opts.get::<Option<usize>>("readable_min_content_length")? {
                     cfg.readable_min_content_length = v;
                 }
-                if let Ok(v) = opts.get("candidate_select_mode") {
-                    cfg.candidate_select_mode = lua_vm.from_value(v)?;
+                if let Some(val) = opts.get::<Option<LuaValue>>("candidate_select_mode")? {
+                    cfg.candidate_select_mode = lua_vm.from_value(val)?;
                 }
-                if let Ok(v) = opts.get("text_mode") {
-                    cfg.text_mode = lua_vm.from_value(v)?;
+                if let Some(val) = opts.get::<Option<LuaValue>>("text_mode")? {
+                    cfg.text_mode = lua_vm.from_value(val)?;
                 }
             }
 

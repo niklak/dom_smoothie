@@ -6,6 +6,10 @@ license.workspace = true
 rust-version.workspace = true
 repository.workspace = true
 authors.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
 
 [dependencies]
 dom_smoothie = { path = ".." , features = ["serde"]}
