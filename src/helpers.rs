@@ -1,8 +1,9 @@
 use std::collections::HashSet;
 
+use foldhash::HashMap;
 use unicode_segmentation::UnicodeSegmentation;
 
-use dom_query::{Node, Selection};
+use dom_query::{Node, NodeId, Selection};
 
 use crate::glob::*;
 use crate::matching::*;
@@ -194,6 +195,48 @@ pub(crate) fn is_probably_visible(node: &Node) -> bool {
         return false;
     }
     !MINI_ARIA_HIDDEN.match_node(node) || MINI_FALLBACK_IMG.match_node(node)
+}
+
+pub (crate) struct CharCounter {
+    inner: HashMap<NodeId, usize>
+}
+
+impl CharCounter {
+    pub fn new() -> Self {
+        CharCounter { inner: HashMap::default() }
+    }
+}
+
+impl CharCounter {
+    pub (crate) fn normalized_char_count(&mut self, node: &Node) -> usize {
+        *self.inner.entry(node.id).or_insert_with(|| node.normalized_char_count())
+    }
+
+
+    pub(crate) fn link_density(&mut self, node: &Node, char_count: Option<usize>) -> f32 {
+    let mut link_length = 0f32;
+
+    for a in node.find_descendants("a") {
+        let href = a.attr_or("href", "");
+        let coeff = if href.len() > 1 && href.starts_with('#') {
+            0.3
+        } else {
+            1.0
+        };
+        link_length += self.normalized_char_count(&a) as f32 * coeff;
+    }
+
+    if link_length == 0.0 {
+        return 0.0;
+    }
+
+    let text_length = char_count.unwrap_or_else(|| self.normalized_char_count(&node)) as f32;
+    if text_length == 0.0 {
+        return 0.0;
+    }
+
+    link_length / text_length
+}
 }
 
 #[cfg(test)]
