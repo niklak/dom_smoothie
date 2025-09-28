@@ -7,6 +7,7 @@ If you have a previous version of Rust installed via `rustup`, you can get 1\.84
 $ rustup update stable
 
 ```
+
 If you don't have it already, you can [get rustup](https://www.rust-lang.org/install.html) from the appropriate page on our website, and check out the [detailed release notes for 1\.84\.0](https://doc.rust-lang.org/stable/releases.html#version-1840-2025-01-09)\.
 
 If you'd like to help us out by testing future releases, you might consider updating locally to use the beta channel \(`rustup default beta`\) or the nightly channel \(`rustup default nightly`\)\. Please [report](https://github.com/rust-lang/rust/issues/new/choose) any bugs you might come across\!
@@ -25,6 +26,7 @@ You can opt-in to the MSRV-aware resolver via [\.cargo/config\.toml](https://doc
 incompatible-rust-versions = "fallback"
 
 ```
+
 Then when adding a dependency:
 
 
@@ -38,6 +40,7 @@ warning: ignoring clap@4.5.23 (which requires rustc 1.74) to maintain demo's rus
       Adding clap v4.0.32 (available: v4.5.23, requires Rust 1.74)
 
 ```
+
 When [verifying the latest dependencies in CI](https://doc.rust-lang.org/cargo/guide/continuous-integration.html#verifying-latest-dependencies), you can override this:
 
 
@@ -48,6 +51,7 @@ $ CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS=allow cargo update
     Updating clap v4.0.32 -> v4.5.23
 
 ```
+
 You can also opt-in by setting [package\.resolver = "3"](https://doc.rust-lang.org/cargo/reference/resolver.html#resolver-versions) in the Cargo\.toml manifest file though that will require raising your MSRV to 1\.84\. The new resolver will be enabled by default for projects using the 2024 edition \(which will stabilize in 1\.85\)\.
 
 This gives library authors more flexibility when deciding their policy on adopting new Rust toolchain features\. Previously, a library adopting features from a new Rust toolchain would force downstream users of that library who have an older Rust version to either upgrade their toolchain or manually select an old version of the library compatible with their toolchain \(and avoid running `cargo update`\)\. Now, those users will be able to automatically use older library versions compatible with their older toolchain\.
@@ -91,6 +95,7 @@ For more details, see the standard library [documentation on provenance](https:/
 - [core::ptr::dangling](https://doc.rust-lang.org/stable/core/ptr/fn.dangling.html)
 - [core::ptr::dangling\_mut](https://doc.rust-lang.org/stable/core/ptr/fn.dangling_mut.html)
 - [Pin::as\_deref\_mut](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.as_deref_mut)
+
 These APIs are now stable in const contexts
 
 - [AtomicBool::from\_ptr](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicBool.html#method.from_ptr)
@@ -116,6 +121,7 @@ These APIs are now stable in const contexts
 - [Pin::get\_unchecked\_mut](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.get_unchecked_mut)
 - [Pin::static\_ref](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.static_ref)
 - [Pin::static\_mut](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.static_mut)
+
 ### Other changes
 
 Check out everything that changed in [Rust](https://github.com/rust-lang/rust/releases/tag/1.84.0), [Cargo](https://github.com/rust-lang/cargo/blob/master/CHANGELOG.md#cargo-184-2025-01-09), and [Clippy](https://github.com/rust-lang/rust-clippy/blob/master/CHANGELOG.md#rust-184)\.

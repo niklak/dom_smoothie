@@ -11,7 +11,6 @@ Readability is available on npm:
 npm install @mozilla/readability
 ```
 
-
 You can then `require()` it, or for web-based projects, load the `Readability.js` script from your webpage\.
 
 ## Basic usage
@@ -22,7 +21,6 @@ To parse a document, you must create a new `Readability` object from a DOM docum
 ```
 var article = new Readability(document).parse();
 ```
-
 
 If you use Readability in a web browser, you will likely be able to use a `document` reference from elsewhere \(e\.g\. fetched via XMLHttpRequest, in a same-origin `<iframe>` you have access to, etc\.\)\. In Node\.js, you can [use an external DOM library](#nodejs-usage)\.
 
@@ -42,6 +40,7 @@ The `options` object accepts a number of properties, all optional:
 - `serializer` \(function, default `el => el.innerHTML`\) controls how the `content` property returned by the `parse()` method is produced from the root DOM element\. It may be useful to specify the `serializer` as the identity function \(`el => el`\) to obtain a DOM element instead of a string for `content` if you plan to process it further\.
 - `allowedVideoRegex` \(RegExp, default `undefined` \): a regular expression that matches video URLs that should be allowed to be included in the article content\. If `undefined`, the [default regex](https://github.com/mozilla/readability/blob/8e8ec27cd2013940bc6f3cc609de10e35a1d9d86/Readability.js#L133) is applied\.
 - `linkDensityModifier` \(number, default `0`\): a number that is added to the base link density threshold during the shadiness checks\. This can be used to penalize nodes with a high link density or vice versa\.
+
 ### `parse()`
 
 Returns an object containing the following properties:
@@ -56,6 +55,7 @@ Returns an object containing the following properties:
 - `siteName`: name of the site;
 - `lang`: content language;
 - `publishedTime`: published time;
+
 The `parse()` method works by modifying the DOM\. This removes some elements in the web page, which may be undesirable\. You can avoid this by passing the clone of the `document` object to the `Readability` constructor:
 
 
@@ -63,7 +63,6 @@ The `parse()` method works by modifying the DOM\. This removes some elements in 
 var documentClone = document.cloneNode(true);
 var article = new Readability(documentClone).parse();
 ```
-
 
 ### `isProbablyReaderable(document, options)`
 
@@ -74,6 +73,7 @@ The `options` object accepts a number of properties, all optional:
 - `minContentLength` \(number, default `140`\): the minimum node content length used to decide if the document is readerable;
 - `minScore` \(number, default `20`\): the minimum cumulated 'score' used to determine if the document is readerable;
 - `visibilityChecker` \(function, default `isNodeVisible`\): the function used to determine if a node is visible;
+
 The function returns a boolean corresponding to whether or not we suspect `Readability.parse()` will succeed at returning an article object\. Here's an example:
 
 
@@ -86,7 +86,6 @@ if (isProbablyReaderable(document)) {
     let article = new Readability(document).parse();
 }
 ```
-
 
 ## Node\.js usage
 
@@ -102,7 +101,6 @@ var doc = new JSDOM("<body>Look at this cat: <img src='./cat.jpg'></body>", {
 let reader = new Readability(doc.window.document);
 let article = reader.parse();
 ```
-
 
 Remember to pass the page's URI as the `url` option in the `JSDOM` constructor \(as shown in the example above\), so that Readability can convert relative URLs for images, hyperlinks, etc\. to their absolute counterparts\.
 
