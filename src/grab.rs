@@ -312,12 +312,13 @@ fn score_elements<'a>(
     flags: &FlagSet<GrabFlags>,
 ) -> Vec<NodeRef<'a>> {
     let mut score_map: HashMap<NodeId, f32> = HashMap::default();
+    let mut cc_cache = CharCounterCache::default();
 
     for element in elements_to_score {
         if element.parent().is_none() {
             continue;
         }
-        let content_len = element.normalized_char_count();
+        let content_len = cc_cache.char_count(element);
         if content_len < 25 {
             continue;
         }
@@ -360,7 +361,7 @@ fn score_elements<'a>(
         }
     }
 
-    let mut cc_cache = CharCounterCache::default();
+    
 
     // Scale the final candidates score based on link density. Good content
     // should have a relatively small link density (5% or less) and be mostly
