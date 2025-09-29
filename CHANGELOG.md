@@ -5,7 +5,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ## [Unreleased]
 ### Changed
 - Updated `dom_query` version from `0.22.0` to `0.23.0`.
-
+- Revised `grab::score_elements`: use a cache for normalized char count to improve performance. No public API changes.
 
 ### Fixed
 - `MATCHER_LAZY_IMG` is now used in `prep_article::fix_lazy_images` instead of `MINI_LAZY`, since the latter does not support complex selectors.
