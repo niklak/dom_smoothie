@@ -360,7 +360,7 @@ fn score_elements<'a>(
         }
     }
 
-    let mut density_cache = CharCounter::new();
+    let mut cc_cache = CharCounterCache::default();
 
     // Scale the final candidates score based on link density. Good content
     // should have a relatively small link density (5% or less) and be mostly
@@ -373,7 +373,7 @@ fn score_elements<'a>(
             let candidate = NodeRef::new(node_id, tree);
             // Skipping adjustment of low score
             let score = if prev_score > cfg.min_score_to_adjust {
-                prev_score * (1.0 - density_cache.link_density(&candidate, None))
+                prev_score * (1.0 - link_density_fn(&candidate, None, |n| cc_cache.char_count(n)))
             } else {
                 prev_score
             };

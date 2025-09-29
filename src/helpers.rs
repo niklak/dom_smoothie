@@ -113,7 +113,10 @@ pub(crate) fn normalize_spaces(text: &str) -> String {
     result
 }
 
-pub(crate) fn link_density(node: &Node, char_count: Option<usize>) -> f32 {
+pub(crate) fn link_density_fn<F>(node: &Node, char_count: Option<usize>, mut count_fn: F) -> f32
+where
+    F: FnMut(&Node) -> usize,
+{
     let mut link_length = 0f32;
 
     for a in node.find_descendants("a") {
@@ -123,19 +126,23 @@ pub(crate) fn link_density(node: &Node, char_count: Option<usize>) -> f32 {
         } else {
             1.0
         };
-        link_length += a.normalized_char_count() as f32 * coeff;
+        link_length += count_fn(&a) as f32 * coeff;
     }
 
     if link_length == 0.0 {
         return 0.0;
     }
 
-    let text_length = char_count.unwrap_or_else(|| node.normalized_char_count()) as f32;
+    let text_length = char_count.unwrap_or_else(|| count_fn(node)) as f32;
     if text_length == 0.0 {
         return 0.0;
     }
 
     link_length / text_length
+}
+
+pub(crate) fn link_density(node: &Node, char_count: Option<usize>) -> f32 {
+    link_density_fn(node, char_count, |n| n.normalized_char_count())
 }
 
 pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
@@ -197,45 +204,17 @@ pub(crate) fn is_probably_visible(node: &Node) -> bool {
     !MINI_ARIA_HIDDEN.match_node(node) || MINI_FALLBACK_IMG.match_node(node)
 }
 
-pub (crate) struct CharCounter {
-    inner: HashMap<NodeId, usize>
+#[derive(Default)]
+pub(crate) struct CharCounterCache {
+    inner: HashMap<NodeId, usize>,
 }
 
-impl CharCounter {
-    pub fn new() -> Self {
-        CharCounter { inner: HashMap::default() }
-    }
-}
-
-impl CharCounter {
-    pub (crate) fn normalized_char_count(&mut self, node: &Node) -> usize {
-        *self.inner.entry(node.id).or_insert_with(|| node.normalized_char_count())
-    }
-
-
-    pub(crate) fn link_density(&mut self, node: &Node, char_count: Option<usize>) -> f32 {
-        let mut link_length = 0f32;
-
-        for a in node.find_descendants("a") {
-            let href = a.attr_or("href", "");
-            let coeff = if href.len() > 1 && href.starts_with('#') {
-                0.3
-            } else {
-                1.0
-            };
-            link_length += self.normalized_char_count(&a) as f32 * coeff;
-        }
-
-        if link_length == 0.0 {
-            return 0.0;
-        }
-
-        let text_length = char_count.unwrap_or_else(|| self.normalized_char_count(&node)) as f32;
-        if text_length == 0.0 {
-            return 0.0;
-        }
-
-        link_length / text_length
+impl CharCounterCache {
+    pub(crate) fn char_count(&mut self, node: &Node) -> usize {
+        *self
+            .inner
+            .entry(node.id)
+            .or_insert_with(|| node.normalized_char_count())
     }
 }
 
