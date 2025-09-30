@@ -828,7 +828,7 @@ impl Readability {
         if metadata.modified_time.is_none() {
             metadata.modified_time = get_map_any_value(values, META_MOD_TIME_KEYS);
         }
-        
+
         metadata.favicon = extract_favicon(&self.doc, self.parse_base_url());
     }
 
@@ -962,6 +962,8 @@ impl Readability {
 // Methods related to URL handling
 impl Readability {
     fn parse_base_url(&self) -> Option<String> {
+        // TODO: Probably, this should be calculated during `Readability` construction, 
+        // and later accessed via property `Readability.base_url`
         let Some(base_uri) = self.doc.base_uri() else {
             return self.doc_url.clone();
         };
@@ -1132,7 +1134,7 @@ fn extract_favicon(root_node: &Document, base_url: Option<String>) -> Option<Str
         let mut priority = match rel.as_ref() {
             "icon" => icon_priority,
             "shortcut icon" => icon_priority - 100.0,
-            "apple-touch-icon" => icon_priority - 200.0,
+            "apple-touch-icon" => icon_priority - 150.0,
             _ => 0.0,
         };
 
@@ -1168,8 +1170,6 @@ fn extract_favicon(root_node: &Document, base_url: Option<String>) -> Option<Str
         favicon_url = favicon_url.map(|u| to_absolute_url(&u, &base_url));
     }
     favicon_url
-
-
 }
 
 #[cfg(test)]
@@ -1332,7 +1332,7 @@ mod tests {
         assert!(metadata.published_time.is_none());
         assert!(metadata.modified_time.is_none());
         assert!(metadata.image.is_some());
-        assert!(metadata.favicon.is_none());
+        assert!(metadata.favicon.is_some());
         assert_eq!(Some("en".to_string()), metadata.lang);
         assert!(metadata.url.is_none());
         assert!(metadata.dir.is_none());
