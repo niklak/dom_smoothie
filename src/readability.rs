@@ -1,7 +1,6 @@
-use std::collections::HashMap;
-
 use dom_query::{Document, Node, NodeData, NodeRef, Selection};
 use tendril::StrTendril;
+use foldhash::HashMap;
 
 use crate::config::ParsePolicy;
 use crate::config::TextMode;
