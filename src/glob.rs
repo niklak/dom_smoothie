@@ -58,6 +58,8 @@ pub(crate) static MATCHER_TABLE: Lazy<Matcher> = lazy_matcher!("table");
 pub(crate) static MATCHER_TABLE_MEMBERS: Lazy<Matcher> =
     lazy_matcher!("caption,col,colgroup,tfoot,thead,th");
 pub(crate) static MATCHER_LAZY_IMG: Lazy<Matcher> = lazy_matcher!(r#"[class*="lazy"],img[loading="lazy"]"#);
+pub(crate) static MATCHER_FAVICON: Lazy<Matcher> = lazy_matcher!(r#"link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]"#);
+
 
 // --- Mini matchers ---
 
