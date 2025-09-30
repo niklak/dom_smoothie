@@ -1121,7 +1121,7 @@ fn extract_favicon(root_node: &Document, base_url: Option<String>) -> Option<Str
     let mut urls: Vec<(String, f32)> = Vec::new();
 
     let icon_priority: f32 = 1000.0;
-    for node in head_sel.select_matcher(&MATCHER_FAVICON).nodes().iter() {
+    for node in head_sel.select_matcher_iter(&MATCHER_FAVICON) {
         let Some(href) = node.attr("href") else {
             continue;
         };
