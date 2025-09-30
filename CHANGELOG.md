@@ -3,6 +3,9 @@
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ## [Unreleased]
+### Added
+- Added `Metadata.favicon` and `Article.favicon` support when calling `Readability::get_article_metadata` and `Readability::parse`.
+
 ### Changed
 - Updated `dom_query` version from `0.22.0` to `0.23.0`.
 - Revised `grab::score_elements`: use a cache for normalized char count to improve performance. No public API changes.
