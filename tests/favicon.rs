@@ -87,3 +87,13 @@ fn test_favicon_topicseed_1() {
         Some("http://fakehost/icons-5f7390f8df97283d5b517dead9b4a9d5/favicon-32x32.png")
     );
 }
+
+
+#[test]
+fn test_favicon_yahoo_1() {
+    test_favicon(
+        "./test-pages/readability/yahoo-1",
+        Some("http://fakehost/test/"),
+        Some("https://s.yimg.com/os/mit/media/p/common/images/favicon_new-7483e38.svg")
+    );
+}
