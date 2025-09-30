@@ -1167,7 +1167,7 @@ fn extract_favicon(root_node: &Document, base_url: Option<String>) -> Option<Str
         .map(|(href, _)| href);
     // Transform to absolute URL if base_url is provided
     if let Some(ref base_url) = base_url {
-        favicon_url = favicon_url.map(|u| to_absolute_url(&u, &base_url));
+        favicon_url = favicon_url.map(|u| to_absolute_url(&u, base_url));
     }
     favicon_url
 }
