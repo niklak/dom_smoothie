@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1759138664298,
+  "lastUpdate": 1759305056333,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -2765,6 +2765,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 44220953,
             "range": "± 886048",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0ebdeabc1b32ebdbda758d5febeba7a6191cdd44",
+          "message": "Merge pull request #142 from niklak/feature/metadata-favicon\n\n- Added `Metadata.favicon` and `Article.favicon` support when calling `Readability::get_article_metadata` and `Readability::parse`.",
+          "timestamp": "2025-10-01T10:48:44+03:00",
+          "tree_id": "ac59acd7d531120ba08ee0ef049cc71801c0a9c8",
+          "url": "https://github.com/niklak/dom_smoothie/commit/0ebdeabc1b32ebdbda758d5febeba7a6191cdd44"
+        },
+        "date": 1759305055876,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2537478,
+            "range": "± 9535",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 11476705,
+            "range": "± 152197",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 45539216,
+            "range": "± 442689",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2535480,
+            "range": "± 7587",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 9090984,
+            "range": "± 221295",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 45331060,
+            "range": "± 637392",
             "unit": "ns/iter"
           }
         ]
