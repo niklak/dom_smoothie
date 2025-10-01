@@ -832,7 +832,16 @@ impl Readability {
     }
 
     fn remove_comments(&self) {
-        remove_comments(&self.doc.root());
+        let comments: Vec<NodeRef> = self
+            .doc
+            .root()
+            .descendants_it()
+            .filter(|node| node.is_comment())
+            .collect();
+
+        for comment in comments {
+            comment.remove_from_parent();
+        }
     }
 
     fn get_html_lang(&self) -> Option<StrTendril> {
@@ -1023,17 +1032,6 @@ impl Readability {
 fn get_map_any_value(map: &HashMap<String, String>, keys: &[&str]) -> Option<String> {
     keys.iter()
         .find_map(|&key| map.get(key).map(|v| v.to_string()))
-}
-
-fn remove_comments(n: &NodeRef) {
-    let comments: Vec<NodeRef> = n
-        .descendants_it()
-        .filter(|node| node.is_comment())
-        .collect();
-
-    for comment in comments {
-        comment.remove_from_parent();
-    }
 }
 
 fn next_significant_node(node: Option<NodeRef>) -> Option<NodeRef> {
