@@ -1,4 +1,4 @@
-use dom_query::{Node, Selection};
+use dom_query::{NodeRef, Selection};
 use flagset::FlagSet;
 
 use crate::glob::*;
@@ -32,7 +32,7 @@ fn clean(root_sel: &Selection) {
     }
 }
 
-fn clean_styles(n: &Node) {
+fn clean_styles(n: &NodeRef) {
     if !n.is_element() {
         return;
     }
@@ -52,14 +52,14 @@ fn clean_styles(n: &Node) {
     }
 }
 
-fn should_clean_conditionally(node: &Node, flags: &FlagSet<GrabFlags>) -> bool {
+fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> bool {
     let sel = Selection::from(*node);
     // keep element if it has a data tables
     if sel.select_single_matcher(&MATCHER_DATA_TABLE).exists() {
         return false;
     }
 
-    let is_data_table = |n: &Node| n.has_name("table") && n.has_attr("data-readability-table");
+    let is_data_table = |n: &NodeRef| n.has_name("table") && n.has_attr("data-readability-table");
 
     if is_data_table(node) {
         return false;
@@ -198,7 +198,7 @@ fn clean_conditionally(sel: &Selection, tags: &str, flags: &FlagSet<GrabFlags>) 
     }
 }
 
-fn set_data_readability_table(n: &Node, is_data_table: bool) {
+fn set_data_readability_table(n: &NodeRef, is_data_table: bool) {
     if is_data_table {
         n.set_attr("data-readability-table", "true");
     } else {
@@ -303,7 +303,6 @@ fn fix_lazy_images(sel: &Selection) {
         }
 
         if (node.has_attr("src") || node.has_attr("srcset")) && !node.is_match(&MATCHER_LAZY_IMG) {
-            // TODO: Looks like it has no effect
             continue;
         }
 
@@ -350,7 +349,7 @@ fn clean_headers(sel: &Selection, flags: &FlagSet<GrabFlags>) {
     }
 }
 
-pub(crate) fn prep_article(article_node: &Node, flags: &FlagSet<GrabFlags>, cfg: &Config) {
+pub(crate) fn prep_article(article_node: &NodeRef, flags: &FlagSet<GrabFlags>, cfg: &Config) {
     let article_sel = Selection::from(*article_node);
     // *Important*: Currently the order of calling 'cleaning' functions is matters.
     // It shouldn't be but it is.

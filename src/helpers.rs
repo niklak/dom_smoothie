@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use foldhash::HashMap;
 use unicode_segmentation::UnicodeSegmentation;
 
-use dom_query::{Node, NodeId, Selection};
+use dom_query::{NodeId, NodeRef, Selection};
 
 use crate::glob::*;
 use crate::matching::*;
@@ -37,7 +37,7 @@ pub(crate) fn text_similarity(text_a: &str, text_b: &str) -> f64 {
     1.0 - distance_b
 }
 
-pub(crate) fn is_phrasing_content(node: &Node) -> bool {
+pub(crate) fn is_phrasing_content(node: &NodeRef) -> bool {
     if node.is_text() {
         return true;
     }
@@ -59,7 +59,7 @@ pub(crate) fn is_phrasing_content(node: &Node) -> bool {
     false
 }
 
-pub(crate) fn is_whitespace(node: &Node) -> bool {
+pub(crate) fn is_whitespace(node: &NodeRef) -> bool {
     if node.is_text() && !node.is_nonempty_text() {
         return true;
     }
@@ -67,15 +67,15 @@ pub(crate) fn is_whitespace(node: &Node) -> bool {
     node.has_name("br")
 }
 
-pub(crate) fn has_ancestor<F>(node: &Node, max_depth: Option<usize>, filter_fn: F) -> bool
+pub(crate) fn has_ancestor<F>(node: &NodeRef, max_depth: Option<usize>, filter_fn: F) -> bool
 where
-    F: Fn(&Node) -> bool,
+    F: Fn(&NodeRef) -> bool,
 {
     let max_depth = max_depth.map(|max_depth| if max_depth == 0 { 3 } else { max_depth });
     node.ancestors_it(max_depth).any(|a| filter_fn(&a))
 }
 
-pub(crate) fn text_density(node: &Node, selector: &str, char_count: Option<usize>) -> f32 {
+pub(crate) fn text_density(node: &NodeRef, selector: &str, char_count: Option<usize>) -> f32 {
     let sel = Selection::from(*node).select(selector);
     let sel_nodes = sel.nodes();
 
@@ -113,9 +113,9 @@ pub(crate) fn normalize_spaces(text: &str) -> String {
     result
 }
 
-pub(crate) fn link_density_fn<F>(node: &Node, char_count: Option<usize>, mut count_fn: F) -> f32
+pub(crate) fn link_density_fn<F>(node: &NodeRef, char_count: Option<usize>, mut count_fn: F) -> f32
 where
-    F: FnMut(&Node) -> usize,
+    F: FnMut(&NodeRef) -> usize,
 {
     let mut link_length = 0f32;
 
@@ -141,11 +141,11 @@ where
     link_length / text_length
 }
 
-pub(crate) fn link_density(node: &Node, char_count: Option<usize>) -> f32 {
+pub(crate) fn link_density(node: &NodeRef, char_count: Option<usize>) -> f32 {
     link_density_fn(node, char_count, |n| n.normalized_char_count())
 }
 
-pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
+pub(crate) fn has_single_tag_inside_element(node: &NodeRef, tag: &str) -> bool {
     // There should be exactly 1 element child with given tag
     let children = node.element_children();
     if children.len() != 1 {
@@ -159,7 +159,7 @@ pub(crate) fn has_single_tag_inside_element(node: &Node, tag: &str) -> bool {
     !node.children_it(false).any(|n| n.is_nonempty_text())
 }
 
-pub(crate) fn is_element_without_content(node: &Node) -> bool {
+pub(crate) fn is_element_without_content(node: &NodeRef) -> bool {
     // since this function calls only for elements check `node.is_element()` is redundant
     let has_text = node.descendants_it().any(|n| n.is_nonempty_text());
     if has_text {
@@ -175,7 +175,7 @@ pub(crate) fn is_element_without_content(node: &Node) -> bool {
     el_children_count == line_breaks
 }
 
-pub(crate) fn get_dir_attr(node: &Node) -> Option<String> {
+pub(crate) fn get_dir_attr(node: &NodeRef) -> Option<String> {
     if let Some(first_child) = node.first_child() {
         if let Some(dir_attr) = first_child.attr("dir") {
             return Some(dir_attr.to_string());
@@ -189,12 +189,12 @@ pub(crate) fn get_dir_attr(node: &Node) -> Option<String> {
     None
 }
 
-pub(crate) fn node_name_in(node: &Node, names: &phf::Set<&str>) -> bool {
+pub(crate) fn node_name_in(node: &NodeRef, names: &phf::Set<&str>) -> bool {
     node.qual_name_ref()
         .is_some_and(|name| names.contains(name.local.as_ref()))
 }
 
-pub(crate) fn is_probably_visible(node: &Node) -> bool {
+pub(crate) fn is_probably_visible(node: &NodeRef) -> bool {
     if node.has_attr("hidden") {
         return false;
     }
@@ -210,7 +210,7 @@ pub(crate) struct CharCounterCache {
 }
 
 impl CharCounterCache {
-    pub(crate) fn char_count(&mut self, node: &Node) -> usize {
+    pub(crate) fn char_count(&mut self, node: &NodeRef) -> usize {
         *self
             .inner
             .entry(node.id)
