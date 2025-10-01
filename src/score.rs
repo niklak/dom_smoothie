@@ -1,28 +1,28 @@
-use dom_query::{Node, NodeData};
+use dom_query::{NodeData, NodeRef};
 
 use crate::{glob::*, matching::contains_one_of_words};
 
-pub(crate) fn get_node_score(node: &Node) -> f32 {
+pub(crate) fn get_node_score(node: &NodeRef) -> f32 {
     node.attr(SCORE_ATTR)
         .and_then(|s| s.parse::<f32>().ok())
         .unwrap_or(0.0)
 }
 
-pub(crate) fn has_node_score(node: &Node) -> bool {
+pub(crate) fn has_node_score(node: &NodeRef) -> bool {
     node.has_attr(SCORE_ATTR)
 }
 
-pub(crate) fn set_node_score(node: &Node, score: f32) {
+pub(crate) fn set_node_score(node: &NodeRef, score: f32) {
     node.set_attr(SCORE_ATTR, &score.to_string());
 }
 
-pub(crate) fn init_node_score(node: &Node, weigh_classes: bool) -> f32 {
+pub(crate) fn init_node_score(node: &NodeRef, weigh_classes: bool) -> f32 {
     let score = determine_node_score(node, weigh_classes);
     set_node_score(node, score);
     score
 }
 
-pub(crate) fn determine_node_score(node: &Node, weigh_classes: bool) -> f32 {
+pub(crate) fn determine_node_score(node: &NodeRef, weigh_classes: bool) -> f32 {
     let Some(node_name) = node.qual_name_ref() else {
         return 0.0;
     };
@@ -38,7 +38,7 @@ pub(crate) fn determine_node_score(node: &Node, weigh_classes: bool) -> f32 {
     score + get_class_weight(node, weigh_classes)
 }
 
-pub(crate) fn get_class_weight(node: &Node, weigh_classes: bool) -> f32 {
+pub(crate) fn get_class_weight(node: &NodeRef, weigh_classes: bool) -> f32 {
     let mut weight = 0.0;
 
     if !weigh_classes {
@@ -88,7 +88,7 @@ fn determine_attr_weight(attr: &str) -> f32 {
     weight
 }
 
-pub(crate) fn score_text_content(node: &Node) -> usize {
+pub(crate) fn score_text_content(node: &NodeRef) -> usize {
     node.descendants_it()
         .filter_map(|n| {
             n.query(|tree_node| {

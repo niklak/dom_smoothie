@@ -7,17 +7,16 @@ fn test_favicon_aclu() {
     test_favicon(
         "./test-pages/ok/aclu",
         Some("http://fakehost/test/"),
-        Some("http://fakehost/sites/all/themes/custom/aclu/favicons/favicon-32x32.png?v=1")
+        Some("http://fakehost/sites/all/themes/custom/aclu/favicons/favicon-32x32.png?v=1"),
     );
 }
-
 
 #[test]
 fn test_favicon_aktualne() {
     test_favicon(
         "./test-pages/ok/aktualne",
         Some("http://fakehost/test/"),
-        Some("http://asset.stdout.cz/fe/aktualne/img/android-chrome-192x192.png")
+        Some("http://asset.stdout.cz/fe/aktualne/img/android-chrome-192x192.png"),
     );
 }
 
@@ -27,10 +26,9 @@ fn test_favicon_breitbart() {
     test_favicon(
         "./test-pages/ok/breitbart",
         Some("http://fakehost/test/"),
-        None
+        None,
     );
 }
-
 
 #[test]
 fn test_favicon_engadget() {
@@ -46,17 +44,16 @@ fn test_favicon_folha() {
     test_favicon(
         "./test-pages/readability/folha",
         Some("http://fakehost/test/"),
-        Some("http://f.i.uol.com.br/hunting/folha/1/common/icons/favicon-192.png")
+        Some("http://f.i.uol.com.br/hunting/folha/1/common/icons/favicon-192.png"),
     );
 }
-
 
 #[test]
 fn test_favicon_gitlab_blog() {
     test_favicon(
         "./test-pages/readability/gitlab-blog",
         Some("http://fakehost/test/"),
-        Some("http://fakehost/blog/nuxt-images/ico/favicon-192x192.png?cache=2022041")
+        Some("http://fakehost/blog/nuxt-images/ico/favicon-192x192.png?cache=2022041"),
     );
 }
 
@@ -65,10 +62,9 @@ fn test_favicon_gitlab_nytimes_2() {
     test_favicon(
         "./test-pages/readability/nytimes-2",
         Some("http://fakehost/test/"),
-        Some("https://static01.nyt.com/favicon.ico")
+        Some("https://static01.nyt.com/favicon.ico"),
     );
 }
-
 
 #[test]
 fn test_favicon_schema_org_context() {
@@ -84,16 +80,15 @@ fn test_favicon_topicseed_1() {
     test_favicon(
         "./test-pages/readability/topicseed-1",
         Some("http://fakehost/test/"),
-        Some("http://fakehost/icons-5f7390f8df97283d5b517dead9b4a9d5/favicon-32x32.png")
+        Some("http://fakehost/icons-5f7390f8df97283d5b517dead9b4a9d5/favicon-32x32.png"),
     );
 }
-
 
 #[test]
 fn test_favicon_yahoo_1() {
     test_favicon(
         "./test-pages/readability/yahoo-1",
         Some("http://fakehost/test/"),
-        Some("https://s.yimg.com/os/mit/media/p/common/images/favicon_new-7483e38.svg")
+        Some("https://s.yimg.com/os/mit/media/p/common/images/favicon_new-7483e38.svg"),
     );
 }

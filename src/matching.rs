@@ -3,11 +3,11 @@
 
 use tendril::StrTendril;
 
-use dom_query::Node;
+use dom_query::NodeRef;
 
 use crate::glob::*;
 
-pub(crate) fn is_invisible_style(node: &Node) -> bool {
+pub(crate) fn is_invisible_style(node: &NodeRef) -> bool {
     if let Some(mut style) = node.attr("style") {
         style.make_ascii_lowercase();
         return style_has_kv(&style, "display", "none")

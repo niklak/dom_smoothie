@@ -145,7 +145,6 @@ where
     );
 }
 
-
 pub fn test_favicon<P>(test_path: P, host: Option<&str>, expected: Option<&str>)
 where
     P: AsRef<Path>,
@@ -160,13 +159,11 @@ where
     };
     let r = Readability::new(source_contents, host, Some(cfg)).unwrap();
 
-
     let metadata = r.get_article_metadata(None);
 
-
     assert_eq!(
-        metadata.favicon, expected.map(|s| s.to_string()),
+        metadata.favicon,
+        expected.map(|s| s.to_string()),
         "favicon does not match expected"
     );
-
 }
