@@ -57,9 +57,10 @@ pub(crate) static MATCHER_DATA_TABLE: Lazy<Matcher> =
 pub(crate) static MATCHER_TABLE: Lazy<Matcher> = lazy_matcher!("table");
 pub(crate) static MATCHER_TABLE_MEMBERS: Lazy<Matcher> =
     lazy_matcher!("caption,col,colgroup,tfoot,thead,th");
-pub(crate) static MATCHER_LAZY_IMG: Lazy<Matcher> = lazy_matcher!(r#"[class*="lazy"],img[loading="lazy"]"#);
-pub(crate) static MATCHER_FAVICON: Lazy<Matcher> = lazy_matcher!(r#"link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]"#);
-
+pub(crate) static MATCHER_LAZY_IMG: Lazy<Matcher> =
+    lazy_matcher!(r#"[class*="lazy"],img[loading="lazy"]"#);
+pub(crate) static MATCHER_FAVICON: Lazy<Matcher> =
+    lazy_matcher!(r#"link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]"#);
 
 // --- Mini matchers ---
 
@@ -71,7 +72,6 @@ pub(crate) static MINI_PRESENTATION: Lazy<MiniSelector> =
     Lazy::new(|| MiniSelector::new(r#"[role="presentation"]"#).unwrap());
 pub(crate) static MINI_AINT_DATA_TABLE: Lazy<MiniSelector> =
     Lazy::new(|| MiniSelector::new(r#"[datatable="0"]"#).unwrap());
-
 
 pub(crate) static TEXTISH_TAGS: &str = "blockquote,dl,div,img,ol,p,pre,table,ul,span,li,td";
 

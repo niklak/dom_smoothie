@@ -1,6 +1,6 @@
-use dom_query::{Document, Node, NodeData, NodeRef, Selection};
-use tendril::StrTendril;
+use dom_query::{Document, NodeRef, Selection};
 use foldhash::HashMap;
+use tendril::StrTendril;
 
 use crate::config::ParsePolicy;
 use crate::config::TextMode;
@@ -384,8 +384,8 @@ impl Readability {
     }
 
     fn remove_empty_imgs(&mut self) {
-        for sel in self.doc.select_matcher(&MATCHER_IMG).iter() {
-            let attrs = sel.attrs();
+        for node in self.doc.select_matcher(&MATCHER_IMG).nodes().iter() {
+            let attrs = node.attrs();
             if attrs.iter().any(|a| {
                 matches!(
                     a.name.local.as_ref(),
@@ -395,7 +395,7 @@ impl Readability {
                 continue;
             }
 
-            sel.remove();
+            node.remove_from_parent();
         }
     }
 
@@ -837,10 +837,7 @@ impl Readability {
 
     fn get_html_lang(&self) -> Option<StrTendril> {
         let sel = self.doc.select_single_matcher(&MATCHER_HTML_LANG);
-        match sel.is_empty() {
-            false => sel.attr("lang"),
-            true => None,
-        }
+        sel.attr("lang")
     }
 
     fn post_process_content(&self, root_sel: &Selection) {
@@ -961,7 +958,7 @@ impl Readability {
 // Methods related to URL handling
 impl Readability {
     fn parse_base_url(&self) -> Option<String> {
-        // TODO: Probably, this should be calculated during `Readability` construction, 
+        // TODO: Probably, this should be calculated during `Readability` construction,
         // and later accessed via property `Readability.base_url`
         let Some(base_uri) = self.doc.base_uri() else {
             return self.doc_url.clone();
@@ -1028,20 +1025,11 @@ fn get_map_any_value(map: &HashMap<String, String>, keys: &[&str]) -> Option<Str
         .find_map(|&key| map.get(key).map(|v| v.to_string()))
 }
 
-fn remove_comments(n: &Node) {
-    let mut ops = n.children();
-    let mut comments = vec![];
-    while let Some(node) = ops.pop() {
-        node.query(|n| match n.data {
-            NodeData::Comment { .. } => {
-                comments.push(node);
-            }
-            NodeData::Element(_) => {
-                ops.extend(node.children());
-            }
-            _ => {}
-        });
-    }
+fn remove_comments(n: &NodeRef) {
+    let comments: Vec<NodeRef> = n
+        .descendants_it()
+        .filter(|node| node.is_comment())
+        .collect();
 
     for comment in comments {
         comment.remove_from_parent();
