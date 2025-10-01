@@ -1,7 +1,6 @@
-use foldhash::HashMap;
-
 use dom_query::{Document, Node, NodeData, NodeRef, Selection};
 use tendril::StrTendril;
+use foldhash::HashMap;
 
 use crate::config::ParsePolicy;
 use crate::config::TextMode;
@@ -828,7 +827,8 @@ impl Readability {
         if metadata.modified_time.is_none() {
             metadata.modified_time = get_map_any_value(values, META_MOD_TIME_KEYS);
         }
-        //TODO: favicon
+
+        metadata.favicon = extract_favicon(&self.doc, self.parse_base_url());
     }
 
     fn remove_comments(&self) {
@@ -961,6 +961,8 @@ impl Readability {
 // Methods related to URL handling
 impl Readability {
     fn parse_base_url(&self) -> Option<String> {
+        // TODO: Probably, this should be calculated during `Readability` construction, 
+        // and later accessed via property `Readability.base_url`
         let Some(base_uri) = self.doc.base_uri() else {
             return self.doc_url.clone();
         };
@@ -1110,6 +1112,63 @@ fn get_json_ld_string_value(value: &gjson::Value, path: &str) -> Option<String> 
         }
     }
     None
+}
+
+fn extract_favicon(root_node: &Document, base_url: Option<String>) -> Option<String> {
+    let head_node = root_node.head()?;
+    let head_sel = Selection::from(head_node);
+
+    let mut urls: Vec<(String, f32)> = Vec::new();
+
+    let icon_priority: f32 = 1000.0;
+    for node in head_sel.select_matcher_iter(&MATCHER_FAVICON) {
+        let Some(href) = node.attr("href") else {
+            continue;
+        };
+        let Some(rel) = node.attr("rel") else {
+            continue;
+        };
+
+        // base priority
+        let mut priority = match rel.as_ref() {
+            "icon" => icon_priority,
+            "shortcut icon" => icon_priority - 100.0,
+            "apple-touch-icon" => icon_priority - 150.0,
+            _ => 0.0,
+        };
+
+        // type bonus
+        if let Some(typ) = node.attr("type") {
+            priority += match typ.as_ref() {
+                "image/svg+xml" => 100.0,
+                "image/png" => 50.0,
+                "image/x-icon" | "image/vnd.microsoft.icon" | "image/ico" => 25.0,
+                _ => 0.0,
+            };
+        }
+
+        // size bonus
+        if let Some(sizes) = node.attr("sizes") {
+            if sizes.as_ref() == "any" {
+                priority += 50.0;
+            } else if let Some(size) = sizes.split('x').next() {
+                if let Ok(px) = size.parse::<f32>() {
+                    let bonus: f32 = px.log2().min(12.0);
+                    priority += bonus;
+                }
+            }
+        }
+        urls.push((href.to_string(), priority));
+    }
+    let mut favicon_url = urls
+        .into_iter()
+        .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
+        .map(|(href, _)| href);
+    // Transform to absolute URL if base_url is provided
+    if let Some(ref base_url) = base_url {
+        favicon_url = favicon_url.map(|u| to_absolute_url(&u, base_url));
+    }
+    favicon_url
 }
 
 #[cfg(test)]
@@ -1272,7 +1331,7 @@ mod tests {
         assert!(metadata.published_time.is_none());
         assert!(metadata.modified_time.is_none());
         assert!(metadata.image.is_some());
-        assert!(metadata.favicon.is_none());
+        assert!(metadata.favicon.is_some());
         assert_eq!(Some("en".to_string()), metadata.lang);
         assert!(metadata.url.is_none());
         assert!(metadata.dir.is_none());
