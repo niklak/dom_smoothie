@@ -7,6 +7,7 @@ rust-version.workspace = true
 authors.workspace = true
 description = "A wrapper around the `dom_smoothie` crate for extracting relevant content from web pages"
 repository = "https://github.com/niklak/dom_smoothie"
+publish = false
 
 keywords = ["html", "readability"]
 

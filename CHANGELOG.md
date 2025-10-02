@@ -5,10 +5,12 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ## [Unreleased]
 ### Added
 - Added `Metadata.favicon` and `Article.favicon` support when calling `Readability::get_article_metadata` and `Readability::parse`.
+- Added *experimental* crate `dom-smoothie-lua` providing **Lua** bindings for the `dom_smoothie` crate.
 
 ### Changed
 - Updated `dom_query` version from `0.22.0` to `0.23.0`.
 - Revised `grab::score_elements`: use a cache for normalized char count to improve performance. No public API changes.
+- Minor internal code changes.
 
 ### Fixed
 - `MATCHER_LAZY_IMG` is now used in `prep_article::fix_lazy_images` instead of `MINI_LAZY`, since the latter does not support complex selectors.
