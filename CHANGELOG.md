@@ -2,7 +2,7 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
-## [Unreleased]
+## [0.13.0] - 2025-10-02
 ### Added
 - Added `Metadata.favicon` and `Article.favicon` support when calling `Readability::get_article_metadata` and `Readability::parse`.
 - Added *experimental* crate `dom-smoothie-lua` providing **Lua** bindings for the `dom_smoothie` crate.
@@ -15,7 +15,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ### Fixed
 - `MATCHER_LAZY_IMG` is now used in `prep_article::fix_lazy_images` instead of `MINI_LAZY`, since the latter does not support complex selectors.
 
-## [0.12.0] - 2024-09-04
+## [0.12.0] - 2025-09-04
 
 ### Changed
 - Optimized internal implementation of `grab::score_elements`. No public API changes.
@@ -42,19 +42,19 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
   - `META_PROPERTY_PREFIXES`: "dcterm" -> "dcterms"
   - `META_NAME_PREFIXES`: "dcterm" -> "dcterms"
 
-## [0.11.2] - 2024-08-09
+## [0.11.2] - 2025-08-09
 
 ### Changed
 - Minor internal code changes.
 - Updated `dom_query` version from `0.19.2` to `0.20.1`.
 
-## [0.11.1] - 2024-07-08
+## [0.11.1] - 2025-07-08
 
 ### Changed
 - Updated `dom_query` version from `0.18.0` to `0.19.2`.
 
 
-## [0.11.0] - 2024-04-30
+## [0.11.0] - 2025-04-30
 
 ### Changed
 - Updated `dom_query` version to `0.18.0`.
@@ -62,7 +62,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 - Minor internal code changes.
 
 
-## [0.10.0] - 2024-04-01
+## [0.10.0] - 2025-04-01
 
 ### Added
 - Added the `Config::min_score_to_adjust` option, which allows controlling the minimum score required for adjustment during the scoring process. Only nodes with a score higher than this value will be adjusted by their link density. Thus, the higher the value, the faster the scoring process.
