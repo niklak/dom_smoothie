@@ -6,6 +6,7 @@ license.workspace = true
 rust-version.workspace = true
 authors.workspace = true
 description = "A reference implementation of a CLI tool for the `dom_smoothie`"
+publish = false
 
 
 [dependencies]
