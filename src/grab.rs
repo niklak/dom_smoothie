@@ -740,7 +740,7 @@ mod tests {
         <html>
             <head><title>Test</title></head>
             <body>
-                 <p hidden>This paragraph should be hidden.</p> 
+                 <p hidden>This paragraph should be hidden.</p>
                  <p aria-hidden="true">This paragraph should be hidden.</p>
                  <p style="display:none">This paragraph should be hidden.</p>
                  <p style="display: none !important">This paragraph should be hidden.</p>
