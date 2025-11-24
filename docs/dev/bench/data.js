@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1763994173583,
+  "lastUpdate": 1763994386161,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -3365,6 +3365,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 42611598,
             "range": "± 580203",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bbaa20ff21cac348660f561f2b7bfa9431780a40",
+          "message": "build(deps): bump clap from 4.5.46 to 4.5.53 (#156)\n\nBumps [clap](https://github.com/clap-rs/clap) from 4.5.46 to 4.5.53.\n- [Release notes](https://github.com/clap-rs/clap/releases)\n- [Changelog](https://github.com/clap-rs/clap/blob/master/CHANGELOG.md)\n- [Commits](https://github.com/clap-rs/clap/compare/clap_complete-v4.5.46...clap_complete-v4.5.53)\n\n---\nupdated-dependencies:\n- dependency-name: clap\n  dependency-version: 4.5.53\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2025-11-24T16:24:06+02:00",
+          "tree_id": "20957eb0c0c93b4980cc1a920a666919e730d7ca",
+          "url": "https://github.com/niklak/dom_smoothie/commit/bbaa20ff21cac348660f561f2b7bfa9431780a40"
+        },
+        "date": 1763994385631,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2436454,
+            "range": "± 10293",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 10602282,
+            "range": "± 258320",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 43560978,
+            "range": "± 746148",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2451851,
+            "range": "± 5960",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8619753,
+            "range": "± 17777",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 43334130,
+            "range": "± 840292",
             "unit": "ns/iter"
           }
         ]
