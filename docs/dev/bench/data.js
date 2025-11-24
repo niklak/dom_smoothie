@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1763994038019,
+  "lastUpdate": 1763994173583,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -3305,6 +3305,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 43614418,
             "range": "± 110707",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bcae125c23303c7f35e29e42493ac28a062e9a86",
+          "message": "build(deps): bump aho-corasick from 1.1.3 to 1.1.4 (#155)\n\nBumps [aho-corasick](https://github.com/BurntSushi/aho-corasick) from 1.1.3 to 1.1.4.\n- [Commits](https://github.com/BurntSushi/aho-corasick/compare/1.1.3...1.1.4)\n\n---\nupdated-dependencies:\n- dependency-name: aho-corasick\n  dependency-version: 1.1.4\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>\nCo-authored-by: Mykola Humanov <gnk667@proton.me>",
+          "timestamp": "2025-11-24T16:20:38+02:00",
+          "tree_id": "22841270c472e61d1736003905778e50373d007a",
+          "url": "https://github.com/niklak/dom_smoothie/commit/bcae125c23303c7f35e29e42493ac28a062e9a86"
+        },
+        "date": 1763994172524,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2276870,
+            "range": "± 29870",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 9863107,
+            "range": "± 457019",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 43131901,
+            "range": "± 947652",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2305341,
+            "range": "± 8936",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8295552,
+            "range": "± 114889",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 42611598,
+            "range": "± 580203",
             "unit": "ns/iter"
           }
         ]
