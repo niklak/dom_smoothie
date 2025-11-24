@@ -1,5 +1,2 @@
 [target.wasm32-unknown-unknown]
 runner = 'wasm-bindgen-test-runner'
-
-[target.x86_64-unknown-linux-gnu]
-rustflags = ['-Clinker-features=-lld']
