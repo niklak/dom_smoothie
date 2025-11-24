@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1763980913690,
+  "lastUpdate": 1763993904414,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -3185,6 +3185,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 45867983,
             "range": "± 1896244",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "35d8a81d053684cd5c231d7469ed9c60648df120",
+          "message": "build(deps): bump mlua from 0.11.3 to 0.11.5 (#153)\n\nBumps [mlua](https://github.com/mlua-rs/mlua) from 0.11.3 to 0.11.5.\n- [Release notes](https://github.com/mlua-rs/mlua/releases)\n- [Changelog](https://github.com/mlua-rs/mlua/blob/main/CHANGELOG.md)\n- [Commits](https://github.com/mlua-rs/mlua/compare/v0.11.3...v0.11.5)\n\n---\nupdated-dependencies:\n- dependency-name: mlua\n  dependency-version: 0.11.5\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2025-11-24T16:16:16+02:00",
+          "tree_id": "28ba5aa9abe8b7e0e4c4fe82adc7ba3ce2f5e48b",
+          "url": "https://github.com/niklak/dom_smoothie/commit/35d8a81d053684cd5c231d7469ed9c60648df120"
+        },
+        "date": 1763993903994,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2441795,
+            "range": "± 29840",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 10904818,
+            "range": "± 60780",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 43693612,
+            "range": "± 440185",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2454235,
+            "range": "± 11067",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8770283,
+            "range": "± 40231",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 43490809,
+            "range": "± 570693",
             "unit": "ns/iter"
           }
         ]
