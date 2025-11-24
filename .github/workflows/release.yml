@@ -43,7 +43,7 @@ jobs:
 
       - name: Build Binary
         run: cargo build --release --target ${{ matrix.target }}
-        working-directory: dom_smoothie_cli
+        working-directory: crates/cli
       
       - name: Install zip (Windows)
         if: matrix.os == 'windows-latest'
