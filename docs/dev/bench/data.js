@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1763994386161,
+  "lastUpdate": 1763994717402,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -3425,6 +3425,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 43334130,
             "range": "± 840292",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "022e70ae847d1499e83cf28b5cd7780356480991",
+          "message": "build(deps): bump cfg-if from 1.0.3 to 1.0.4 (#157)\n\nBumps [cfg-if](https://github.com/rust-lang/cfg-if) from 1.0.3 to 1.0.4.\n- [Release notes](https://github.com/rust-lang/cfg-if/releases)\n- [Changelog](https://github.com/rust-lang/cfg-if/blob/main/CHANGELOG.md)\n- [Commits](https://github.com/rust-lang/cfg-if/compare/v1.0.3...v1.0.4)\n\n---\nupdated-dependencies:\n- dependency-name: cfg-if\n  dependency-version: 1.0.4\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>\nCo-authored-by: Mykola Humanov <gnk667@proton.me>",
+          "timestamp": "2025-11-24T16:29:37+02:00",
+          "tree_id": "fdb9e63b3a816878a97886c928e100a50dcc77ef",
+          "url": "https://github.com/niklak/dom_smoothie/commit/022e70ae847d1499e83cf28b5cd7780356480991"
+        },
+        "date": 1763994716715,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2437582,
+            "range": "± 6997",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 9951956,
+            "range": "± 214564",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 43279635,
+            "range": "± 1076529",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2446934,
+            "range": "± 8577",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8558173,
+            "range": "± 71486",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 43148187,
+            "range": "± 680131",
             "unit": "ns/iter"
           }
         ]
