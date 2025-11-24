@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1763993904414,
+  "lastUpdate": 1763994038019,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -3245,6 +3245,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 43490809,
             "range": "± 570693",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "286bb6cef216d69362af42c497b75a14334cfc66",
+          "message": "build(deps): bump thiserror from 2.0.16 to 2.0.17 (#154)\n\nBumps [thiserror](https://github.com/dtolnay/thiserror) from 2.0.16 to 2.0.17.\n- [Release notes](https://github.com/dtolnay/thiserror/releases)\n- [Commits](https://github.com/dtolnay/thiserror/compare/2.0.16...2.0.17)\n\n---\nupdated-dependencies:\n- dependency-name: thiserror\n  dependency-version: 2.0.17\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>\nCo-authored-by: Mykola Humanov <gnk667@proton.me>",
+          "timestamp": "2025-11-24T16:18:25+02:00",
+          "tree_id": "57deef25629367390f005591d81b58634cc9f876",
+          "url": "https://github.com/niklak/dom_smoothie/commit/286bb6cef216d69362af42c497b75a14334cfc66"
+        },
+        "date": 1763994037059,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2452576,
+            "range": "± 33877",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 10620962,
+            "range": "± 196109",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 43905948,
+            "range": "± 775505",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2452557,
+            "range": "± 11754",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8867689,
+            "range": "± 21837",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 43614418,
+            "range": "± 110707",
             "unit": "ns/iter"
           }
         ]
