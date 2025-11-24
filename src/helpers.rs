@@ -30,6 +30,7 @@ pub(crate) fn text_similarity(text_a: &str, text_b: &str) -> f64 {
         .cloned()
         .collect();
 
+    // TODO: can be calculated without joining
     let merged_b = tokens_b.join(" ");
     let merged_unique_b = unique_tokens_b.join(" ");
 
@@ -79,23 +80,19 @@ pub(crate) fn text_density(node: &NodeRef, selector: &str, char_count: Option<us
     let sel = Selection::from(*node).select(selector);
     let sel_nodes = sel.nodes();
 
-    if sel_nodes.is_empty() {
+    let children_length: f32 = sel_nodes
+        .iter()
+        .map(|n| n.normalized_char_count())
+        .sum::<usize>() as f32;
+
+    if children_length == 0.0 {
         return 0.0;
     }
+    let text_length = char_count.unwrap_or_else(|| node.normalized_char_count()) as f32;
 
-    let text_length = if let Some(c) = char_count {
-        c as f32
-    } else {
-        node.normalized_char_count() as f32
-    };
     if text_length == 0.0 {
         return 0.0;
     }
-
-    let children_length = sel_nodes
-        .iter()
-        .map(|n| n.normalized_char_count() as f32)
-        .sum::<f32>();
     children_length / text_length
 }
 
