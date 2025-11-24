@@ -1,5 +1,5 @@
 [package]
-name = "dom-smoothie-lua"
+name = "dom-smoothie-bench"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -8,9 +8,13 @@ repository.workspace = true
 authors.workspace = true
 publish = false
 
-[lib]
-crate-type = ["cdylib"]
-
 [dependencies]
-dom_smoothie = { path = ".." , features = ["serde"]}
-mlua = { version = "0.11.3", features = ["lua54", "module", "serde"] }
+dom_smoothie = { path = "../..", features = ["serde"] }
+
+
+[dev-dependencies]
+criterion = { version = "0.7.0" }
+
+[[bench]]
+name = "parse"
+harness = false

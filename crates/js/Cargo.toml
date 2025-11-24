@@ -18,7 +18,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 wasm-bindgen = "0.2.84"
-dom_smoothie = { path = "./..", features = ["serde"] }
+dom_smoothie = { path = "../..", features = ["serde"] }
 
 serde-wasm-bindgen = "0.6.5"
 lol_alloc = {version = "0.4.1", optional = true}

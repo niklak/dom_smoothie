@@ -47,12 +47,11 @@ aho-corasick = ["dep:aho-corasick"]
 
 [workspace]
 members = [
-    "dom_smoothie_cli",
-    "dom-smoothie-js", 
-    "dom-smoothie-bench", 
-    "dom-smoothie-lua",
+    "crates/cli",
+    "crates/js",
+    "crates/bench",
+    "crates/lua",
     ]
-
 
 [profile.bench]
 codegen-units = 1
