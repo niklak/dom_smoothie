@@ -385,17 +385,20 @@ impl Readability {
 
     fn remove_empty_imgs(&mut self) {
         for node in self.doc.select_matcher(&MATCHER_IMG).nodes().iter() {
-            let attrs = node.attrs();
-            if attrs.iter().any(|a| {
-                matches!(
-                    a.name.local.as_ref(),
-                    "src" | "data-src" | "data-srcset" | "srcset"
-                ) || IMG_EXT.iter().any(|p| a.value.contains(p))
-            }) {
-                continue;
-            }
+            let has_src = node.query_or(false, |n| {
+                n.as_element().map_or(false, |el| {
+                    el.attrs.iter().any(|a| {
+                        matches!(
+                            a.name.local.as_ref(),
+                            "src" | "data-src" | "data-srcset" | "srcset"
+                        ) || IMG_EXT.iter().any(|p| a.value.contains(p))
+                    })
+                })
+            });
 
-            node.remove_from_parent();
+            if !has_src {
+                node.remove_from_parent();
+            }            
         }
     }
 
