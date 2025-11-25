@@ -243,4 +243,12 @@ mod tests {
         let similarity = text_similarity(text_a, text_b);
         assert_eq!(similarity, 1.0);
     }
+
+    #[test]
+    fn test_normalize_spaces() {
+        let text = "    The quick  brown  fox\n jumps over the lazy dog. ";
+        let normalized_text = normalize_spaces(text);
+        let expected = "The quick brown fox jumps over the lazy dog.";
+        assert_eq!(expected, normalized_text);
+    }
 }
