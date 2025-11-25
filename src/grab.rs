@@ -86,10 +86,10 @@ impl Readability {
 
         let mut top_candidate = top_candidates.first().cloned();
 
-        let mut needed_to_create_top_candidate = false;
+        let mut top_candidate_is_created = false;
 
         if top_candidate.is_none() || top_candidate.as_ref().is_some_and(|n| n.has_name("body")) {
-            needed_to_create_top_candidate = true;
+            top_candidate_is_created = true;
             let tc = tree.new_element("div");
 
             tree.reparent_children_of(&body_node.id, Some(tc.id));
@@ -141,7 +141,7 @@ impl Readability {
             //prepare the article
             prep_article(&article_content, flags, &self.config);
 
-            if needed_to_create_top_candidate {
+            if top_candidate_is_created {
                 tc.set_attr("id", CONTENT_ID);
                 tc.set_attr("class", "page");
             } else {
@@ -281,7 +281,7 @@ fn div_into_p(node: &NodeRef) {
             } else if !is_whitespace(child) {
                 let raw_p = tree.new_element("p");
                 child.insert_before(&raw_p);
-                raw_p.append_child(&child.id);
+                raw_p.append_child(child);
                 p_node = Some(raw_p);
             }
         } else if let Some(ref p) = p_node {
@@ -421,7 +421,7 @@ fn assign_article_node(tc: &NodeRef, article_content: &NodeRef) {
             } else if sibling.has_name("p") {
                 let sibling_text = sibling.text();
                 let node_content = normalize_spaces(&sibling_text);
-                let node_length = sibling.normalized_char_count();
+                let node_length = node_content.chars().count();
                 let link_density = link_density(sibling, Some(node_length));
 
                 if (node_length > 80 && link_density < 0.25)
