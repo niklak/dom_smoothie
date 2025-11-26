@@ -386,7 +386,7 @@ impl Readability {
     fn remove_empty_imgs(&mut self) {
         for node in self.doc.select_matcher(&MATCHER_IMG).nodes().iter() {
             let has_src = node.query_or(false, |n| {
-                n.as_element().map_or(false, |el| {
+                n.as_element().is_some_and(|el| {
                     el.attrs.iter().any(|a| {
                         matches!(
                             a.name.local.as_ref(),
