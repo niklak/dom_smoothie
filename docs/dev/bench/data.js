@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1763994717402,
+  "lastUpdate": 1764167269284,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -3485,6 +3485,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 43148187,
             "range": "± 680131",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5dae2ba0ce20d8b6ba70ffa3f5b3afba54c5ca36",
+          "message": "Merge pull request #159 from niklak/chore/refactor-2025-11-25\n\n- Implemented internal `AsciiPatternCheck`, improving the performance of `match_unlikely` and `determine_attr_weight`\n when the `aho-corasick` feature is disabled. No public API changes.\n- Minor internal code changes.",
+          "timestamp": "2025-11-26T16:25:38+02:00",
+          "tree_id": "dfae4c9998237385e9b3585aa7d27d99ed92311c",
+          "url": "https://github.com/niklak/dom_smoothie/commit/5dae2ba0ce20d8b6ba70ffa3f5b3afba54c5ca36"
+        },
+        "date": 1764167268061,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2271869,
+            "range": "± 30472",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 9730410,
+            "range": "± 453978",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 40845941,
+            "range": "± 709052",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2291601,
+            "range": "± 7172",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8295415,
+            "range": "± 43757",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 40297108,
+            "range": "± 863892",
             "unit": "ns/iter"
           }
         ]
