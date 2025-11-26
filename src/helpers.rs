@@ -204,20 +204,20 @@ pub(crate) fn is_probably_visible(node: &NodeRef) -> bool {
 #[cfg(not(feature = "aho-corasick"))]
 /// A lightweight ASCII-only pre-checker used to quickly skip patterns
 /// that cannot occur in the haystack.
-pub(crate) struct AciiPatternCheck<'a> {
+pub(crate) struct AsciiPatternCheck<'a> {
     haystack: &'a str,
     char_map: [u8; 256],
 }
 
 #[cfg(not(feature = "aho-corasick"))]
-impl<'a> AciiPatternCheck<'a> {
-    pub(crate) fn new(haystack: &'a str) -> AciiPatternCheck<'a> {
+impl<'a> AsciiPatternCheck<'a> {
+    pub(crate) fn new(haystack: &'a str) -> AsciiPatternCheck<'a> {
         let mut char_map = [0u8; 256];
 
         for &b in haystack.as_bytes() {
             char_map[b as usize] = 1;
         }
-        AciiPatternCheck { haystack, char_map }
+        AsciiPatternCheck { haystack, char_map }
     }
     #[inline]
     fn pre_check(&self, pat: &str) -> bool {
