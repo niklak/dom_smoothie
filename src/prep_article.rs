@@ -11,19 +11,16 @@ use crate::Config;
 fn clean(root_sel: &Selection) {
     for node in root_sel.select_matcher(&MATCHER_CLEAN).nodes().iter() {
         // Allow youtube and vimeo videos through as people usually want to see those.
-        let mut should_remove = true;
 
-        if node_name_in(node, &EMBED_ELEMENTS) {
-            for attr in node.attrs().iter() {
-                if is_video_url(&attr.value) {
-                    should_remove = false;
-                    break;
-                }
-            }
-            // For embed with <object> tag, check inner HTML as well.
-            if should_remove && node.has_name("object") && is_video_url(&node.inner_html()) {
-                should_remove = false;
-            }
+        if !node_name_in(node, &EMBED_ELEMENTS) {
+            node.remove_from_parent();
+            continue;
+        }
+        let mut should_remove = !node.attrs().iter().any(|attr| is_video_url(&attr.value));
+
+        // For embed with <object> tag, check inner HTML as well.
+        if should_remove && node.has_name("object") && is_video_url(&node.inner_html()) {
+            should_remove = false;
         }
 
         if should_remove {

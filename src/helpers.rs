@@ -201,6 +201,41 @@ pub(crate) fn is_probably_visible(node: &NodeRef) -> bool {
     !MINI_ARIA_HIDDEN.match_node(node) || MINI_FALLBACK_IMG.match_node(node)
 }
 
+#[cfg(not(feature = "aho-corasick"))]
+/// A lightweight ASCII-only pre-checker used to quickly skip patterns
+/// that cannot occur in the haystack.
+pub(crate) struct AsciiPatternCheck<'a> {
+    haystack: &'a str,
+    char_map: [u8; 256],
+}
+
+#[cfg(not(feature = "aho-corasick"))]
+impl<'a> AsciiPatternCheck<'a> {
+    pub(crate) fn new(haystack: &'a str) -> AsciiPatternCheck<'a> {
+        let mut char_map = [0u8; 256];
+
+        for &b in haystack.as_bytes() {
+            char_map[b as usize] = 1;
+        }
+        AsciiPatternCheck { haystack, char_map }
+    }
+    #[inline]
+    fn pre_check(&self, pat: &str) -> bool {
+        for &b in pat.as_bytes() {
+            if self.char_map[b as usize] == 0 {
+                return false;
+            }
+        }
+        true
+    }
+    /// Checks if the haystack contains any of the given patterns.
+    /// Performs a cheap ASCII bitmap pre-check before `str::contains`.
+    pub(crate) fn contains_any(&self, pats: &[&str]) -> bool {
+        pats.iter()
+            .any(|pat| self.pre_check(pat) && self.haystack.contains(pat))
+    }
+}
+
 #[derive(Default)]
 pub(crate) struct CharCounterCache {
     inner: HashMap<NodeId, usize>,
@@ -242,5 +277,13 @@ mod tests {
         let text_b = "DeepMind新电脑已可利用记忆自学 人工智能迈上新台阶";
         let similarity = text_similarity(text_a, text_b);
         assert_eq!(similarity, 1.0);
+    }
+
+    #[test]
+    fn test_normalize_spaces() {
+        let text = "    The quick  brown  fox\n jumps over the lazy dog. ";
+        let normalized_text = normalize_spaces(text);
+        let expected = "The quick brown fox jumps over the lazy dog.";
+        assert_eq!(expected, normalized_text);
     }
 }
