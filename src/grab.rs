@@ -708,10 +708,12 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
 
 #[cfg(not(feature = "aho-corasick"))]
 fn match_unlikely(haystack: &str) -> bool {
-    if !UNLIKELY_CANDIDATES.iter().any(|p| haystack.contains(p)) {
+    let pat_checker = PatChecker::new(haystack);
+
+    if !pat_checker.contains_any(UNLIKELY_CANDIDATES) {
         return false;
     }
-    if MAYBE_CANDIDATES.iter().any(|p| haystack.contains(p)) {
+    if pat_checker.contains_any( MAYBE_CANDIDATES) {
         return false;
     }
     true

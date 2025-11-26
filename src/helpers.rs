@@ -201,6 +201,40 @@ pub(crate) fn is_probably_visible(node: &NodeRef) -> bool {
     !MINI_ARIA_HIDDEN.match_node(node) || MINI_FALLBACK_IMG.match_node(node)
 }
 
+pub(crate) struct PatChecker<'a> {
+    hay: &'a str,
+    char_map: [u8; 256]
+}
+
+impl <'a>PatChecker<'a> {
+    pub(crate)fn new(hay: &'a str) -> PatChecker<'a> {
+        let mut char_map = [0u8; 256];
+
+        for &b in hay.as_bytes() {
+            char_map[b as usize] = 1;
+        }
+        PatChecker { hay, char_map }
+    }
+    #[inline]
+    fn check(&self, pat: &str) -> bool {
+        for &b in pat.as_bytes() {
+            if self.char_map[b as usize] == 0 {
+                return false;
+            }
+        }
+        true
+    }
+
+    pub(crate)fn contains_any(&self, pats: &[&str]) -> bool {
+        for pat in pats {
+            if self.check(pat) && self.hay.contains(pat) {
+                return true
+            }
+        }
+        return false
+    }
+}
+
 #[derive(Default)]
 pub(crate) struct CharCounterCache {
     inner: HashMap<NodeId, usize>,
