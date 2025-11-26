@@ -398,7 +398,7 @@ impl Readability {
 
             if !has_src {
                 node.remove_from_parent();
-            }            
+            }
         }
     }
 

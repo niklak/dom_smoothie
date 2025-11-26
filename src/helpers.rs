@@ -201,22 +201,26 @@ pub(crate) fn is_probably_visible(node: &NodeRef) -> bool {
     !MINI_ARIA_HIDDEN.match_node(node) || MINI_FALLBACK_IMG.match_node(node)
 }
 
-pub(crate) struct PatChecker<'a> {
-    hay: &'a str,
-    char_map: [u8; 256]
+#[cfg(not(feature = "aho-corasick"))]
+/// A lightweight ASCII-only pre-checker used to quickly skip patterns
+/// that cannot occur in the haystack.
+pub(crate) struct AciiPatternCheck<'a> {
+    haystack: &'a str,
+    char_map: [u8; 256],
 }
 
-impl <'a>PatChecker<'a> {
-    pub(crate)fn new(hay: &'a str) -> PatChecker<'a> {
+#[cfg(not(feature = "aho-corasick"))]
+impl<'a> AciiPatternCheck<'a> {
+    pub(crate) fn new(haystack: &'a str) -> AciiPatternCheck<'a> {
         let mut char_map = [0u8; 256];
 
-        for &b in hay.as_bytes() {
+        for &b in haystack.as_bytes() {
             char_map[b as usize] = 1;
         }
-        PatChecker { hay, char_map }
+        AciiPatternCheck { haystack, char_map }
     }
     #[inline]
-    fn check(&self, pat: &str) -> bool {
+    fn pre_check(&self, pat: &str) -> bool {
         for &b in pat.as_bytes() {
             if self.char_map[b as usize] == 0 {
                 return false;
@@ -224,14 +228,11 @@ impl <'a>PatChecker<'a> {
         }
         true
     }
-
-    pub(crate)fn contains_any(&self, pats: &[&str]) -> bool {
-        for pat in pats {
-            if self.check(pat) && self.hay.contains(pat) {
-                return true
-            }
-        }
-        return false
+    /// Checks if the haystack contains any of the given patterns.
+    /// Performs a cheap ASCII bitmap pre-check before `str::contains`.
+    pub(crate) fn contains_any(&self, pats: &[&str]) -> bool {
+        pats.iter()
+            .any(|pat| self.pre_check(pat) && self.haystack.contains(pat))
     }
 }
 
