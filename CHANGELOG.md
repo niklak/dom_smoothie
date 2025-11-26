@@ -4,9 +4,14 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Implemented internal `AciiPatternCheck`, improving the performance of `match_unlikely` and `determine_attr_weight`
+ when the `aho-corasick` feature is disabled. No public API changes.
+
 ### Changed
 - Updated `dom_query` version from `0.23.0` to `0.24.0`.
 - Moved all secondary crates into `crates/`.
+- Minor internal code changes.
 
 ## [0.13.0] - 2025-10-02
 ### Added
