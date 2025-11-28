@@ -5,7 +5,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Implemented internal `AsciiPatternCheck`, improving the performance of `match_unlikely` and `determine_attr_weight`
+- Implemented internal `BytePatternCheck`, improving the performance of `match_unlikely` and `determine_attr_weight`
  when the `aho-corasick` feature is disabled. No public API changes.
 
 ### Changed
