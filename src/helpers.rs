@@ -288,6 +288,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "aho-corasick"))]
     fn test_ascii_pattern_check() {
         let class = "article primary main äußerlich konnen";
         let check = BytePatternCheck::new(class);
