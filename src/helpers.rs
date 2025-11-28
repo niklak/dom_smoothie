@@ -202,22 +202,22 @@ pub(crate) fn is_probably_visible(node: &NodeRef) -> bool {
 }
 
 #[cfg(not(feature = "aho-corasick"))]
-/// A lightweight ASCII-only pre-checker used to quickly skip patterns
+/// A lightweight byte-level pre-checker used to quickly skip patterns
 /// that cannot occur in the haystack.
-pub(crate) struct AsciiPatternCheck<'a> {
+pub(crate) struct BytePatternCheck<'a> {
     haystack: &'a str,
     char_map: [u8; 256],
 }
 
 #[cfg(not(feature = "aho-corasick"))]
-impl<'a> AsciiPatternCheck<'a> {
-    pub(crate) fn new(haystack: &'a str) -> AsciiPatternCheck<'a> {
+impl<'a> BytePatternCheck<'a> {
+    pub(crate) fn new(haystack: &'a str) -> BytePatternCheck<'a> {
         let mut char_map = [0u8; 256];
 
         for &b in haystack.as_bytes() {
             char_map[b as usize] = 1;
         }
-        AsciiPatternCheck { haystack, char_map }
+        BytePatternCheck { haystack, char_map }
     }
     #[inline]
     fn pre_check(&self, pat: &str) -> bool {
@@ -229,7 +229,7 @@ impl<'a> AsciiPatternCheck<'a> {
         true
     }
     /// Checks if the haystack contains any of the given patterns.
-    /// Performs a cheap ASCII bitmap pre-check before `str::contains`.
+    /// Performs a cheap bitmap pre-check before `str::contains`.
     pub(crate) fn contains_any(&self, pats: &[&str]) -> bool {
         pats.iter()
             .any(|pat| self.pre_check(pat) && self.haystack.contains(pat))
@@ -285,5 +285,14 @@ mod tests {
         let normalized_text = normalize_spaces(text);
         let expected = "The quick brown fox jumps over the lazy dog.";
         assert_eq!(expected, normalized_text);
+    }
+
+    #[test]
+    fn test_ascii_pattern_check() {
+        let class = "article primary main äußerlich konnen";
+        let check = BytePatternCheck::new(class);
+        assert!(check.contains_any(&["äußerlich"]));
+        assert!(check.contains_any(&["article", "post"]));
+        assert!(!check.contains_any(&["können"]));
     }
 }

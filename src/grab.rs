@@ -708,7 +708,7 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
 
 #[cfg(not(feature = "aho-corasick"))]
 fn match_unlikely(haystack: &str) -> bool {
-    let check = AsciiPatternCheck::new(haystack);
+    let check = BytePatternCheck::new(haystack);
 
     if !check.contains_any(UNLIKELY_CANDIDATES) {
         return false;
