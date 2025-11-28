@@ -9,7 +9,6 @@ use crate::glob::*;
 use crate::matching::*;
 
 pub(crate) fn text_similarity(text_a: &str, text_b: &str) -> f64 {
-    //TODO: revise this later (use Jaccard index)
     if text_a.is_empty() || text_b.is_empty() {
         return 0.0;
     }
@@ -21,20 +20,17 @@ pub(crate) fn text_similarity(text_a: &str, text_b: &str) -> f64 {
         return 1.0;
     }
 
-    let unique_tokens_a: HashSet<&str> = a.unicode_words().collect();
-
+    let tokens_a: HashSet<&str> = a.unicode_words().collect();
     let tokens_b: Vec<&str> = b.unicode_words().collect();
-    let unique_tokens_b: Vec<&str> = tokens_b
+
+    let b_chars_total: usize = tokens_b.iter().map(|s| s.chars().count()).sum();
+    let b_chars_unique: usize = tokens_b
         .iter()
-        .filter(|&&s| !unique_tokens_a.contains(s))
-        .cloned()
-        .collect();
+        .filter(|&&s| !tokens_a.contains(s))
+        .map(|s| s.chars().count())
+        .sum();
 
-    // TODO: can be calculated without joining
-    let merged_b = tokens_b.join(" ");
-    let merged_unique_b = unique_tokens_b.join(" ");
-
-    let distance_b = merged_unique_b.chars().count() as f64 / merged_b.chars().count() as f64;
+    let distance_b = b_chars_unique as f64 / b_chars_total as f64;
     1.0 - distance_b
 }
 
