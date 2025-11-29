@@ -616,8 +616,8 @@ fn adjust_top_candidate_by_parent(
     top_candidate
 }
 
-fn next_child_or_sibling<'a>(node: &NodeRef<'a>, ignore_self: bool) -> Option<NodeRef<'a>> {
-    if !ignore_self {
+fn next_child_or_sibling<'a>(node: &NodeRef<'a>, ignore_child: bool) -> Option<NodeRef<'a>> {
+    if !ignore_child {
         if let Some(first_child) = node.first_element_child() {
             return Some(first_child);
         }
@@ -648,38 +648,26 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
         }
 
         if strip_unlikely {
-            if is_unlikely_candidate(&node) {
+            let strip = is_unlikely_candidate(&node)
+                || node
+                    .attr("role")
+                    .is_some_and(|role| UNLIKELY_ROLES.contains(&role));
+            if strip {
                 next_node = next_child_or_sibling(&node, true);
                 node.remove_from_parent();
                 continue;
-            }
-
-            if let Some(role) = node.attr("role") {
-                if UNLIKELY_ROLES.contains(&role) {
-                    next_node = next_child_or_sibling(&node, true);
-                    node.remove_from_parent();
-                    continue;
-                }
             }
         }
-        if node_name_in(&node, &TAGS_WITH_CONTENT) {
-            // TODO: this is a controversial moment, it may leave an empty block,
-            // which will have an impact on the result.
-            // When parent of the top candidate have more than one child,
-            // then parent will be a new top candidate.
-
-            if is_element_without_content(&node) {
-                next_node = next_child_or_sibling(&node, true);
-                node.remove_from_parent();
-                continue;
-            }
+        if node_name_in(&node, &TAGS_WITH_CONTENT) && is_element_without_content(&node) {
+            next_node = next_child_or_sibling(&node, true);
+            node.remove_from_parent();
+            continue;
         }
 
         if node_name_in(&node, &DEFAULT_TAGS_TO_SCORE) {
             elements_id_to_score.push(node.id);
         }
 
-        // this block is relate to previous block
         if node.has_name("div") {
             div_into_p(&node);
 
