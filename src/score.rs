@@ -66,9 +66,7 @@ fn determine_attr_weight(attr: &str) -> f32 {
     let mut weight: f32 = 0.0;
 
     let check = BytePatternCheck::new(attr);
-    if check.contains_any(CLASSES_NEGATIVE)
-        || contains_one_of_words(attr, CLASSES_NEGATIVE_WORDS)
-    {
+    if check.contains_any(CLASSES_NEGATIVE) || contains_one_of_words(attr, CLASSES_NEGATIVE_WORDS) {
         weight -= 25.0;
     }
     if check.contains_any(CLASSES_POSITIVE) {
