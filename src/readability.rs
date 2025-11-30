@@ -847,7 +847,7 @@ impl Readability {
             .doc
             .root()
             .descendants_it()
-            .filter(|node| node.is_comment())
+            .filter(NodeRef::is_comment)
             .collect();
 
         for comment in comments {
@@ -885,7 +885,7 @@ impl Readability {
             .config
             .classes_to_preserve
             .iter()
-            .map(|s| s.as_str())
+            .map(String::as_str)
             .collect();
 
         let class_selector = classes_to_preserve
@@ -919,7 +919,7 @@ impl Readability {
                 .doc
                 .root()
                 .descendants_it()
-                .filter(|n| n.is_element())
+                .filter(NodeRef::is_element)
                 .count();
             if total_elements > self.config.max_elements_to_parse {
                 return Err(ReadabilityError::TooManyElements(
