@@ -5,6 +5,7 @@ use tendril::StrTendril;
 
 use dom_query::NodeRef;
 
+#[allow(clippy::wildcard_imports)]
 use crate::glob::*;
 
 pub(crate) fn is_invisible_style(node: &NodeRef) -> bool {
