@@ -41,7 +41,7 @@ pub(crate) static MATCHER_META: Lazy<Matcher> = lazy_matcher!("meta[content]");
 pub(crate) static MATCHER_JS_LINK: Lazy<Matcher> = lazy_matcher!(r#"a[href^="javascript:"]"#);
 pub(crate) static MATCHER_JSONLD: Lazy<Matcher> =
     lazy_matcher!(r#"script[type="application/ld+json"]"#);
-pub(crate) static MATCHER_HEADING: Lazy<Matcher> = lazy_matcher!(r#"h1,h2"#);
+pub(crate) static MATCHER_HEADING: Lazy<Matcher> = lazy_matcher!(r"h1,h2");
 pub(crate) static MATCHER_DIALOGS: Lazy<Matcher> =
     lazy_matcher!(r#"dialog,[aria-modal="true"][role="dialog"]"#);
 pub(crate) static MATCHER_BYLINE: Lazy<Matcher> =
