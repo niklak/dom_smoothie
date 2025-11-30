@@ -854,7 +854,7 @@ impl Readability {
 
     fn post_process_content(&self, root_sel: &Selection) {
         // Link cleanup only; absolute-URL rewriting is performed later in `fix_relative_uris`.
-        self.fix_links(root_sel);
+        fix_links(root_sel);
 
         simplify_nested_elements(root_sel);
 
@@ -904,34 +904,6 @@ impl Readability {
         }
     }
 
-    fn fix_links(&self, root_sel: &Selection) {
-        // Handle links with javascript: URIs, since
-        // they won't work after scripts have been removed from the page.
-        for a in root_sel.select_matcher(&MATCHER_JS_LINK).nodes().iter() {
-            let children = a.children();
-            if children.len() == 1 {
-                let child = &children[0];
-                if child.is_text() {
-                    a.replace_with(child);
-                } else {
-                    a.remove_all_attrs();
-                    a.rename("span");
-                }
-            } else if children.is_empty() {
-                a.remove_from_parent();
-            } else {
-                a.remove_all_attrs();
-                a.rename("span");
-            }
-        }
-
-        // Handle links without href attributes.
-        for a in root_sel.select("a:not([href])").nodes().iter() {
-            if a.children().is_empty() {
-                a.remove_from_parent();
-            }
-        }
-    }
 
     fn verify_doc(&self) -> Result<(), ReadabilityError> {
         if self.config.max_elements_to_parse > 0 {
@@ -993,9 +965,9 @@ impl Readability {
         let url_sel = if self.doc_url.as_ref() == Some(&base_url) {
             r##"a[href]:not([href^="#"]):not([href^="http"])"##
         } else {
-            r##"a[href]:not([href^="http"])"##
+            r#"a[href]:not([href^="http"])"#
         };
-        for a in root_sel.select(url_sel).nodes().iter() {
+        for a in root_sel.select(url_sel).nodes() {
             let Some(href) = a.attr("href") else {
                 unreachable!();
             };
@@ -1003,7 +975,7 @@ impl Readability {
             a.set_attr("href", abs_url.as_str());
         }
 
-        for media in root_sel.select_matcher(&MATCHER_SOURCES).nodes().iter() {
+        for media in root_sel.select_matcher(&MATCHER_SOURCES).nodes() {
             if let Some(src) = media.attr("src") {
                 let abs_src = to_absolute_url(&src, &base_url);
                 media.set_attr("src", abs_src.as_str());
@@ -1049,8 +1021,37 @@ fn next_significant_node(node: Option<NodeRef>) -> Option<NodeRef> {
     next
 }
 
+fn fix_links(root_sel: &Selection) {
+        // Handle links with javascript: URIs, since
+        // they won't work after scripts have been removed from the page.
+        for a in root_sel.select_matcher(&MATCHER_JS_LINK).nodes() {
+            let children = a.children();
+            if children.len() == 1 {
+                let child = &children[0];
+                if child.is_text() {
+                    a.replace_with(child);
+                } else {
+                    a.remove_all_attrs();
+                    a.rename("span");
+                }
+            } else if children.is_empty() {
+                a.remove_from_parent();
+            } else {
+                a.remove_all_attrs();
+                a.rename("span");
+            }
+        }
+
+        // Handle links without href attributes.
+        for a in root_sel.select("a:not([href])").nodes() {
+            if a.children().is_empty() {
+                a.remove_from_parent();
+            }
+        }
+    }
+
 fn simplify_nested_elements(root_sel: &Selection) {
-    for td_node in root_sel.select("*:not(tr) > td").nodes().iter() {
+    for td_node in root_sel.select("*:not(tr) > td").nodes() {
         if let Some(parent) = td_node.parent() {
             if let Some(first_child) = td_node.first_child() {
                 parent.append_children(&first_child);
@@ -1063,7 +1064,7 @@ fn simplify_nested_elements(root_sel: &Selection) {
         .select("div, section")
         .select(":is(div, section) > :is(div, section):only-child");
 
-    for node in only_sel.nodes().iter() {
+    for node in only_sel.nodes() {
         let Some(parent) = node.parent() else {
             continue;
         };
@@ -1218,7 +1219,7 @@ mod tests {
             </body>
         </html>"#;
         let readability = Readability::from(contents);
-        readability.fix_links(&readability.doc.select("body"));
+        fix_links(&readability.doc.select("body"));
         assert_eq!(readability.doc.select("a").length(), 1);
     }
 
