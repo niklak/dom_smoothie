@@ -4,12 +4,15 @@ use tendril::StrTendril;
 
 use crate::config::ParsePolicy;
 use crate::config::TextMode;
+#[allow(clippy::wildcard_imports)]
 use crate::glob::*;
 use crate::grab;
+#[allow(clippy::wildcard_imports)]
 use crate::helpers::*;
 use crate::is_probably_readable;
+#[allow(clippy::wildcard_imports)]
 use crate::matching::*;
-use crate::url_helpers::*;
+use crate::url_helpers::{is_absolute_url, url_join, to_absolute_url};
 use crate::Config;
 use crate::ReadabilityError;
 
@@ -282,11 +285,11 @@ impl Readability {
                         if let Some(tmp_title) =
                             orig_title.find(':').map(|idx| orig_title[idx + 1..].trim())
                         {
-                            cur_title = tmp_title
+                            cur_title = tmp_title;
                         }
                     } else if orig_title
                         .find(':')
-                        .map_or(0, |idx| orig_title[0..idx + 1].split_whitespace().count())
+                        .map_or(0, |idx| orig_title[0..=idx].split_whitespace().count())
                         > 5
                     {
                         cur_title = orig_title;
@@ -331,7 +334,7 @@ impl Readability {
     fn replace_brs(&mut self) {
         let sel = self.doc.select_matcher(&MATCHER_BR);
 
-        for br in sel.nodes().iter() {
+        for br in sel.nodes() {
             let mut next_sibling = br.next_sibling();
             let mut replaced = false;
 
@@ -384,7 +387,7 @@ impl Readability {
     }
 
     fn remove_empty_imgs(&mut self) {
-        for node in self.doc.select_matcher(&MATCHER_IMG).nodes().iter() {
+        for node in self.doc.select_matcher(&MATCHER_IMG).nodes() {
             let has_src = node.query_or(false, |n| {
                 n.as_element().is_some_and(|el| {
                     el.attrs.iter().any(|a| {
@@ -404,7 +407,7 @@ impl Readability {
 
     fn unwrap_noscript_images(&self) {
         let noscript_sel = self.doc.select("noscript:has(img:only-child)");
-        for noscript_node in noscript_sel.nodes().iter() {
+        for noscript_node in noscript_sel.nodes() {
             let Some(prev_sibling) = noscript_node.prev_element_sibling() else {
                 continue;
             };
@@ -438,7 +441,7 @@ impl Readability {
                         new_img.set_attr(&attr_name, &attr.value);
                     } else {
                         new_img.set_attr(&attr.name.local, &attr.value);
-                    };
+                    }
                 }
             }
             prev_img.replace_with(new_img);
@@ -497,7 +500,7 @@ impl Readability {
         if metadata.excerpt.is_none() {
             // TODO: Although this matches readability.js,
             // the procedure is far from perfect and requires improvement.
-            metadata.excerpt = extract_excerpt(&root_sel)
+            metadata.excerpt = extract_excerpt(&root_sel);
         }
 
         let text_content = match self.config.text_mode {
@@ -555,6 +558,11 @@ impl Readability {
     /// less memory because it does not need to keep the best attempt.
     /// If you need more precise results, use [`Readability::parse`],  
     /// as it sequentially applies all policies, from strict to raw.
+    /// 
+    /// # Errors
+    /// If `config.max_elements_to_parse` is > 0 and the document's number of element nodes exceeds this limit,
+    /// a [`ReadabilityError::TooManyElements`] error is returned.
+    /// If the document fails to extract the content, a [`ReadabilityError::GrabFailed`] error is returned.
     pub fn parse_with_policy(&mut self, policy: ParsePolicy) -> Result<Article, ReadabilityError> {
         self.parse_impl(Some(policy))
     }
@@ -584,7 +592,7 @@ impl Readability {
             let clipped_content: String;
 
             if parsed.kind() == gjson::Kind::Array {
-                for it in parsed.array().iter() {
+                for it in parsed.array() {
                     let typ = it.get("^type");
                     if typ.kind() == gjson::Kind::String
                         && JSONLD_ARTICLE_TYPES.iter().any(|p| typ.str().contains(p))
@@ -621,13 +629,13 @@ impl Readability {
             let type_val = parsed.get("^type");
             //There are no examples with @graph array, so it is not clear how to check it
             //TODO: implement same @graph logic as mozilla, when there will be examples.
-            if !type_val.exists() {
+            if type_val.exists() {
+                article_type = type_val.str().to_string();
+            } else {
                 let type_val = parsed.get("^graph.#.^type");
                 if matches!(type_val.kind(), gjson::Kind::String) {
                     article_type = type_val.str().to_string();
                 }
-            } else {
-                article_type = type_val.str().to_string();
             }
             if !JSONLD_ARTICLE_TYPES
                 .iter()
@@ -746,7 +754,7 @@ impl Readability {
 
         let selection = self.doc.select_matcher(&MATCHER_META);
 
-        for node in selection.nodes().iter() {
+        for node in selection.nodes() {
             if let Some(content) = node.attr("content") {
                 let content = content.trim();
                 if content.is_empty() {
@@ -891,7 +899,7 @@ impl Readability {
 
         let class_sel = sel.select(&format!(".page {class_selector}"));
 
-        for node in class_sel.nodes().iter() {
+        for node in class_sel.nodes() {
             let Some(class_string) = node.class() else {
                 unreachable!();
             };
