@@ -1,6 +1,8 @@
 use dom_query::{NodeData, NodeRef};
 
-use crate::{glob::*, matching::contains_one_of_words};
+#[allow(clippy::wildcard_imports)]
+use crate::glob::*;
+use crate::matching::contains_one_of_words;
 
 pub(crate) fn get_node_score(node: &NodeRef) -> f32 {
     node.attr(SCORE_ATTR)
@@ -49,7 +51,7 @@ pub(crate) fn get_class_weight(node: &NodeRef, weigh_classes: bool) -> f32 {
         if let Some(mut class_name) = el.class() {
             class_name.make_ascii_lowercase();
             weight += determine_attr_weight(&class_name);
-        };
+        }
 
         if let Some(mut id_attr) = el.id() {
             id_attr.make_ascii_lowercase();

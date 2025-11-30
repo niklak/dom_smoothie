@@ -2,6 +2,7 @@ use dom_query::Document;
 
 use tendril::format_tendril;
 
+#[allow(clippy::wildcard_imports)]
 use crate::glob::*;
 use crate::helpers::is_probably_visible;
 
