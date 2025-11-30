@@ -104,7 +104,7 @@ pub(crate) fn url_join(base: &str, relative: &str) -> String {
 
     for segment in rel.split('/') {
         match segment {
-            "." => continue,
+            "." => {},
             ".." => {
                 path_segments.pop();
             }
