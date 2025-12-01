@@ -30,7 +30,7 @@ cfg-if = "1.0.4"
 console_error_panic_hook = { version = "0.1.7", optional = true }
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3.34"
+wasm-bindgen-test = "0.3.56"
 
 
 # `wasm-opt` is on by default in for the release profile, but it can be
