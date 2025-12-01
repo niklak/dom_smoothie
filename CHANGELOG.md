@@ -11,7 +11,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ### Changed
 - Updated `dom_query` version from `0.23.0` to `0.24.0`.
 - Moved all secondary crates into `crates/`.
-- Minor internal code changes.
+- Performed internal refactoring based on `clippy`\'s recommendations to improve code clarity. No public API changes.
 
 ## [0.13.0] - 2025-10-02
 ### Added
