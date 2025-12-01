@@ -65,24 +65,20 @@ pub(crate) fn url_join(base: &str, relative: &str) -> String {
 
     // 2. Handle relative URLs starting with "//": //example.com/path
     if rel.starts_with("//") {
-        return format!("{}:{}", scheme, rel);
+        return format!("{scheme}:{rel}");
     }
 
     // 3. Find the end of origin (scheme://authority)
-    let origin_end = base
-        .find("://")
-        .map(|pos| {
-            base[pos + 3..]
-                .find('/')
-                .map(|p| p + pos + 3)
-                .unwrap_or(base.len())
-        })
-        .unwrap_or(scheme_end + 1);
+    let origin_end = base.find("://").map_or(scheme_end + 1, |pos| {
+        base[pos + 3..]
+            .find('/')
+            .map_or(base.len(), |p| p + pos + 3)
+    });
     let origin = &base[..origin_end];
 
     // 4. Links, starting with root: /path/to/file
     if rel.starts_with('/') {
-        return format!("{}{}", origin, rel);
+        return format!("{origin}{rel}");
     }
 
     // 5. Split path from query and fragment in base URL
@@ -94,7 +90,7 @@ pub(crate) fn url_join(base: &str, relative: &str) -> String {
 
     // 6. Links with query/fragment: ?id=123 or #anchor
     if rel.starts_with(['?', '#']) {
-        return format!("{}{}{}", origin, base_path, rel);
+        return format!("{origin}{base_path}{rel}");
     }
     // 7. The most complex case: relative paths (cat.jpg, ../img/dog.jpg)
 
@@ -106,7 +102,7 @@ pub(crate) fn url_join(base: &str, relative: &str) -> String {
 
     for segment in rel.split('/') {
         match segment {
-            "." => continue,
+            "." => {}
             ".." => {
                 path_segments.pop();
             }
@@ -115,7 +111,7 @@ pub(crate) fn url_join(base: &str, relative: &str) -> String {
     }
 
     let final_path = path_segments.join("/");
-    format!("{}/{}", origin, final_path)
+    format!("{origin}/{final_path}")
 }
 
 #[cfg(test)]

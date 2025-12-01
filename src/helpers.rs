@@ -5,8 +5,8 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use dom_query::{NodeId, NodeRef, Selection};
 
-use crate::glob::*;
-use crate::matching::*;
+use crate::glob::{MINI_ARIA_HIDDEN, MINI_FALLBACK_IMG, PHRASING_ELEMS};
+use crate::matching::is_invisible_style;
 
 pub(crate) fn text_similarity(text_a: &str, text_b: &str) -> f64 {
     if text_a.is_empty() || text_b.is_empty() {

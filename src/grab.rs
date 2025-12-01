@@ -7,11 +7,15 @@ use flagset::FlagSet;
 use tendril::StrTendril;
 
 use crate::config::CandidateSelectMode;
+#[allow(clippy::wildcard_imports)]
 use crate::glob::*;
 use crate::grab_flags::GrabFlags;
+#[allow(clippy::wildcard_imports)]
 use crate::helpers::*;
+#[allow(clippy::wildcard_imports)]
 use crate::matching::*;
 use crate::prep_article::prep_article;
+#[allow(clippy::wildcard_imports)]
 use crate::score::*;
 use crate::Config;
 use crate::Metadata;
@@ -84,7 +88,7 @@ impl Readability {
         let weigh_class = flags.contains(GrabFlags::WeightClasses);
         let top_candidates = score_elements(elements_to_score, tree, &self.config, flags);
 
-        let mut top_candidate = top_candidates.first().cloned();
+        let mut top_candidate = top_candidates.first().copied();
 
         let mut top_candidate_is_created = false;
 
@@ -566,7 +570,7 @@ fn get_node_ancestors_set(node: &NodeRef) -> HashSet<NodeId> {
         .iter()
         .filter(|n| {
             n.is_element()
-                && !matches!(n.node_name().as_deref(), Some("html") | Some("body"))
+                && !matches!(n.node_name().as_deref(), Some("html" | "body"))
                 && has_node_score(n)
         })
         .map(|n| n.id)
@@ -630,9 +634,8 @@ fn next_child_or_sibling<'a>(node: &NodeRef<'a>, ignore_child: bool) -> Option<N
     while let Some(parent_node) = parent {
         if let Some(next_sibling) = parent_node.next_element_sibling() {
             return Some(next_sibling);
-        } else {
-            parent = parent_node.parent()
         }
+        parent = parent_node.parent();
     }
     None
 }

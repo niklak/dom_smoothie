@@ -4,12 +4,15 @@ use tendril::StrTendril;
 
 use crate::config::ParsePolicy;
 use crate::config::TextMode;
+#[allow(clippy::wildcard_imports)]
 use crate::glob::*;
 use crate::grab;
+#[allow(clippy::wildcard_imports)]
 use crate::helpers::*;
 use crate::is_probably_readable;
+#[allow(clippy::wildcard_imports)]
 use crate::matching::*;
-use crate::url_helpers::*;
+use crate::url_helpers::{is_absolute_url, to_absolute_url, url_join};
 use crate::Config;
 use crate::ReadabilityError;
 
@@ -282,11 +285,11 @@ impl Readability {
                         if let Some(tmp_title) =
                             orig_title.find(':').map(|idx| orig_title[idx + 1..].trim())
                         {
-                            cur_title = tmp_title
+                            cur_title = tmp_title;
                         }
                     } else if orig_title
                         .find(':')
-                        .map_or(0, |idx| orig_title[0..idx + 1].split_whitespace().count())
+                        .map_or(0, |idx| orig_title[0..=idx].split_whitespace().count())
                         > 5
                     {
                         cur_title = orig_title;
@@ -438,7 +441,7 @@ impl Readability {
                         new_img.set_attr(&attr_name, &attr.value);
                     } else {
                         new_img.set_attr(&attr.name.local, &attr.value);
-                    };
+                    }
                 }
             }
             prev_img.replace_with(new_img);
@@ -497,7 +500,7 @@ impl Readability {
         if metadata.excerpt.is_none() {
             // TODO: Although this matches readability.js,
             // the procedure is far from perfect and requires improvement.
-            metadata.excerpt = extract_excerpt(&root_sel)
+            metadata.excerpt = extract_excerpt(&root_sel);
         }
 
         let text_content = match self.config.text_mode {
@@ -555,6 +558,11 @@ impl Readability {
     /// less memory because it does not need to keep the best attempt.
     /// If you need more precise results, use [`Readability::parse`],  
     /// as it sequentially applies all policies, from strict to raw.
+    ///
+    /// # Errors
+    /// If `config.max_elements_to_parse` is > 0 and the document's number of element nodes exceeds this limit,
+    /// a [`ReadabilityError::TooManyElements`] error is returned.
+    /// If the document fails to extract the content, a [`ReadabilityError::GrabFailed`] error is returned.
     pub fn parse_with_policy(&mut self, policy: ParsePolicy) -> Result<Article, ReadabilityError> {
         self.parse_impl(Some(policy))
     }
@@ -621,13 +629,13 @@ impl Readability {
             let type_val = parsed.get("^type");
             //There are no examples with @graph array, so it is not clear how to check it
             //TODO: implement same @graph logic as mozilla, when there will be examples.
-            if !type_val.exists() {
+            if type_val.exists() {
+                article_type = type_val.str().to_string();
+            } else {
                 let type_val = parsed.get("^graph.#.^type");
                 if matches!(type_val.kind(), gjson::Kind::String) {
                     article_type = type_val.str().to_string();
                 }
-            } else {
-                article_type = type_val.str().to_string();
             }
             if !JSONLD_ARTICLE_TYPES
                 .iter()
@@ -839,7 +847,7 @@ impl Readability {
             .doc
             .root()
             .descendants_it()
-            .filter(|node| node.is_comment())
+            .filter(NodeRef::is_comment)
             .collect();
 
         for comment in comments {
@@ -854,7 +862,7 @@ impl Readability {
 
     fn post_process_content(&self, root_sel: &Selection) {
         // Link cleanup only; absolute-URL rewriting is performed later in `fix_relative_uris`.
-        self.fix_links(root_sel);
+        fix_links(root_sel);
 
         simplify_nested_elements(root_sel);
 
@@ -877,7 +885,7 @@ impl Readability {
             .config
             .classes_to_preserve
             .iter()
-            .map(|s| s.as_str())
+            .map(String::as_str)
             .collect();
 
         let class_selector = classes_to_preserve
@@ -904,42 +912,13 @@ impl Readability {
         }
     }
 
-    fn fix_links(&self, root_sel: &Selection) {
-        // Handle links with javascript: URIs, since
-        // they won't work after scripts have been removed from the page.
-        for a in root_sel.select_matcher(&MATCHER_JS_LINK).nodes().iter() {
-            let children = a.children();
-            if children.len() == 1 {
-                let child = &children[0];
-                if child.is_text() {
-                    a.replace_with(child);
-                } else {
-                    a.remove_all_attrs();
-                    a.rename("span");
-                }
-            } else if children.is_empty() {
-                a.remove_from_parent();
-            } else {
-                a.remove_all_attrs();
-                a.rename("span");
-            }
-        }
-
-        // Handle links without href attributes.
-        for a in root_sel.select("a:not([href])").nodes().iter() {
-            if a.children().is_empty() {
-                a.remove_from_parent();
-            }
-        }
-    }
-
     fn verify_doc(&self) -> Result<(), ReadabilityError> {
         if self.config.max_elements_to_parse > 0 {
             let total_elements = self
                 .doc
                 .root()
                 .descendants_it()
-                .filter(|n| n.is_element())
+                .filter(NodeRef::is_element)
                 .count();
             if total_elements > self.config.max_elements_to_parse {
                 return Err(ReadabilityError::TooManyElements(
@@ -993,7 +972,7 @@ impl Readability {
         let url_sel = if self.doc_url.as_ref() == Some(&base_url) {
             r##"a[href]:not([href^="#"]):not([href^="http"])"##
         } else {
-            r##"a[href]:not([href^="http"])"##
+            r#"a[href]:not([href^="http"])"#
         };
         for a in root_sel.select(url_sel).nodes().iter() {
             let Some(href) = a.attr("href") else {
@@ -1047,6 +1026,35 @@ fn next_significant_node(node: Option<NodeRef>) -> Option<NodeRef> {
         }
     }
     next
+}
+
+fn fix_links(root_sel: &Selection) {
+    // Handle links with javascript: URIs, since
+    // they won't work after scripts have been removed from the page.
+    for a in root_sel.select_matcher(&MATCHER_JS_LINK).nodes().iter() {
+        let children = a.children();
+        if children.len() == 1 {
+            let child = &children[0];
+            if child.is_text() {
+                a.replace_with(child);
+            } else {
+                a.remove_all_attrs();
+                a.rename("span");
+            }
+        } else if children.is_empty() {
+            a.remove_from_parent();
+        } else {
+            a.remove_all_attrs();
+            a.rename("span");
+        }
+    }
+
+    // Handle links without href attributes.
+    for a in root_sel.select("a:not([href])").nodes().iter() {
+        if a.children().is_empty() {
+            a.remove_from_parent();
+        }
+    }
 }
 
 fn simplify_nested_elements(root_sel: &Selection) {
@@ -1218,7 +1226,7 @@ mod tests {
             </body>
         </html>"#;
         let readability = Readability::from(contents);
-        readability.fix_links(&readability.doc.select("body"));
+        fix_links(&readability.doc.select("body"));
         assert_eq!(readability.doc.select("a").length(), 1);
     }
 
