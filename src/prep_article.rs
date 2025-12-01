@@ -1,11 +1,14 @@
 use dom_query::{NodeRef, Selection};
 use flagset::FlagSet;
 
+#[allow(clippy::wildcard_imports)]
 use crate::glob::*;
 use crate::grab_flags::GrabFlags;
+#[allow(clippy::wildcard_imports)]
 use crate::helpers::*;
+#[allow(clippy::wildcard_imports)]
 use crate::matching::*;
-use crate::score::*;
+use crate::score::get_class_weight;
 use crate::Config;
 
 fn clean(root_sel: &Selection) {
