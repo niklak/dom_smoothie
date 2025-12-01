@@ -982,7 +982,7 @@ impl Readability {
             a.set_attr("href", abs_url.as_str());
         }
 
-        for media in root_sel.select_matcher(&MATCHER_SOURCES).nodes() {
+        for media in root_sel.select_matcher(&MATCHER_SOURCES).nodes().iter() {
             if let Some(src) = media.attr("src") {
                 let abs_src = to_absolute_url(&src, &base_url);
                 media.set_attr("src", abs_src.as_str());
@@ -1031,7 +1031,7 @@ fn next_significant_node(node: Option<NodeRef>) -> Option<NodeRef> {
 fn fix_links(root_sel: &Selection) {
     // Handle links with javascript: URIs, since
     // they won't work after scripts have been removed from the page.
-    for a in root_sel.select_matcher(&MATCHER_JS_LINK).nodes() {
+    for a in root_sel.select_matcher(&MATCHER_JS_LINK).nodes().iter() {
         let children = a.children();
         if children.len() == 1 {
             let child = &children[0];
@@ -1050,7 +1050,7 @@ fn fix_links(root_sel: &Selection) {
     }
 
     // Handle links without href attributes.
-    for a in root_sel.select("a:not([href])").nodes() {
+    for a in root_sel.select("a:not([href])").nodes().iter() {
         if a.children().is_empty() {
             a.remove_from_parent();
         }
