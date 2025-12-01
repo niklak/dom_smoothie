@@ -69,13 +69,11 @@ pub(crate) fn url_join(base: &str, relative: &str) -> String {
     }
 
     // 3. Find the end of origin (scheme://authority)
-    let origin_end = base
-        .find("://")
-        .map_or(scheme_end + 1,|pos| {
-            base[pos + 3..]
-                .find('/')
-                .map_or(base.len(),|p| p + pos + 3)
-        });
+    let origin_end = base.find("://").map_or(scheme_end + 1, |pos| {
+        base[pos + 3..]
+            .find('/')
+            .map_or(base.len(), |p| p + pos + 3)
+    });
     let origin = &base[..origin_end];
 
     // 4. Links, starting with root: /path/to/file
@@ -104,7 +102,7 @@ pub(crate) fn url_join(base: &str, relative: &str) -> String {
 
     for segment in rel.split('/') {
         match segment {
-            "." => {},
+            "." => {}
             ".." => {
                 path_segments.pop();
             }

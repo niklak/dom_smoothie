@@ -12,7 +12,7 @@ use crate::helpers::*;
 use crate::is_probably_readable;
 #[allow(clippy::wildcard_imports)]
 use crate::matching::*;
-use crate::url_helpers::{is_absolute_url, url_join, to_absolute_url};
+use crate::url_helpers::{is_absolute_url, to_absolute_url, url_join};
 use crate::Config;
 use crate::ReadabilityError;
 
@@ -558,7 +558,7 @@ impl Readability {
     /// less memory because it does not need to keep the best attempt.
     /// If you need more precise results, use [`Readability::parse`],  
     /// as it sequentially applies all policies, from strict to raw.
-    /// 
+    ///
     /// # Errors
     /// If `config.max_elements_to_parse` is > 0 and the document's number of element nodes exceeds this limit,
     /// a [`ReadabilityError::TooManyElements`] error is returned.
@@ -912,7 +912,6 @@ impl Readability {
         }
     }
 
-
     fn verify_doc(&self) -> Result<(), ReadabilityError> {
         if self.config.max_elements_to_parse > 0 {
             let total_elements = self
@@ -1030,33 +1029,33 @@ fn next_significant_node(node: Option<NodeRef>) -> Option<NodeRef> {
 }
 
 fn fix_links(root_sel: &Selection) {
-        // Handle links with javascript: URIs, since
-        // they won't work after scripts have been removed from the page.
-        for a in root_sel.select_matcher(&MATCHER_JS_LINK).nodes() {
-            let children = a.children();
-            if children.len() == 1 {
-                let child = &children[0];
-                if child.is_text() {
-                    a.replace_with(child);
-                } else {
-                    a.remove_all_attrs();
-                    a.rename("span");
-                }
-            } else if children.is_empty() {
-                a.remove_from_parent();
+    // Handle links with javascript: URIs, since
+    // they won't work after scripts have been removed from the page.
+    for a in root_sel.select_matcher(&MATCHER_JS_LINK).nodes() {
+        let children = a.children();
+        if children.len() == 1 {
+            let child = &children[0];
+            if child.is_text() {
+                a.replace_with(child);
             } else {
                 a.remove_all_attrs();
                 a.rename("span");
             }
-        }
-
-        // Handle links without href attributes.
-        for a in root_sel.select("a:not([href])").nodes() {
-            if a.children().is_empty() {
-                a.remove_from_parent();
-            }
+        } else if children.is_empty() {
+            a.remove_from_parent();
+        } else {
+            a.remove_all_attrs();
+            a.rename("span");
         }
     }
+
+    // Handle links without href attributes.
+    for a in root_sel.select("a:not([href])").nodes() {
+        if a.children().is_empty() {
+            a.remove_from_parent();
+        }
+    }
+}
 
 fn simplify_nested_elements(root_sel: &Selection) {
     for td_node in root_sel.select("*:not(tr) > td").nodes().iter() {

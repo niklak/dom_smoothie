@@ -636,7 +636,6 @@ fn next_child_or_sibling<'a>(node: &NodeRef<'a>, ignore_child: bool) -> Option<N
             return Some(next_sibling);
         }
         parent = parent_node.parent();
-        
     }
     None
 }
