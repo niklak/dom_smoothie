@@ -2,7 +2,7 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
-## [Unreleased]
+## [0.14.0] - 2025-12-01
 
 ### Added
 - Implemented internal `BytePatternCheck`, improving the performance of `match_unlikely` and `determine_attr_weight`
@@ -14,6 +14,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 - Performed internal refactoring based on `clippy`\'s recommendations to improve code clarity. No public API changes.
 
 ## [0.13.0] - 2025-10-02
+
 ### Added
 - Added `Metadata.favicon` and `Article.favicon` support when calling `Readability::get_article_metadata` and `Readability::parse`.
 - Added *experimental* crate `dom-smoothie-lua` providing **Lua** bindings for the `dom_smoothie` crate.
