@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1764414529288,
+  "lastUpdate": 1764587604542,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -3725,6 +3725,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 40397809,
             "range": "± 223649",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "87b99c046c7081289684928c10e163ac10161ddc",
+          "message": "clippy guided refactoring (#163)\n\n* src/url_helpers.rs: refactor\n\n* src/readable.rs, src/score.rs: refactor\n\n* src/readability.rs: refactor\n\n* src/glob.rs: adjust `MATCHER_HEADING`\n\n* src/grab.rs: refactor\n\n* src/helpers.rs: minor changes\n\n* src/matching.rs: minor changes\n\n* src/prep_article.rs: minor changes\n\n* CHANGELOG.md: update\n\n* src/: fmt\n\n* src/readability.rs: `nodes()` -> `nodes().iter()`",
+          "timestamp": "2025-12-01T13:11:17+02:00",
+          "tree_id": "08a8d26a64227014cefe34a63d52720228716f7f",
+          "url": "https://github.com/niklak/dom_smoothie/commit/87b99c046c7081289684928c10e163ac10161ddc"
+        },
+        "date": 1764587604113,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2257843,
+            "range": "± 37335",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 9727018,
+            "range": "± 205852",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 40490499,
+            "range": "± 686128",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2269696,
+            "range": "± 6777",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8342226,
+            "range": "± 191094",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 40211828,
+            "range": "± 443180",
             "unit": "ns/iter"
           }
         ]
