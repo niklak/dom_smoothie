@@ -407,7 +407,7 @@ fn assign_article_node(tc: &NodeRef, article_content: &NodeRef) {
 
     let tc_class = tc.attr_or("class", "");
     let siblings: Vec<NodeRef> = tc_parent.element_children();
-    for sibling in &siblings {
+    for sibling in siblings.iter() {
         let mut append = false;
         if sibling.id == tc.id {
             append = true;

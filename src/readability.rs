@@ -334,7 +334,7 @@ impl Readability {
     fn replace_brs(&mut self) {
         let sel = self.doc.select_matcher(&MATCHER_BR);
 
-        for br in sel.nodes() {
+        for br in sel.nodes().iter() {
             let mut next_sibling = br.next_sibling();
             let mut replaced = false;
 
@@ -387,7 +387,7 @@ impl Readability {
     }
 
     fn remove_empty_imgs(&mut self) {
-        for node in self.doc.select_matcher(&MATCHER_IMG).nodes() {
+        for node in self.doc.select_matcher(&MATCHER_IMG).nodes().iter() {
             let has_src = node.query_or(false, |n| {
                 n.as_element().is_some_and(|el| {
                     el.attrs.iter().any(|a| {
@@ -407,7 +407,7 @@ impl Readability {
 
     fn unwrap_noscript_images(&self) {
         let noscript_sel = self.doc.select("noscript:has(img:only-child)");
-        for noscript_node in noscript_sel.nodes() {
+        for noscript_node in noscript_sel.nodes().iter() {
             let Some(prev_sibling) = noscript_node.prev_element_sibling() else {
                 continue;
             };
@@ -592,7 +592,7 @@ impl Readability {
             let clipped_content: String;
 
             if parsed.kind() == gjson::Kind::Array {
-                for it in parsed.array() {
+                for it in parsed.array().iter() {
                     let typ = it.get("^type");
                     if typ.kind() == gjson::Kind::String
                         && JSONLD_ARTICLE_TYPES.iter().any(|p| typ.str().contains(p))
@@ -754,7 +754,7 @@ impl Readability {
 
         let selection = self.doc.select_matcher(&MATCHER_META);
 
-        for node in selection.nodes() {
+        for node in selection.nodes().iter() {
             if let Some(content) = node.attr("content") {
                 let content = content.trim();
                 if content.is_empty() {
@@ -899,7 +899,7 @@ impl Readability {
 
         let class_sel = sel.select(&format!(".page {class_selector}"));
 
-        for node in class_sel.nodes() {
+        for node in class_sel.nodes().iter() {
             let Some(class_string) = node.class() else {
                 unreachable!();
             };
@@ -975,7 +975,7 @@ impl Readability {
         } else {
             r#"a[href]:not([href^="http"])"#
         };
-        for a in root_sel.select(url_sel).nodes() {
+        for a in root_sel.select(url_sel).nodes().iter() {
             let Some(href) = a.attr("href") else {
                 unreachable!();
             };
@@ -1059,7 +1059,7 @@ fn fix_links(root_sel: &Selection) {
     }
 
 fn simplify_nested_elements(root_sel: &Selection) {
-    for td_node in root_sel.select("*:not(tr) > td").nodes() {
+    for td_node in root_sel.select("*:not(tr) > td").nodes().iter() {
         if let Some(parent) = td_node.parent() {
             if let Some(first_child) = td_node.first_child() {
                 parent.append_children(&first_child);
@@ -1072,7 +1072,7 @@ fn simplify_nested_elements(root_sel: &Selection) {
         .select("div, section")
         .select(":is(div, section) > :is(div, section):only-child");
 
-    for node in only_sel.nodes() {
+    for node in only_sel.nodes().iter() {
         let Some(parent) = node.parent() else {
             continue;
         };
