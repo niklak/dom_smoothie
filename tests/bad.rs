@@ -46,3 +46,26 @@ fn test_skip_body_ancestor_fragment() {
     let got: String = res.content.split_whitespace().collect();
     assert_eq!(got, expected);
 }
+
+#[test]
+fn test_fragments() {
+    let contents_0 = r#"
+    <body>
+        <p><a class="button" href="https://example.com/sign-up"> Sign Up for Live Updates!</a></p>
+    </body>
+    "#;
+
+    let contents_1 = r#"
+        <p><a class="button" href="https://example.com/sign-up"> Sign Up for Live Updates!</a></p>
+    "#;
+
+    let cases = vec![contents_0, contents_1];
+
+    for contents in cases {
+        let doc = dom_query::Document::fragment(contents);
+
+        let mut ra = Readability::with_document(doc, None, None).unwrap();
+        let err = ra.parse().unwrap_err();
+        assert!(matches!(err, dom_smoothie::ReadabilityError::GrabFailed));
+    }
+}
