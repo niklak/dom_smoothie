@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1764587893101,
+  "lastUpdate": 1767348601025,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -3845,6 +3845,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 40303189,
             "range": "± 844233",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "552acfb9ab4fd8a03daf77277ff16aec271e8ed0",
+          "message": "Merge pull request #170 from niklak/fix/doc-without-body\n\n- **Breaking**: Fixed a panic when `Readability::with_document` was used with a `dom_query::Document` created via `dom_query::Document::fragment`, where `<body>` is unreachable. \nIn this case, `Readability::parse` now returns `ReadabilityError::GrabFailed`.",
+          "timestamp": "2026-01-02T12:07:59+02:00",
+          "tree_id": "0958d7a4a296fd9a351ee07f3186a01abc022b1c",
+          "url": "https://github.com/niklak/dom_smoothie/commit/552acfb9ab4fd8a03daf77277ff16aec271e8ed0"
+        },
+        "date": 1767348600713,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2264240,
+            "range": "± 13655",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 9994900,
+            "range": "± 218621",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 40317239,
+            "range": "± 381608",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2269406,
+            "range": "± 12551",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8366341,
+            "range": "± 141657",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 40048661,
+            "range": "± 388689",
             "unit": "ns/iter"
           }
         ]
