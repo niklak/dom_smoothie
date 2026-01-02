@@ -69,7 +69,6 @@ impl Readability {
         flags: &FlagSet<GrabFlags>,
     ) -> Option<NodeRef<'a>> {
         let selection = doc.select_single("body");
-        // html5ever always puts body element, even if it wasn't in the document's contents
         let body_node = selection.nodes().first()?;
         let strip_unlikely = flags.contains(GrabFlags::StripUnlikelys);
         let mut elements_to_score = collect_elements_to_score(body_node, strip_unlikely);
@@ -165,8 +164,9 @@ pub(crate) fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
     // However, I believe it is better to do it only once. Additionally, there is a lot of logic that relies
     // on a certain element which is going to be removed in the next iteration.
     let body_sel = doc.select_single("body");
-    // html5ever always puts body element, even if it wasn't in the document's contents
-    let body_node = body_sel.nodes().first().unwrap();
+    let Some(body_node) = body_sel.nodes().first() else {
+        return;
+    };
     let mut should_remove_title_header = !metadata.title.is_empty();
     let mut next_node = next_child_or_sibling(body_node, false);
     while let Some(node) = next_node {
