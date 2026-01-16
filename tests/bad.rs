@@ -69,3 +69,17 @@ fn test_fragments() {
         assert!(matches!(err, dom_smoothie::ReadabilityError::GrabFailed));
     }
 }
+
+
+#[test]
+fn test_frameset_fail() {
+    let contents = r#"
+     <frameset>
+         <p><a class="button" href="https://example.com/sign-up"> Sign Up for Live Updates!</a></p>
+     </frameset>
+     "#;
+
+    let mut ra = Readability::new(contents, None, None).unwrap();
+    let err = ra.parse().unwrap_err();
+    assert!(matches!(err, dom_smoothie::ReadabilityError::GrabFailed));
+}
