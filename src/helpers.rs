@@ -138,18 +138,27 @@ pub(crate) fn link_density(node: &NodeRef, char_count: Option<usize>) -> f32 {
     link_density_fn(node, char_count, |n| n.normalized_char_count())
 }
 
-pub(crate) fn has_single_tag_inside_element(node: &NodeRef, tag: &str) -> bool {
+/// Returns the child element if the node contains exactly one element child with the given tag
+/// and no non-empty text nodes.
+pub(crate) fn single_child_element<'a>(
+    node: &NodeRef<'a>,
+    tag: &str,
+) -> Option<NodeRef<'a>> {
     // There should be exactly 1 element child with given tag
     let children = node.element_children();
     if children.len() != 1 {
-        return false;
-    }
+        return None;
+    };
 
-    if !children.first().is_some_and(|child| child.has_name(tag)) {
-        return false;
-    }
+    let first = children.first()?;
 
-    !node.children_it(false).any(|n| n.is_nonempty_text())
+    if !first.has_name(tag) {
+        return None;
+    }
+    if node.children_it(false).any(|n| n.is_nonempty_text()) {
+        return None;
+    }
+    Some(*first)
 }
 
 pub(crate) fn is_element_without_content(node: &NodeRef) -> bool {

@@ -2,10 +2,11 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
-## [Unreleased]
+## [0.15.0] - 2026-01-18
 
 ### Changed
 - Updated `dom_query` version from `0.24.0` to `0.25.1`.
+- Replaced logic of `has_single_tag_inside_element` with `single_child_element`;
 
 ### Fixed
 - **Breaking**: Fixed a panic when `Readability::with_document` was used with a `dom_query::Document` created via `dom_query::Document::fragment`, where `<body>` is unreachable. 

@@ -70,7 +70,6 @@ fn test_fragments() {
     }
 }
 
-
 #[test]
 fn test_frameset_fail() {
     let contents = r#"

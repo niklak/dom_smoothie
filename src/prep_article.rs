@@ -407,18 +407,11 @@ pub(crate) fn prep_article(article_node: &NodeRef, flags: &FlagSet<GrabFlags>, c
 fn fix_single_cell_tables(sel: &Selection) {
     // Remove single-cell tables
     for table_node in sel.select("table").nodes() {
-        let tbody = if has_single_tag_inside_element(table_node, "tbody") {
-            table_node.first_element_child().unwrap()
-        } else {
-            *table_node
-        };
+        let tbody = single_child_element(table_node, "tbody").unwrap_or(*table_node);
 
-        if has_single_tag_inside_element(&tbody, "tr") {
-            let row = tbody.first_element_child().unwrap();
-            if has_single_tag_inside_element(&row, "td") {
-                let cell = row.first_element_child().unwrap();
-
-                let new_name = if cell.children().iter().all(|c| is_phrasing_content(c)) {
+        if let Some(row) = single_child_element(&tbody, "tr") {
+            if let Some(cell) = single_child_element(&row, "td") {
+                let new_name = if cell.children_it(false).all(|c| is_phrasing_content(&c)) {
                     "p"
                 } else {
                     "div"
