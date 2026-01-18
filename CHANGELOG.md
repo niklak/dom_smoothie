@@ -4,6 +4,9 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- Updated `dom_query` version from `0.24.0` to `0.25.1`.
+
 ### Fixed
 - **Breaking**: Fixed a panic when `Readability::with_document` was used with a `dom_query::Document` created via `dom_query::Document::fragment`, where `<body>` is unreachable. 
 In this case, `Readability::parse` now returns `ReadabilityError::GrabFailed`.

@@ -352,9 +352,9 @@ dependencies = [
 
 [[package]]
 name = "dom_query"
-version = "0.24.0"
+version = "0.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4af481d52c89bfe91ca11be1e5be9d6106f53ba5960cc28cddd3ac424fbd13f2"
+checksum = "4d9c2e7f1d22d0f2ce07626d259b8a55f4a47cb0938d4006dd8ae037f17d585e"
 dependencies = [
  "bit-set",
  "cssparser",
@@ -910,9 +910,9 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "selectors"
-version = "0.33.0"
+version = "0.35.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "feef350c36147532e1b79ea5c1f3791373e61cbd9a6a2615413b3807bb164fb7"
+checksum = "93fdfed56cd634f04fe8b9ddf947ae3dc493483e819593d2ba17df9ad05db8b2"
 dependencies = [
  "bitflags",
  "cssparser",
@@ -1043,7 +1043,6 @@ dependencies = [
  "parking_lot",
  "phf_shared",
  "precomputed-hash",
- "serde",
 ]
 
 [[package]]
@@ -1269,9 +1268,9 @@ dependencies = [
 
 [[package]]
 name = "web_atoms"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "acd0c322f146d0f8aad130ce6c187953889359584497dac6561204c8e17bb43d"
+checksum = "30e588f10c7bc3465f5fc1ab087fc97877ec1064a7ec89fb685ac4ee998dac4a"
 dependencies = [
  "phf",
  "phf_codegen",
