@@ -323,7 +323,7 @@ dependencies = [
 
 [[package]]
 name = "dom-smoothie-bench"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "criterion",
  "dom_smoothie",
@@ -331,7 +331,7 @@ dependencies = [
 
 [[package]]
 name = "dom-smoothie-js"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "cfg-if",
  "console_error_panic_hook",
@@ -344,7 +344,7 @@ dependencies = [
 
 [[package]]
 name = "dom-smoothie-lua"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "dom_smoothie",
  "mlua",
@@ -368,7 +368,7 @@ dependencies = [
 
 [[package]]
 name = "dom_smoothie"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "aho-corasick",
  "dom_query",
@@ -387,7 +387,7 @@ dependencies = [
 
 [[package]]
 name = "dom_smoothie_cli"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "clap",
  "dom_smoothie",

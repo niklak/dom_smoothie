@@ -679,8 +679,10 @@ fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -
             // safely converted into plain P elements to avoid confusing the scoring
             // algorithm with DIVs with are, in practice, paragraphs.
 
-            if has_single_tag_inside_element(&node, "p") && link_density(&node, None) < 0.25 {
-                let new_node = node.first_element_child().unwrap();
+            // Check `p` first (cheap), then link density (expensive).
+            let single_p: Option<NodeRef<'_>> =
+                single_child_element(&node, "p").filter(|_| link_density(&node, None) < 0.25);
+            if let Some(new_node) = single_p {
                 node.replace_with(&new_node);
                 elements_id_to_score.push(new_node.id);
                 node = new_node;
