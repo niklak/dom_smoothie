@@ -5,6 +5,8 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use dom_query::{NodeId, NodeRef, Selection};
 
+use tendril::StrTendril;
+
 use crate::glob::{MINI_ARIA_HIDDEN, MINI_FALLBACK_IMG, PHRASING_ELEMS};
 use crate::matching::is_invisible_style;
 
@@ -204,6 +206,24 @@ pub(crate) fn is_probably_visible(node: &NodeRef) -> bool {
         return false;
     }
     !MINI_ARIA_HIDDEN.match_node(node) || MINI_FALLBACK_IMG.match_node(node)
+}
+
+pub(crate) fn get_node_matching_string(node: &NodeRef) -> StrTendril {
+    let mut buf = StrTendril::new();
+    let Some(el) = node.element_ref() else {
+        return buf;
+    };
+
+    for attr in &el.attrs {
+        if !matches!(attr.name.local.as_ref(), "class" | "id") {
+            continue;
+        }
+        buf.push_tendril(&attr.value);
+        buf.push_char(' ');
+    }
+
+    buf.make_ascii_lowercase();
+    buf
 }
 
 #[cfg(not(feature = "aho-corasick"))]

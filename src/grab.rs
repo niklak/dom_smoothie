@@ -4,7 +4,6 @@ use std::vec;
 
 use dom_query::{Document, NodeId, NodeRef, Selection};
 use flagset::FlagSet;
-use tendril::StrTendril;
 
 use crate::config::CandidateSelectMode;
 #[allow(clippy::wildcard_imports)]
@@ -217,23 +216,6 @@ pub(crate) fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
     }
 }
 
-fn get_node_matching_string(node: &NodeRef) -> StrTendril {
-    let mut buf = StrTendril::new();
-    let Some(el) = node.element_ref() else {
-        return buf;
-    };
-
-    for attr in &el.attrs {
-        if !matches!(attr.name.local.as_ref(), "class" | "id") {
-            continue;
-        }
-        buf.push_tendril(&attr.value);
-        buf.push_char(' ');
-    }
-
-    buf.make_ascii_lowercase();
-    buf
-}
 
 fn is_valid_byline(node: &NodeRef) -> bool {
     let mut is_byline = MATCHER_BYLINE.match_element(node);
