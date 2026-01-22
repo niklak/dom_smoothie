@@ -142,10 +142,7 @@ pub(crate) fn link_density(node: &NodeRef, char_count: Option<usize>) -> f32 {
 
 /// Returns the child element if the node contains exactly one element child with the given tag
 /// and no non-empty text nodes.
-pub(crate) fn single_child_element<'a>(
-    node: &NodeRef<'a>,
-    tag: &str,
-) -> Option<NodeRef<'a>> {
+pub(crate) fn single_child_element<'a>(node: &NodeRef<'a>, tag: &str) -> Option<NodeRef<'a>> {
     // There should be exactly 1 element child with given tag
     let children = node.element_children();
     if children.len() != 1 {

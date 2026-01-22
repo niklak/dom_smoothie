@@ -1,6 +1,5 @@
 use dom_query::Document;
 
-
 #[allow(clippy::wildcard_imports)]
 use crate::glob::*;
 use crate::helpers::{get_node_matching_string, is_probably_visible};
@@ -39,8 +38,8 @@ pub fn is_probably_readable(
         }
         let match_string = get_node_matching_string(node);
 
-        if !match_string.is_empty() 
-        && UNLIKELY_CANDIDATES.iter().any(|p| match_string.contains(p))
+        if !match_string.is_empty()
+            && UNLIKELY_CANDIDATES.iter().any(|p| match_string.contains(p))
             && !MAYBE_CANDIDATES.iter().any(|p| match_string.contains(p))
         {
             return false;
