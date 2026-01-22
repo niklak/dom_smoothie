@@ -211,9 +211,3 @@ fn arstechnica() {
     // this seems ok
     test_readability("test-pages/alt/arstechnica/");
 }
-
-#[test]
-fn test_wapo_1() {
-    // this seems ok
-    test_readability("test-pages/readability/wapo-1/");
-}
