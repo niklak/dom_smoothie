@@ -5,6 +5,8 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use dom_query::{NodeId, NodeRef, Selection};
 
+use tendril::StrTendril;
+
 use crate::glob::{MINI_ARIA_HIDDEN, MINI_FALLBACK_IMG, PHRASING_ELEMS};
 use crate::matching::is_invisible_style;
 
@@ -140,10 +142,7 @@ pub(crate) fn link_density(node: &NodeRef, char_count: Option<usize>) -> f32 {
 
 /// Returns the child element if the node contains exactly one element child with the given tag
 /// and no non-empty text nodes.
-pub(crate) fn single_child_element<'a>(
-    node: &NodeRef<'a>,
-    tag: &str,
-) -> Option<NodeRef<'a>> {
+pub(crate) fn single_child_element<'a>(node: &NodeRef<'a>, tag: &str) -> Option<NodeRef<'a>> {
     // There should be exactly 1 element child with given tag
     let children = node.element_children();
     if children.len() != 1 {
@@ -204,6 +203,24 @@ pub(crate) fn is_probably_visible(node: &NodeRef) -> bool {
         return false;
     }
     !MINI_ARIA_HIDDEN.match_node(node) || MINI_FALLBACK_IMG.match_node(node)
+}
+
+pub(crate) fn get_node_matching_string(node: &NodeRef) -> StrTendril {
+    let mut buf = StrTendril::new();
+    let Some(el) = node.element_ref() else {
+        return buf;
+    };
+
+    for attr in &el.attrs {
+        if !matches!(attr.name.local.as_ref(), "class" | "id") {
+            continue;
+        }
+        buf.push_tendril(&attr.value);
+        buf.push_char(' ');
+    }
+
+    buf.make_ascii_lowercase();
+    buf
 }
 
 #[cfg(not(feature = "aho-corasick"))]

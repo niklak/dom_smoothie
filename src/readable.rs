@@ -1,10 +1,8 @@
 use dom_query::Document;
 
-use tendril::format_tendril;
-
 #[allow(clippy::wildcard_imports)]
 use crate::glob::*;
-use crate::helpers::is_probably_visible;
+use crate::helpers::{get_node_matching_string, is_probably_visible};
 
 /// Estimates whether the document is readable in a *quick-and-dirty* way.
 ///
@@ -38,10 +36,10 @@ pub fn is_probably_readable(
         if !is_probably_visible(node) {
             return false;
         }
-        let match_string =
-            format_tendril!("{} {}", node.attr_or("class", ""), node.attr_or("id", ""));
+        let match_string = get_node_matching_string(node);
 
-        if UNLIKELY_CANDIDATES.iter().any(|p| match_string.contains(p))
+        if !match_string.is_empty()
+            && UNLIKELY_CANDIDATES.iter().any(|p| match_string.contains(p))
             && !MAYBE_CANDIDATES.iter().any(|p| match_string.contains(p))
         {
             return false;

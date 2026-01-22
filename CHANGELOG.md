@@ -2,6 +2,12 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+- Minor internal code changes.
+- Refactored `div_into_p` function.
+
 ## [0.15.0] - 2026-01-18
 
 ### Changed

@@ -94,7 +94,7 @@ pub(crate) fn url_join(base: &str, relative: &str) -> String {
     }
     // 7. The most complex case: relative paths (cat.jpg, ../img/dog.jpg)
 
-    // Building a new path, handling ".." и "."
+    // Building a new path, handling ".." and "."
     let mut path_segments: Vec<&str> = base_path
         .rsplit_once('/')
         .map(|(dir, _)| dir.split('/').filter(|s| !s.is_empty()).collect())

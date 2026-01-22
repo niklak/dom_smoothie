@@ -4,7 +4,6 @@ use std::vec;
 
 use dom_query::{Document, NodeId, NodeRef, Selection};
 use flagset::FlagSet;
-use tendril::StrTendril;
 
 use crate::config::CandidateSelectMode;
 #[allow(clippy::wildcard_imports)]
@@ -217,24 +216,6 @@ pub(crate) fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
     }
 }
 
-fn get_node_matching_string(node: &NodeRef) -> StrTendril {
-    let mut buf = StrTendril::new();
-    let Some(el) = node.element_ref() else {
-        return buf;
-    };
-
-    for attr in &el.attrs {
-        if !matches!(attr.name.local.as_ref(), "class" | "id") {
-            continue;
-        }
-        buf.push_tendril(&attr.value);
-        buf.push_char(' ');
-    }
-
-    buf.make_ascii_lowercase();
-    buf
-}
-
 fn is_valid_byline(node: &NodeRef) -> bool {
     let mut is_byline = MATCHER_BYLINE.match_element(node);
     if !is_byline {
@@ -273,33 +254,50 @@ fn is_unlikely_candidate(node: &NodeRef) -> bool {
 
 fn div_into_p(node: &NodeRef) {
     // Turn all divs that don't have children block level elements into p's
-    let tree = node.tree;
     // Put phrasing content into paragraphs.
-    let mut p_node: Option<NodeRef> = None;
     let mut child_node = node.first_child();
     while let Some(ref child) = child_node {
-        let next_sibling = child.next_sibling();
-        if is_phrasing_content(child) {
-            if let Some(ref p) = p_node {
-                p.append_child(child);
-            } else if !is_whitespace(child) {
-                let raw_p = tree.new_element("p");
-                child.insert_before(&raw_p);
-                raw_p.append_child(child);
-                p_node = Some(raw_p);
-            }
-        } else if let Some(ref p) = p_node {
-            while let Some(p_last_child) = p.last_child() {
-                if is_whitespace(&p_last_child) {
-                    p_last_child.remove_from_parent();
-                } else {
-                    break;
-                }
-            }
-            p_node = None;
-        }
+        let next_sibling = wrap_pharsing_content(child);
         child_node = next_sibling;
     }
+}
+
+fn wrap_pharsing_content<'a>(node: &NodeRef<'a>) -> Option<NodeRef<'a>> {
+    if is_phrasing_content(node) && !is_whitespace(node) {
+        let mut next_sibling = node.next_sibling();
+        let p = node.tree.new_element("p");
+        node.insert_before(&p);
+        p.append_child(node);
+
+        while let Some(child) = next_sibling {
+            next_sibling = child.next_sibling();
+            if is_phrasing_content(&child) {
+                p.append_child(&child);
+            } else {
+                break;
+            }
+        }
+
+        while let Some(p_first_child) = p.first_child() {
+            if is_whitespace(&p_first_child) {
+                p_first_child.remove_from_parent();
+            } else {
+                break;
+            }
+        }
+
+        while let Some(p_last_child) = p.last_child() {
+            if is_whitespace(&p_last_child) {
+                p_last_child.remove_from_parent();
+            } else {
+                break;
+            }
+        }
+
+        return next_sibling;
+    }
+
+    node.next_sibling()
 }
 
 fn has_child_block_element(node: &NodeRef) -> bool {
