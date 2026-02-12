@@ -29,7 +29,7 @@ impl Readability {
             let article_node = self.attempt_grab_article(&doc, &flags);
             // Now that we've gone through the full algorithm, check to see if
             // we got any meaningful content. If we didn't, we may need to re-run
-            // grabArticle with different flags set. This gives us a higher likelihood of
+            // `grap_article` with different flags set. This gives us a higher likelihood of
             // finding the content, and the sieve approach gives us a higher likelihood of
             // finding the -right- content.
 
@@ -70,15 +70,14 @@ impl Readability {
         let selection = doc.select_single("body");
         let body_node = selection.nodes().first()?;
         let strip_unlikely = flags.contains(GrabFlags::StripUnlikelys);
-        let mut elements_to_score = collect_elements_to_score(body_node, strip_unlikely);
-        let article_node = self.handle_candidates(&mut elements_to_score, body_node, flags);
-        let res = article_node.map(|n| NodeRef::new(n.id, &doc.tree));
-        res
+        let elements_to_score = collect_elements_to_score(body_node, strip_unlikely);
+        let article_node = self.handle_candidates(&elements_to_score, body_node, flags);
+        article_node.map(|n| NodeRef::new(n.id, &doc.tree))
     }
 
     fn handle_candidates<'a>(
         &self,
-        elements_to_score: &mut Vec<NodeRef<'a>>,
+        elements_to_score: &Vec<NodeRef<'a>>,
         body_node: &'a NodeRef,
         flags: &FlagSet<GrabFlags>,
     ) -> Option<NodeRef<'a>> {
@@ -106,8 +105,8 @@ impl Readability {
                 top_candidate =
                     find_common_candidate_alt(top_candidate, &top_candidates, weigh_class);
             } else {
-                // Find a better top candidate node if it contains (at least three) nodes which belong to `topCandidates` array
-                // and whose scores are quite closed with current `topCandidate` node.
+                // Find a better top candidate node if it contains (at least three) nodes which belong to `top_candidates` array
+                // and whose scores are quite closed with current `top_candidate` node.
                 top_candidate = find_common_candidate(top_candidate, &top_candidates, weigh_class);
             }
             // If the top candidate is the only child, use parent instead. This will help sibling
@@ -128,33 +127,31 @@ impl Readability {
                 }
             }
         }
-        if let Some(ref tc) = top_candidate {
-            if !has_node_score(tc) {
-                init_node_score(tc, weigh_class);
-            }
-            // Now that we have the top candidate, look through its siblings for content
-            // that might also be related. Things like preambles, content split by ads
-            // that we removed, etc.
 
-            let article_content = tree.new_element("div");
+        let tc = top_candidate.as_ref()?;
 
-            assign_article_node(tc, &article_content);
-
-            //prepare the article
-            prep_article(&article_content, flags, &self.config);
-
-            if top_candidate_is_created {
-                tc.set_attr("id", CONTENT_ID);
-                tc.set_attr("class", "page");
-            } else {
-                // this code does the same this as mozilla's implementation, but it is more simpler.
-                article_content.set_attr("id", CONTENT_ID);
-                article_content.set_attr("class", "page");
-            }
-
-            return Some(article_content);
+        if !has_node_score(tc) {
+            init_node_score(tc, weigh_class);
         }
-        None
+        // Now that we have the top candidate, look through its siblings for content
+        // that might also be related. Things like preambles, content split by ads
+        // that we removed, etc.
+        let article_content = tree.new_element("div");
+        assign_article_node(tc, &article_content);
+
+        //prepare the article
+        prep_article(&article_content, flags, &self.config);
+
+        if top_candidate_is_created {
+            tc.set_attr("id", CONTENT_ID);
+            tc.set_attr("class", "page");
+        } else {
+            // this code does the same this as mozilla's implementation, but it is more simpler.
+            article_content.set_attr("id", CONTENT_ID);
+            article_content.set_attr("class", "page");
+        }
+
+        Some(article_content)
     }
 }
 
@@ -257,8 +254,7 @@ fn div_into_p(node: &NodeRef) {
     // Put phrasing content into paragraphs.
     let mut child_node = node.first_child();
     while let Some(ref child) = child_node {
-        let next_sibling = wrap_pharsing_content(child);
-        child_node = next_sibling;
+        child_node = wrap_pharsing_content(child);
     }
 }
 
@@ -400,7 +396,7 @@ fn assign_article_node(tc: &NodeRef, article_content: &NodeRef) {
     }
     // Keep potential top candidate's parent node to try to get text direction of it later.
     let Some(tc_parent) = tc.parent() else {
-        unreachable!()
+        unreachable!("Top candidate must have a parent")
     };
 
     let tc_class = tc.attr_or("class", "");
@@ -456,9 +452,8 @@ fn find_common_candidate<'a>(
     top_candidates: &[NodeRef<'a>],
     weigh_class: bool,
 ) -> Option<NodeRef<'a>> {
-    let Some(ref tc) = top_candidate else {
-        return top_candidate;
-    };
+    let tc = top_candidate.as_ref()?;
+    
     let tc_score = get_node_score(tc);
 
     let mut alternative_candidate_ancestors = vec![];
@@ -514,9 +509,7 @@ fn find_common_candidate_alt<'a>(
     top_candidates: &Vec<NodeRef<'a>>,
     weigh_class: bool,
 ) -> Option<NodeRef<'a>> {
-    let Some(ref tc) = top_candidate else {
-        return top_candidate;
-    };
+    let tc = top_candidate.as_ref()?;
 
     if top_candidates.len() < 2 {
         return top_candidate;
@@ -579,41 +572,40 @@ fn adjust_top_candidate_by_parent(
     mut top_candidate: Option<NodeRef<'_>>,
     weigh_class: bool,
 ) -> Option<NodeRef<'_>> {
-    if let Some(ref tc) = top_candidate {
-        if !has_node_score(tc) {
-            init_node_score(tc, weigh_class);
+    let tc = top_candidate.as_ref()?;
+    if !has_node_score(tc) {
+        init_node_score(tc, weigh_class);
+    }
+    // Because of our bonus system, parents of candidates might have scores
+    // themselves. They get half of the node. There won't be nodes with higher
+    // scores than our `top_candidate`, but if we see the score going *up* in the first
+    // few steps up the tree, that's a decent sign that there might be more content
+    // lurking in other places that we want to unify in. The sibling stuff
+    // below does some of that - but only if we've looked high enough up the DOM
+    // tree.
+    let mut last_score = get_node_score(tc);
+    let score_threshold = last_score / 3.0;
+    let mut parent_of_top_candidate = tc.parent();
+    while let Some(ref tc_parent) = parent_of_top_candidate {
+        if tc_parent.has_name("body") {
+            break;
         }
-        // Because of our bonus system, parents of candidates might have scores
-        // themselves. They get half of the node. There won't be nodes with higher
-        // scores than our topCandidate, but if we see the score going *up* in the first
-        // few steps up the tree, that's a decent sign that there might be more content
-        // lurking in other places that we want to unify in. The sibling stuff
-        // below does some of that - but only if we've looked high enough up the DOM
-        // tree.
-        let mut last_score = get_node_score(tc);
-        let score_threshold = last_score / 3.0;
-        let mut parent_of_top_candidate = tc.parent();
-        while let Some(ref tc_parent) = parent_of_top_candidate {
-            if tc_parent.has_name("body") {
-                break;
-            }
 
-            if !has_node_score(tc_parent) {
-                parent_of_top_candidate = tc_parent.parent();
-                continue;
-            }
-
-            let parent_score = get_node_score(tc_parent);
-            if parent_score < score_threshold {
-                break;
-            }
-            if parent_score > last_score {
-                top_candidate = parent_of_top_candidate;
-                break;
-            }
-            last_score = parent_score;
+        if !has_node_score(tc_parent) {
             parent_of_top_candidate = tc_parent.parent();
+            continue;
         }
+
+        let parent_score = get_node_score(tc_parent);
+        if parent_score < score_threshold {
+            break;
+        }
+        if parent_score > last_score {
+            top_candidate = parent_of_top_candidate;
+            break;
+        }
+        last_score = parent_score;
+        parent_of_top_candidate = tc_parent.parent();
     }
     top_candidate
 }
