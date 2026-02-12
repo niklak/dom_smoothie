@@ -313,18 +313,14 @@ fn score_elements<'a>(
     let mut cc_cache = CharCounterCache::default();
 
     for element in elements_to_score {
-        if element.parent().is_none() {
-            continue;
-        }
+
         let content_len = cc_cache.char_count(element);
         if content_len < 25 {
             continue;
         }
+        // these elements have at least one ancestor -- their parent.
         let ancestors = element.ancestors(Some(5));
 
-        if ancestors.is_empty() {
-            continue;
-        }
 
         // Count commas in the element's text content without allocating a new StrTendril.
         // Equivalent to `1 + element.text().split(COMMAS).count()`, but more efficient.
@@ -630,6 +626,7 @@ fn next_child_or_sibling<'a>(node: &NodeRef<'a>, ignore_child: bool) -> Option<N
     None
 }
 
+/// Collecting nodes to score. Also, it removes unlikely candidates and elements without content.
 fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -> Vec<NodeRef<'a>> {
     let tree = &root_node.tree;
     let mut elements_id_to_score: Vec<NodeId> = vec![];
@@ -786,8 +783,9 @@ mod tests {
 
         let doc = Document::from(contents);
         assert!(doc.select("*[role]").exists());
+        let body = doc.body().unwrap();
 
-        collect_elements_to_score(&doc.root(), true);
+        collect_elements_to_score(&body, true);
         assert!(!doc.select("*[role]").exists());
     }
 
@@ -893,8 +891,8 @@ mod tests {
 
         let doc = Document::from(contents);
         assert!(doc.select("div.banner").exists());
-
-        collect_elements_to_score(&doc.root(), true);
+        let body = doc.body().unwrap();
+        collect_elements_to_score(&body, true);
         assert!(!doc.select("div.banner").exists())
     }
     #[test]
@@ -910,7 +908,8 @@ mod tests {
 
         let doc = Document::from(contents);
         assert!(doc.select("a.banner").exists());
-        collect_elements_to_score(&doc.root(), true);
+        let body = doc.body().unwrap();
+        collect_elements_to_score(&body, true);
         assert!(doc.select("a.banner").exists())
     }
 }
