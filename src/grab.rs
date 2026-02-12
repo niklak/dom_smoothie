@@ -77,7 +77,7 @@ impl Readability {
 
     fn handle_candidates<'a>(
         &self,
-        elements_to_score: &Vec<NodeRef<'a>>,
+        elements_to_score: &[NodeRef<'a>],
         body_node: &'a NodeRef,
         flags: &FlagSet<GrabFlags>,
     ) -> Option<NodeRef<'a>> {
@@ -304,7 +304,7 @@ fn has_child_block_element(node: &NodeRef) -> bool {
 }
 
 fn score_elements<'a>(
-    elements_to_score: &Vec<NodeRef<'a>>,
+    elements_to_score: &[NodeRef<'a>],
     tree: &'a Tree,
     cfg: &Config,
     flags: &FlagSet<GrabFlags>,
@@ -502,7 +502,7 @@ fn find_common_candidate<'a>(
 /// Find a better top candidate across other candidates (alternative approach).
 fn find_common_candidate_alt<'a>(
     mut top_candidate: Option<NodeRef<'a>>,
-    top_candidates: &Vec<NodeRef<'a>>,
+    top_candidates: &[NodeRef<'a>],
     weigh_class: bool,
 ) -> Option<NodeRef<'a>> {
     let tc = top_candidate.as_ref()?;
