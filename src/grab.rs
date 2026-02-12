@@ -29,7 +29,7 @@ impl Readability {
             let article_node = self.attempt_grab_article(&doc, &flags);
             // Now that we've gone through the full algorithm, check to see if
             // we got any meaningful content. If we didn't, we may need to re-run
-            // `grap_article` with different flags set. This gives us a higher likelihood of
+            // `grab_article` with different flags set. This gives us a higher likelihood of
             // finding the content, and the sieve approach gives us a higher likelihood of
             // finding the -right- content.
 
@@ -146,7 +146,7 @@ impl Readability {
             tc.set_attr("id", CONTENT_ID);
             tc.set_attr("class", "page");
         } else {
-            // this code does the same this as mozilla's implementation, but it is more simpler.
+            // this code does the same thing as mozilla's implementation, but it is more simpler.
             article_content.set_attr("id", CONTENT_ID);
             article_content.set_attr("class", "page");
         }
