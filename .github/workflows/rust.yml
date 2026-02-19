@@ -23,9 +23,19 @@ jobs:
     - uses: dtolnay/rust-toolchain@master
       with:
         toolchain: ${{ matrix.rust }}
+    - name: Cache cargo bin
+      uses: actions/cache@v3
+      with:
+        path: ~/.cargo/bin
+        key: cargo-bin-${{ matrix.rust }}
+    
+    - name: Install cargo-nextest
+      uses: taiki-e/install-action@v2
+      with:
+        tool: cargo-nextest    
     - name: Build
       run: cargo build --verbose
     - name: Run tests
-      run: cargo test --verbose --all-targets
+      run: cargo nextest run --all-targets
     - name: Run tests with all features
-      run: cargo test --verbose --all-targets --all-features
+      run: cargo nextest run --all-targets --all-features
