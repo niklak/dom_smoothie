@@ -313,14 +313,12 @@ fn score_elements<'a>(
     let mut cc_cache = CharCounterCache::default();
 
     for element in elements_to_score {
-
         let content_len = cc_cache.char_count(element);
         if content_len < 25 {
             continue;
         }
         // these elements have at least one ancestor -- their parent.
         let ancestors = element.ancestors(Some(5));
-
 
         // Count commas in the element's text content without allocating a new StrTendril.
         // Equivalent to `1 + element.text().split(COMMAS).count()`, but more efficient.
@@ -449,7 +447,7 @@ fn find_common_candidate<'a>(
     weigh_class: bool,
 ) -> Option<NodeRef<'a>> {
     let tc = top_candidate.as_ref()?;
-    
+
     let tc_score = get_node_score(tc);
 
     let mut alternative_candidate_ancestors = vec![];
