@@ -24,7 +24,7 @@ exclude = [".*", "test-pages", "deny.toml"]
 
 [dependencies]
 dom_query = {version = "0.25.1", features = ["mini_selector", "markdown"]}
-tendril = {version = "0.4.3"}
+tendril = {version = "0.5.0"}
 once_cell = { version = "1" }
 serde = {version = "1.0", features = ["derive"], optional = true}
 gjson = {version = "0.8.1"}
