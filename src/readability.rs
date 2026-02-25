@@ -605,19 +605,25 @@ impl Readability {
             }
 
             // validating @type
-            let mut article_type = String::new();
+            
+            let mut article_type: Option<String> = None;
 
             let type_val = parsed.get("^type");
             //There are no examples with @graph array, so it is not clear how to check it
             //TODO: implement same @graph logic as mozilla, when there will be examples.
             if type_val.exists() {
-                article_type = type_val.str().to_string();
+                article_type = Some(type_val.str().to_string());
             } else {
                 let type_val = parsed.get("^graph.#.^type");
                 if matches!(type_val.kind(), gjson::Kind::String) {
-                    article_type = type_val.str().to_string();
+                    article_type = Some(type_val.str().to_string());
                 }
             }
+
+            let Some(article_type) = article_type else {
+                continue;
+            };
+
             if !JSONLD_ARTICLE_TYPES
                 .iter()
                 .any(|p| article_type.contains(p))
