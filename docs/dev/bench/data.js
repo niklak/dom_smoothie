@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772027608664,
+  "lastUpdate": 1772028747495,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -4385,6 +4385,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 40561292,
             "range": "± 475260",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "992f00af672b49bc32b0ca9ddb0b1e5c6959387e",
+          "message": "Merge pull request #171 from niklak/dependabot/cargo/clap-4.5.54\n\nbuild(deps): bump clap from 4.5.53 to 4.5.54",
+          "timestamp": "2026-02-25T16:09:58+02:00",
+          "tree_id": "739f815a8a5b3d0684728cc469e9dac346cd4d33",
+          "url": "https://github.com/niklak/dom_smoothie/commit/992f00af672b49bc32b0ca9ddb0b1e5c6959387e"
+        },
+        "date": 1772028746454,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2271728,
+            "range": "± 27323",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 9879297,
+            "range": "± 287176",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 41933804,
+            "range": "± 848704",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2281467,
+            "range": "± 9048",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8455261,
+            "range": "± 116289",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 41494091,
+            "range": "± 743027",
             "unit": "ns/iter"
           }
         ]
