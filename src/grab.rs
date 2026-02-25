@@ -97,7 +97,7 @@ impl Readability {
             body_node.append_child(&tc);
             init_node_score(&tc, flags.contains(GrabFlags::WeightClasses));
             top_candidate = Some(tc);
-        } else if top_candidate.is_some() {
+        } else {
             if matches!(
                 self.config.candidate_select_mode,
                 CandidateSelectMode::DomSmoothie
