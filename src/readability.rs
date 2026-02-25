@@ -93,6 +93,8 @@ impl Metadata {
             && self.image.is_none()
             && self.favicon.is_none()
             && self.lang.is_none()
+            && self.url.is_none()
+            && self.dir.is_none()
     }
 
     fn unescape_html_entities(&mut self) {
@@ -1418,5 +1420,22 @@ mod tests {
         );
         let got_video = ra.doc.select("video source").attr("src").unwrap();
         assert_eq!(got_video, "https://example.com/clip.mp4".into());
+    }
+
+    #[test]
+    fn test_metadata_is_empty() {
+        let empty_meta = Metadata::default();
+        assert!(empty_meta.is_empty());
+
+        let non_empty_meta_1 = Metadata {
+            title: "The Title".into(),
+            ..Default::default()
+        };
+        assert!(!non_empty_meta_1.is_empty());
+        let non_empty_meta_2 = Metadata {
+            lang: Some("en".into()),
+            ..Default::default()
+        };
+        assert!(!non_empty_meta_2.is_empty());
     }
 }
