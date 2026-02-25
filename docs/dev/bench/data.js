@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772015024868,
+  "lastUpdate": 1772027608664,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -4325,6 +4325,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 40790572,
             "range": "± 386636",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d821348d55cc4006125897bc4aed7807280dd3b0",
+          "message": "removed a redundant check on `clean_styles`\n\n- removed a redundant check on `clean_styles`.\n- Added comments to `should_clean_conditionally`, as the logic there is not immediately obvious.",
+          "timestamp": "2026-02-25T15:51:22+02:00",
+          "tree_id": "279e8b2deb5f1c08f8e6b6424982cbb735948d02",
+          "url": "https://github.com/niklak/dom_smoothie/commit/d821348d55cc4006125897bc4aed7807280dd3b0"
+        },
+        "date": 1772027607991,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2259379,
+            "range": "± 11145",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 9951015,
+            "range": "± 171860",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 40788252,
+            "range": "± 993179",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2283990,
+            "range": "± 20932",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8400168,
+            "range": "± 53634",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 40561292,
+            "range": "± 475260",
             "unit": "ns/iter"
           }
         ]
