@@ -98,35 +98,14 @@ impl Metadata {
     }
 
     fn unescape_html_entities(&mut self) {
-        self.title = html_escape::decode_html_entities(&self.title).to_string();
-        self.byline = self
-            .byline
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.excerpt = self
-            .excerpt
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.site_name = self
-            .site_name
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.published_time = self
-            .published_time
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.modified_time = self
-            .modified_time
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.image = self
-            .image
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.favicon = self
-            .favicon
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
+        decode_html_entities(&mut self.title);
+        decode_opt_html_entities(&mut self.byline);
+        decode_opt_html_entities(&mut self.excerpt);
+        decode_opt_html_entities(&mut self.site_name);
+        decode_opt_html_entities(&mut self.published_time);
+        decode_opt_html_entities(&mut self.modified_time);
+        decode_opt_html_entities(&mut self.image);
+        decode_opt_html_entities(&mut self.favicon);
     }
 }
 
@@ -1168,6 +1147,20 @@ fn extract_favicon(root_node: &Document, base_url: Option<String>) -> Option<Str
         favicon_url = favicon_url.map(|u| to_absolute_url(&u, base_url));
     }
     favicon_url
+}
+
+
+fn decode_html_entities(s: &mut String) {
+    let decoded = html_escape::decode_html_entities(s);
+    if let std::borrow::Cow::Owned(new) = decoded {
+        *s = new;
+    }
+}
+
+fn decode_opt_html_entities(opt: &mut Option<String>) {
+    if let Some(s) = opt {
+        decode_html_entities(s);
+    }
 }
 
 #[cfg(test)]
