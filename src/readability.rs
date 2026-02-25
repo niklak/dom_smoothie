@@ -93,38 +93,19 @@ impl Metadata {
             && self.image.is_none()
             && self.favicon.is_none()
             && self.lang.is_none()
+            && self.url.is_none()
+            && self.dir.is_none()
     }
 
     fn unescape_html_entities(&mut self) {
-        self.title = html_escape::decode_html_entities(&self.title).to_string();
-        self.byline = self
-            .byline
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.excerpt = self
-            .excerpt
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.site_name = self
-            .site_name
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.published_time = self
-            .published_time
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.modified_time = self
-            .modified_time
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.image = self
-            .image
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
-        self.favicon = self
-            .favicon
-            .as_ref()
-            .map(|s| html_escape::decode_html_entities(&s).to_string());
+        decode_html_entities(&mut self.title);
+        decode_opt_html_entities(&mut self.byline);
+        decode_opt_html_entities(&mut self.excerpt);
+        decode_opt_html_entities(&mut self.site_name);
+        decode_opt_html_entities(&mut self.published_time);
+        decode_opt_html_entities(&mut self.modified_time);
+        decode_opt_html_entities(&mut self.image);
+        decode_opt_html_entities(&mut self.favicon);
     }
 }
 
@@ -624,19 +605,25 @@ impl Readability {
             }
 
             // validating @type
-            let mut article_type = String::new();
+            
+            let mut article_type: Option<String> = None;
 
             let type_val = parsed.get("^type");
             //There are no examples with @graph array, so it is not clear how to check it
             //TODO: implement same @graph logic as mozilla, when there will be examples.
             if type_val.exists() {
-                article_type = type_val.str().to_string();
+                article_type = Some(type_val.str().to_string());
             } else {
                 let type_val = parsed.get("^graph.#.^type");
                 if matches!(type_val.kind(), gjson::Kind::String) {
-                    article_type = type_val.str().to_string();
+                    article_type = Some(type_val.str().to_string());
                 }
             }
+
+            let Some(article_type) = article_type else {
+                continue;
+            };
+
             if !JSONLD_ARTICLE_TYPES
                 .iter()
                 .any(|p| article_type.contains(p))
@@ -1168,6 +1155,20 @@ fn extract_favicon(root_node: &Document, base_url: Option<String>) -> Option<Str
     favicon_url
 }
 
+
+fn decode_html_entities(s: &mut String) {
+    let decoded = html_escape::decode_html_entities(s);
+    if let std::borrow::Cow::Owned(new) = decoded {
+        *s = new;
+    }
+}
+
+fn decode_opt_html_entities(opt: &mut Option<String>) {
+    if let Some(s) = opt {
+        decode_html_entities(s);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1418,5 +1419,22 @@ mod tests {
         );
         let got_video = ra.doc.select("video source").attr("src").unwrap();
         assert_eq!(got_video, "https://example.com/clip.mp4".into());
+    }
+
+    #[test]
+    fn test_metadata_is_empty() {
+        let empty_meta = Metadata::default();
+        assert!(empty_meta.is_empty());
+
+        let non_empty_meta_1 = Metadata {
+            title: "The Title".into(),
+            ..Default::default()
+        };
+        assert!(!non_empty_meta_1.is_empty());
+        let non_empty_meta_2 = Metadata {
+            lang: Some("en".into()),
+            ..Default::default()
+        };
+        assert!(!non_empty_meta_2.is_empty());
     }
 }

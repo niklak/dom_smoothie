@@ -8,6 +8,18 @@ use once_cell::sync::Lazy;
 pub(crate) static R_MATCHER: Lazy<Matcher> =
     Lazy::new(|| Matcher::new("#readability-page-1").unwrap());
 
+macro_rules! check {
+    ($field:expr, $left:expr, $right:expr, $path:expr) => {
+        assert_eq!(
+            $left,
+            $right,
+            "Mismatch in field '{}' (test: {})",
+            $field,
+            $path.display()
+        );
+    };
+}
+
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct ExpectedMetadata {
@@ -42,7 +54,13 @@ where
     let article = readability.parse().unwrap();
     let expected_contents = fs::read_to_string(expected_path).unwrap();
     let article_text = article.text_content.as_ref();
-    assert_eq!(article_text, expected_contents.trim())
+
+    check!(
+        "text_content",
+        article_text,
+        expected_contents.trim(),
+        base_path
+    );
 }
 
 pub(crate) fn test_readability<P>(test_path: P)
@@ -82,12 +100,7 @@ where
         .collect::<Vec<_>>()
         .join("");
 
-    assert_eq!(
-        a_html,
-        e_html,
-        "parsed contents for test {} do not match with expected content",
-        test_path.as_ref().display()
-    );
+    check!("content", a_html, e_html, base_path);
 }
 
 pub fn test_metadata<P>(test_path: P, host: Option<&str>)
@@ -110,39 +123,22 @@ where
 
     let expected_metadata_path = base_path.join("expected-metadata.json");
     let meta_contents = fs::read_to_string(expected_metadata_path).unwrap();
-    let expected: ExpectedMetadata = serde_json::from_str(&meta_contents).unwrap();
+    let exp: ExpectedMetadata = serde_json::from_str(&meta_contents).unwrap();
 
-    assert_eq!(
-        readable, expected.readerable,
-        "readerable does not match expected"
+    check!("readable", &readable, &exp.readerable, &base_path);
+    check!("title", &article.title, &exp.title, &base_path);
+    check!("byline", &article.byline, &exp.byline, &base_path);
+    check!("excerpt", &article.excerpt, &exp.excerpt, &base_path);
+    check!("site_name", &article.site_name, &exp.site_name, &base_path);
+    check!(
+        "published_time",
+        &article.published_time,
+        &exp.published_time,
+        &base_path
     );
-
-    assert_eq!(
-        article.title, expected.title,
-        "title does not match expected"
-    );
-    assert_eq!(
-        article.byline, expected.byline,
-        "byline does not match expected"
-    );
-    assert_eq!(
-        article.excerpt, expected.excerpt,
-        "excerpt does not match expected"
-    );
-    assert_eq!(
-        article.site_name, expected.site_name,
-        "site_name does not match expected"
-    );
-    assert_eq!(
-        article.published_time, expected.published_time,
-        "published_time does not match expected"
-    );
-    assert_eq!(article.lang, expected.lang, "lang does not match expected");
-    assert_eq!(article.dir, expected.dir, "dirs does not match expected");
-    assert_eq!(
-        article.image, expected.image,
-        "image does not match expected"
-    );
+    check!("lang", &article.lang, &exp.lang, &base_path);
+    check!("dir", &article.dir, &exp.dir, &base_path);
+    check!("image", &article.image, &exp.image, &base_path);
 }
 
 pub fn test_favicon<P>(test_path: P, host: Option<&str>, expected: Option<&str>)
@@ -161,9 +157,10 @@ where
 
     let metadata = r.get_article_metadata(None);
 
-    assert_eq!(
-        metadata.favicon,
-        expected.map(|s| s.to_string()),
-        "favicon does not match expected"
+    check!(
+        "favicon",
+        &metadata.favicon,
+        &expected.map(|s| s.to_string()),
+        &base_path
     );
 }
