@@ -33,7 +33,6 @@ fn clean(root_sel: &Selection) {
 }
 
 fn clean_styles(n: &NodeRef) {
-
     if n.has_name("svg") {
         return;
     }
