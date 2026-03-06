@@ -95,7 +95,7 @@ impl Readability {
 
             tree.reparent_children_of(&body_node.id, Some(tc.id));
             body_node.append_child(&tc);
-            init_node_score(&tc, flags.contains(GrabFlags::WeightClasses));
+            init_node_score(&tc, weigh_class);
             top_candidate = Some(tc);
         } else if let Some(mut tc) = top_candidate {
             if matches!(
