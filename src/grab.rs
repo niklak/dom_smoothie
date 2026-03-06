@@ -492,7 +492,9 @@ fn find_common_candidate<'a>(
         }
     }
 
-    top_candidate = adjust_top_candidate_by_parent(top_candidate, weigh_class);
+    if let Some(tc) = top_candidate {
+        top_candidate = Some( adjust_top_candidate_by_parent(tc, weigh_class));
+    }
 
     top_candidate
 }
@@ -544,7 +546,9 @@ fn find_common_candidate_alt<'a>(
     }
 
     if require_adjustment {
-        top_candidate = adjust_top_candidate_by_parent(top_candidate, weigh_class);
+        if let Some(tc) = top_candidate {
+            top_candidate = Some(adjust_top_candidate_by_parent(tc, weigh_class));
+        }
     }
     top_candidate
 }
@@ -563,10 +567,10 @@ fn get_node_ancestors_set(node: &NodeRef) -> HashSet<NodeId> {
 }
 
 fn adjust_top_candidate_by_parent(
-    mut top_candidate: Option<NodeRef<'_>>,
+    mut top_candidate: NodeRef<'_>,
     weigh_class: bool,
-) -> Option<NodeRef<'_>> {
-    let tc = top_candidate.as_ref()?;
+) -> NodeRef<'_> {
+    let tc = &mut top_candidate;
     if !has_node_score(tc) {
         init_node_score(tc, weigh_class);
     }
@@ -595,7 +599,7 @@ fn adjust_top_candidate_by_parent(
             break;
         }
         if parent_score > last_score {
-            top_candidate = parent_of_top_candidate;
+            top_candidate = *tc_parent;
             break;
         }
         last_score = parent_score;
