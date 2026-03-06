@@ -95,37 +95,36 @@ impl Readability {
 
             tree.reparent_children_of(&body_node.id, Some(tc.id));
             body_node.append_child(&tc);
-            init_node_score(&tc, flags.contains(GrabFlags::WeightClasses));
+            init_node_score(&tc, weigh_class);
             top_candidate = Some(tc);
-        } else if top_candidate.is_some() {
+        } else if let Some(mut tc) = top_candidate {
             if matches!(
                 self.config.candidate_select_mode,
                 CandidateSelectMode::DomSmoothie
             ) {
-                top_candidate =
-                    find_common_candidate_alt(top_candidate, &top_candidates, weigh_class);
+                tc = find_common_candidate_alt(tc, &top_candidates, weigh_class);
             } else {
                 // Find a better top candidate node if it contains (at least three) nodes which belong to `top_candidates` array
                 // and whose scores are quite closed with current `top_candidate` node.
-                top_candidate = find_common_candidate(top_candidate, &top_candidates, weigh_class);
+                tc = find_common_candidate(tc, &top_candidates, weigh_class);
             }
+
             // If the top candidate is the only child, use parent instead. This will help sibling
             // joining logic when adjacent content is actually located in parent's sibling node.
-            if let Some(ref tc) = top_candidate {
-                let mut parent_of_top_candidate = tc.parent();
+            let mut parent_of_top_candidate = tc.parent();
 
-                while let Some(ref tc_parent) = parent_of_top_candidate {
-                    if tc_parent.has_name("body") {
-                        break;
-                    }
-
-                    if tc_parent.element_children().len() != 1 {
-                        break;
-                    }
-                    top_candidate = parent_of_top_candidate;
-                    parent_of_top_candidate = tc_parent.parent();
+            while let Some(ref tc_parent) = parent_of_top_candidate {
+                if tc_parent.has_name("body") {
+                    break;
                 }
+
+                if tc_parent.element_children().len() != 1 {
+                    break;
+                }
+                tc = *tc_parent;
+                parent_of_top_candidate = tc_parent.parent();
             }
+            top_candidate = Some(tc);
         }
 
         let tc = top_candidate.as_ref()?;
@@ -442,11 +441,11 @@ fn assign_article_node(tc: &NodeRef, article_content: &NodeRef) {
 
 /// Find a better top candidate across other candidates in a way that `mozilla/readability` does.
 fn find_common_candidate<'a>(
-    mut top_candidate: Option<NodeRef<'a>>,
+    mut top_candidate: NodeRef<'a>,
     top_candidates: &[NodeRef<'a>],
     weigh_class: bool,
-) -> Option<NodeRef<'a>> {
-    let tc = top_candidate.as_ref()?;
+) -> NodeRef<'a> {
+    let tc = &mut top_candidate;
 
     let tc_score = get_node_score(tc);
 
@@ -484,7 +483,7 @@ fn find_common_candidate<'a>(
             }
 
             if lists_containing_this_ancestor >= MIN_COMMON_ANCESTORS {
-                top_candidate = parent_of_top_candidate;
+                top_candidate = *tc_parent;
                 break;
             }
 
@@ -499,15 +498,14 @@ fn find_common_candidate<'a>(
 
 /// Find a better top candidate across other candidates (alternative approach).
 fn find_common_candidate_alt<'a>(
-    mut top_candidate: Option<NodeRef<'a>>,
+    mut top_candidate: NodeRef<'a>,
     top_candidates: &[NodeRef<'a>],
     weigh_class: bool,
-) -> Option<NodeRef<'a>> {
-    let tc = top_candidate.as_ref()?;
-
+) -> NodeRef<'a> {
     if top_candidates.len() < 2 {
         return top_candidate;
     }
+    let tc = &mut top_candidate;
 
     let tc_ancestors = get_node_ancestors_set(tc);
     let tc_score = get_node_score(tc);
@@ -538,7 +536,7 @@ fn find_common_candidate_alt<'a>(
         let threshold = get_node_score(tc) / 3.0;
         let best_candidate = NodeRef::new(best_candidate_id, tc.tree);
         if get_node_score(&best_candidate) > threshold {
-            top_candidate = Some(best_candidate);
+            top_candidate = best_candidate;
             require_adjustment = false;
         }
     }
@@ -563,10 +561,10 @@ fn get_node_ancestors_set(node: &NodeRef) -> HashSet<NodeId> {
 }
 
 fn adjust_top_candidate_by_parent(
-    mut top_candidate: Option<NodeRef<'_>>,
+    mut top_candidate: NodeRef<'_>,
     weigh_class: bool,
-) -> Option<NodeRef<'_>> {
-    let tc = top_candidate.as_ref()?;
+) -> NodeRef<'_> {
+    let tc = &mut top_candidate;
     if !has_node_score(tc) {
         init_node_score(tc, weigh_class);
     }
@@ -595,7 +593,7 @@ fn adjust_top_candidate_by_parent(
             break;
         }
         if parent_score > last_score {
-            top_candidate = parent_of_top_candidate;
+            top_candidate = *tc_parent;
             break;
         }
         last_score = parent_score;

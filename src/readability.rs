@@ -605,7 +605,7 @@ impl Readability {
             }
 
             // validating @type
-            
+
             let mut article_type: Option<String> = None;
 
             let type_val = parsed.get("^type");
@@ -1154,7 +1154,6 @@ fn extract_favicon(root_node: &Document, base_url: Option<String>) -> Option<Str
     }
     favicon_url
 }
-
 
 fn decode_html_entities(s: &mut String) {
     let decoded = html_escape::decode_html_entities(s);
