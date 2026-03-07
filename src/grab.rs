@@ -446,7 +446,6 @@ fn find_common_candidate<'a>(
     weigh_class: bool,
 ) -> NodeRef<'a> {
     let tc = &mut top_candidate;
-
     let tc_score = get_node_score(tc);
 
     let mut alternative_candidate_ancestors = vec![];
@@ -533,9 +532,8 @@ fn find_common_candidate_alt<'a>(
         .max_by(|x, y| x.0.cmp(&y.0).then(x.1.cmp(&y.1)))
         .map(|n| n.0)
     {
-        let threshold = get_node_score(tc) / 3.0;
         let best_candidate = NodeRef::new(best_candidate_id, tc.tree);
-        if get_node_score(&best_candidate) > threshold {
+        if get_node_score(&best_candidate) > tc_score / 3.0 {
             top_candidate = best_candidate;
             require_adjustment = false;
         }
