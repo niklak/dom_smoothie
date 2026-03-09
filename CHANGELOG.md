@@ -2,7 +2,7 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
-## [Unreleased]
+## [0.16.0] - 2026-03-09
 
 ### Changed
 - Minor internal code changes.
