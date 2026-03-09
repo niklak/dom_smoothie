@@ -1210,8 +1210,8 @@ mod tests {
         readability.replace_fonts();
 
         debug_assert_eq!(
-            readability.doc.select("span").html(),
-            "<span>Styled Text Here</span>".into()
+            &readability.doc.select("span").html(),
+            "<span>Styled Text Here</span>"
         );
     }
 
@@ -1238,7 +1238,7 @@ mod tests {
 
         let title = readability.get_article_title();
 
-        assert_eq!(title, "Rust (programming language) - Wikipedia".into())
+        assert_eq!(&title, "Rust (programming language) - Wikipedia")
     }
 
     #[test]
@@ -1359,7 +1359,7 @@ mod tests {
         </html>"#;
         let readability = Readability::from(contents);
         let title = readability.get_article_title();
-        assert_eq!(title, "/".into());
+        assert_eq!(&title, "/");
     }
 
     #[test]
@@ -1413,11 +1413,11 @@ mod tests {
         ra.fix_relative_uris(&body);
         let got_img = ra.doc.select("img").attr("srcset").unwrap();
         assert_eq!(
-            got_img,
-            "https://example.com/img/a.jpg, https://example.com/img/b.jpg 2x".into()
+            &got_img,
+            "https://example.com/img/a.jpg, https://example.com/img/b.jpg 2x"
         );
         let got_video = ra.doc.select("video source").attr("src").unwrap();
-        assert_eq!(got_video, "https://example.com/clip.mp4".into());
+        assert_eq!(&got_video, "https://example.com/clip.mp4");
     }
 
     #[test]
