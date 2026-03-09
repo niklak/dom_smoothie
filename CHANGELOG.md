@@ -8,7 +8,8 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 - Minor internal code changes.
 - Refactored `div_into_p` function.
 - Simplify control flow in `Readability::handle_candidates`.
- 
+- Updated `dom_query` version from `0.25.1` to `0.26.0`.
+
 ## [0.15.0] - 2026-01-18
 
 ### Changed
