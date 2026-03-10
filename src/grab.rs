@@ -253,11 +253,11 @@ fn div_into_p(node: &NodeRef) {
     // Put phrasing content into paragraphs.
     let mut child_node = node.first_child();
     while let Some(ref child) = child_node {
-        child_node = wrap_pharsing_content(child);
+        child_node = wrap_phrasing_content(child);
     }
 }
 
-fn wrap_pharsing_content<'a>(node: &NodeRef<'a>) -> Option<NodeRef<'a>> {
+fn wrap_phrasing_content<'a>(node: &NodeRef<'a>) -> Option<NodeRef<'a>> {
     if is_phrasing_content(node) && !is_whitespace(node) {
         let mut next_sibling = node.next_sibling();
         let p = node.tree.new_element("p");
@@ -272,14 +272,8 @@ fn wrap_pharsing_content<'a>(node: &NodeRef<'a>) -> Option<NodeRef<'a>> {
                 break;
             }
         }
-
-        while let Some(p_first_child) = p.first_child() {
-            if is_whitespace(&p_first_child) {
-                p_first_child.remove_from_parent();
-            } else {
-                break;
-            }
-        }
+        // Because `p` starts with phrasing content that is not whitespace,
+        // we can skip checking the first child for whitespace.
 
         while let Some(p_last_child) = p.last_child() {
             if is_whitespace(&p_last_child) {
