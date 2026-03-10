@@ -2,6 +2,10 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
+## [Unreleased]
+### Changed
+- Removed redundant whitespace check in `wrap_phrasing_content`.
+
 ## [0.16.0] - 2026-03-09
 
 ### Changed
