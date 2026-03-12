@@ -23,7 +23,7 @@ fn table_test_metadata() {
         let paths = fs::read_dir(d).unwrap();
         for p in paths {
             let pb = p.unwrap().path();
-            let data = TestData::from_path(pb, None, "expected-metadata.json").unwrap();
+            let data = test_data!(pb, "expected-metadata.json");
             test_metadata(data, Some("http://fakehost/test/"));
         }
     }

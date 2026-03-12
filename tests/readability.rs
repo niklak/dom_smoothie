@@ -1,5 +1,6 @@
 use std::fs;
 
+#[macro_use]
 mod common;
 
 use common::{test_readability, TestData};
@@ -10,7 +11,7 @@ fn table_test_readability() {
 
     for p in paths {
         let pb = p.unwrap().path();
-        let data = TestData::from_path(pb, None, "expected.html").unwrap();
+        let data = test_data!(pb, "expected.html");
         test_readability(data);
     }
 }

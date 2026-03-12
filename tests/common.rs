@@ -31,6 +31,17 @@ macro_rules! test_data {
     };
 }
 
+#[allow(unused_macros)]
+macro_rules! include_test_data {
+    ($test_path:expr, $source_file:expr, $expected_file:expr) => {
+        TestData::new(
+            $test_path,
+            include_str!($source_file).to_string(),
+            include_str!($expected_file).to_string(),
+        )
+    };
+}
+
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct ExpectedMetadata {
@@ -52,6 +63,7 @@ pub struct TestData {
 }
 
 impl TestData {
+    /// new creates a new instance of `TestData`.
     pub fn new<P>(test_path: P, source_contents: String, expected_contents: String) -> Self
     where
         P: AsRef<Path>,
