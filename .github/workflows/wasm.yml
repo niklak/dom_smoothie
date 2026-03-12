@@ -22,10 +22,10 @@ jobs:
       with:
         toolchain: stable
         targets: wasm32-unknown-unknown
-    - name: Install wasm-bindgen-cli
+    - name: Install wasm-pack & wasm-bindgen-cli
       uses: taiki-e/install-action@v2
       with:
-        tool: wasm-pack
+        tool: wasm-pack,wasm-bindgen-cli
     - uses: Swatinem/rust-cache@v2
       with:
         workspaces: .       
