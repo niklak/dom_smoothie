@@ -89,11 +89,7 @@ impl TestData {
         let source_contents = fs::read_to_string(source_path)?;
         let expected_path = base_path.join(expected_file);
         let expected_contents = fs::read_to_string(expected_path)?;
-        Ok(Self {
-            path: base_path.to_path_buf(),
-            source_contents,
-            expected_contents,
-        })
+        Ok(Self::new(test_path, source_contents, expected_contents))
     }
 }
 
@@ -109,13 +105,8 @@ pub(crate) fn test_alt_text(data: TestData, text_mode: TextMode) {
 
     let article = readability.parse().unwrap();
     let article_text = article.text_content.as_ref();
-
-    check!(
-        "text_content",
-        data.expected_contents.trim(),
-        article_text,
-        &data.path
-    );
+    let expected = data.expected_contents.trim();
+    check!("text_content",article_text, expected, &data.path);
 }
 
 pub(crate) fn test_readability(data: TestData) {
@@ -194,8 +185,8 @@ where
 
     check!(
         "favicon",
-        &expected.map(|s| s.to_string()),
         &metadata.favicon,
+        &expected.map(|s| s.to_string()),
         &test_path.as_ref()
     );
 }
