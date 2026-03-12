@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1773132224582,
+  "lastUpdate": 1773337699417,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -4745,6 +4745,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 41713891,
             "range": "± 590732",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3ddc3697dfc5ca673f39c73c26420b1b1d4d6d0d",
+          "message": "Merge pull request #191 from niklak/ci/wasm-tests\n\nadded wasm32 tests",
+          "timestamp": "2026-03-12T19:45:39+02:00",
+          "tree_id": "faac5957a01c36e28906c437636005e3fe77eda4",
+          "url": "https://github.com/niklak/dom_smoothie/commit/3ddc3697dfc5ca673f39c73c26420b1b1d4d6d0d"
+        },
+        "date": 1773337698328,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2267935,
+            "range": "± 32914",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 9757354,
+            "range": "± 275051",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 40997344,
+            "range": "± 1161124",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2291780,
+            "range": "± 7557",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8380762,
+            "range": "± 44181",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 40956496,
+            "range": "± 242214",
             "unit": "ns/iter"
           }
         ]
