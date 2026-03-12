@@ -29,6 +29,8 @@ jobs:
     - uses: Swatinem/rust-cache@v2
       with:
         workspaces: .       
-    - name: Run tests
+    - name: Run tests (crates/js)
       working-directory: crates/js
       run: wasm-pack test --node
+    - name: Run tests 
+      run: cargo test --target wasm32-unknown-unknown
