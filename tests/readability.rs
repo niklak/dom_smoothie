@@ -1,15 +1,18 @@
 use std::fs;
 
+#[macro_use]
 mod common;
 
-use common::test_readability;
+use common::{test_readability, TestData};
 
 #[test]
 fn table_test_readability() {
     let paths = fs::read_dir("./test-pages/readability").unwrap();
 
     for p in paths {
-        test_readability(p.unwrap().path());
+        let pb = p.unwrap().path();
+        let data = test_data!(pb, "expected.html");
+        test_readability(data);
     }
 }
 
