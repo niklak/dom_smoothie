@@ -14,28 +14,30 @@ fn test_candidates() {
     // The `DomSmoothie` approach performs better here because it
     // does not rely on the additional ancestor candidate lists
     // required by the original Readability algorithm.
-    
+
     let contents = include_str!("../test-pages/alice-two-paragraphs.html");
-    
+
     let first_p_mark = "Alice was beginning to get very tired of sitting";
     let second_p_mark = "So she was considering in her own mind";
 
     let mut ra = Readability::new(contents, None, None).unwrap();
-    let res = ra.parse_with_policy(dom_smoothie::ParsePolicy::Strict).unwrap();
-    
-    
+    let res = ra
+        .parse_with_policy(dom_smoothie::ParsePolicy::Strict)
+        .unwrap();
+
     assert!(res.text_content.contains(first_p_mark));
     assert!(!res.text_content.contains(second_p_mark));
-    
-    let cfg = Config{
+
+    let cfg = Config {
         candidate_select_mode: dom_smoothie::CandidateSelectMode::DomSmoothie,
         ..Default::default()
     };
-    
+
     let mut ra = Readability::new(contents, None, Some(cfg)).unwrap();
-    let res = ra.parse_with_policy(dom_smoothie::ParsePolicy::Strict).unwrap();
-    
+    let res = ra
+        .parse_with_policy(dom_smoothie::ParsePolicy::Strict)
+        .unwrap();
+
     assert!(res.text_content.contains(first_p_mark));
     assert!(res.text_content.contains(second_p_mark));
-    
 }

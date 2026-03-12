@@ -1,5 +1,9 @@
 #![allow(dead_code)]
-use std::{fs, io, path::Path};
+
+use std::{
+    fs, io,
+    path::{Path, PathBuf},
+};
 
 use dom_query::{Document, Matcher};
 use dom_smoothie::{CandidateSelectMode, Config, Readability, TextMode};
@@ -20,6 +24,13 @@ macro_rules! check {
     };
 }
 
+#[allow(unused_macros)]
+macro_rules! test_data {
+    ($test_path:expr, $expected_file:expr) => {
+        TestData::from_path($test_path, None, $expected_file).unwrap()
+    };
+}
+
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct ExpectedMetadata {
@@ -35,32 +46,46 @@ struct ExpectedMetadata {
 }
 
 pub struct TestData {
+    path: PathBuf,
     source_contents: String,
     expected_contents: String,
 }
 
 impl TestData {
-    pub fn new(source_contents: String, expected_contents: String) -> Self{
-        Self {source_contents, expected_contents}
+    pub fn new<P>(test_path: P, source_contents: String, expected_contents: String) -> Self
+    where
+        P: AsRef<Path>,
+    {
+        Self {
+            path: test_path.as_ref().to_path_buf(),
+            source_contents,
+            expected_contents,
+        }
     }
-    
-    pub fn from_path<P>(test_path: P, source_file: Option<&str>, expected_file: &str)  -> io::Result<Self>  where P: AsRef<Path>{
-        let source_file = source_file.unwrap_or("source.html");
+
+    pub fn from_path<P>(
+        test_path: P,
+        source_file: Option<&str>,
+        expected_file: &str,
+    ) -> io::Result<Self>
+    where
+        P: AsRef<Path>,
+    {
         let base_path = test_path.as_ref();
+        let source_file = source_file.unwrap_or("source.html");
         let source_path = base_path.join(source_file);
         let source_contents = fs::read_to_string(source_path)?;
         let expected_path = base_path.join(expected_file);
         let expected_contents = fs::read_to_string(expected_path)?;
-        Ok(Self {source_contents, expected_contents})
+        Ok(Self {
+            path: base_path.to_path_buf(),
+            source_contents,
+            expected_contents,
+        })
     }
 }
 
-pub(crate) fn test_alt_text<P>(test_path: P, text_mode: TextMode, expected_filename: &str)
-where
-    P: AsRef<Path>,
-{
-    let data = TestData::from_path(&test_path, None, expected_filename).unwrap();
-
+pub(crate) fn test_alt_text(data: TestData, text_mode: TextMode) {
     // for more options check the documentation
     let cfg = Config {
         candidate_select_mode: CandidateSelectMode::DomSmoothie,
@@ -77,16 +102,11 @@ where
         "text_content",
         data.expected_contents.trim(),
         article_text,
-        &test_path.as_ref()
+        &data.path
     );
 }
 
-pub(crate) fn test_readability<P>(test_path: P)
-where
-    P: AsRef<Path>,
-{
-    let data = TestData::from_path(&test_path, None, "expected.html").unwrap();
-    
+pub(crate) fn test_readability(data: TestData) {
     let doc_url = Some("http://fakehost/test/");
     let cfg = dom_smoothie::Config {
         classes_to_preserve: vec!["caption".into()],
@@ -114,15 +134,10 @@ where
         .collect::<Vec<_>>()
         .join("");
 
-    check!("content", a_html, e_html, &test_path.as_ref());
+    check!("content", a_html, e_html, data.path);
 }
 
-pub fn test_metadata<P>(test_path: P, host: Option<&str>)
-where
-    P: AsRef<Path>,
-{
-    let data = TestData::from_path(&test_path, None, "expected-metadata.json").unwrap();
-    
+pub fn test_metadata(data: TestData, host: Option<&str>) {
     let cfg = dom_smoothie::Config {
         classes_to_preserve: vec!["caption".into()],
         ..Default::default()
@@ -132,31 +147,29 @@ where
     let readable = r.is_probably_readable();
     let article = r.parse().unwrap();
 
-
     let exp: ExpectedMetadata = serde_json::from_str(&data.expected_contents).unwrap();
 
-    check!("readable", &readable, &exp.readerable, &test_path.as_ref());
-    check!("title", &article.title, &exp.title, &test_path.as_ref());
-    check!("byline", &article.byline, &exp.byline, &test_path.as_ref());
-    check!("excerpt", &article.excerpt, &exp.excerpt, &test_path.as_ref());
-    check!("site_name", &article.site_name, &exp.site_name, &test_path.as_ref());
+    check!("readable", &readable, &exp.readerable, data.path);
+    check!("title", &article.title, &exp.title, data.path);
+    check!("byline", &article.byline, &exp.byline, data.path);
+    check!("excerpt", &article.excerpt, &exp.excerpt, data.path);
+    check!("site_name", &article.site_name, &exp.site_name, data.path);
     check!(
         "published_time",
         &article.published_time,
         &exp.published_time,
-        &test_path.as_ref()
+        data.path
     );
-    check!("lang", &article.lang, &exp.lang, &test_path.as_ref());
-    check!("dir", &article.dir, &exp.dir, &test_path.as_ref());
-    check!("image", &article.image, &exp.image, &test_path.as_ref());
+    check!("lang", &article.lang, &exp.lang, data.path);
+    check!("dir", &article.dir, &exp.dir, data.path);
+    check!("image", &article.image, &exp.image, data.path);
 }
 
 pub fn test_favicon<P>(test_path: P, host: Option<&str>, expected: Option<&str>)
 where
     P: AsRef<Path>,
 {
-    let base_path = test_path.as_ref();
-    let source_path = base_path.join("source.html");
+    let source_path = test_path.as_ref().join("source.html");
     let source_contents = fs::read_to_string(source_path).unwrap();
 
     let cfg = dom_smoothie::Config {
@@ -169,8 +182,8 @@ where
 
     check!(
         "favicon",
-        &metadata.favicon,
         &expected.map(|s| s.to_string()),
+        &metadata.favicon,
         &test_path.as_ref()
     );
 }

@@ -1,13 +1,17 @@
 use std::fs;
 
+#[macro_use]
 mod common;
 
-use common::test_metadata;
+use common::{test_metadata, TestData};
 
 #[test]
 fn test_metadata_last_fail() {
     test_metadata(
-        "./test-pages/readability/title-en-dash",
+        test_data!(
+            "./test-pages/readability/title-en-dash",
+            "expected-metadata.json"
+        ),
         Some("http://fakehost/test/"),
     );
 }
@@ -18,8 +22,9 @@ fn table_test_metadata() {
     for d in source_dirs {
         let paths = fs::read_dir(d).unwrap();
         for p in paths {
-            let pp = p.unwrap().path();
-            test_metadata(pp, Some("http://fakehost/test/"));
+            let pb = p.unwrap().path();
+            let data = TestData::from_path(pb, None, "expected-metadata.json").unwrap();
+            test_metadata(data, Some("http://fakehost/test/"));
         }
     }
 }
