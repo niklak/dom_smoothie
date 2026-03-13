@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1773337699417,
+  "lastUpdate": 1773389375967,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -4805,6 +4805,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 40956496,
             "range": "± 242214",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "distinct": true,
+          "id": "676e3e6e9a01f7466e87e0b5018f0f1dfe58cad9",
+          "message": "build(deps): bump thiserror from 2.0.17 to 2.0.18\n\nBumps [thiserror](https://github.com/dtolnay/thiserror) from 2.0.17 to 2.0.18.\n- [Release notes](https://github.com/dtolnay/thiserror/releases)\n- [Commits](https://github.com/dtolnay/thiserror/compare/2.0.17...2.0.18)\n\n---\nupdated-dependencies:\n- dependency-name: thiserror\n  dependency-version: 2.0.18\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>",
+          "timestamp": "2026-03-13T10:07:28+02:00",
+          "tree_id": "e86f6630b55d1895d7f3c8ec402871c0a6f47704",
+          "url": "https://github.com/niklak/dom_smoothie/commit/676e3e6e9a01f7466e87e0b5018f0f1dfe58cad9"
+        },
+        "date": 1773389375372,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2259395,
+            "range": "± 9046",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 9772384,
+            "range": "± 262143",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 41833658,
+            "range": "± 1269659",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2293362,
+            "range": "± 16273",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8584320,
+            "range": "± 239699",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 41756320,
+            "range": "± 698394",
             "unit": "ns/iter"
           }
         ]
