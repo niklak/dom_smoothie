@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1773389375967,
+  "lastUpdate": 1773389864017,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -4865,6 +4865,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 41756320,
             "range": "± 698394",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "distinct": true,
+          "id": "e4452fd9a085d0a15b5145691f4b626c97257b0d",
+          "message": "build(deps): bump serde_json from 1.0.145 to 1.0.149\n\nBumps [serde_json](https://github.com/serde-rs/json) from 1.0.145 to 1.0.149.\n- [Release notes](https://github.com/serde-rs/json/releases)\n- [Commits](https://github.com/serde-rs/json/compare/v1.0.145...v1.0.149)\n\n---\nupdated-dependencies:\n- dependency-name: serde_json\n  dependency-version: 1.0.149\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>",
+          "timestamp": "2026-03-13T10:15:23+02:00",
+          "tree_id": "7abfeac816279814c9fd392121e536a1cdf3ff7b",
+          "url": "https://github.com/niklak/dom_smoothie/commit/e4452fd9a085d0a15b5145691f4b626c97257b0d"
+        },
+        "date": 1773389862930,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2286896,
+            "range": "± 72001",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 9897063,
+            "range": "± 294423",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 42240371,
+            "range": "± 920382",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2300319,
+            "range": "± 10996",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8500101,
+            "range": "± 55296",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 41020830,
+            "range": "± 740221",
             "unit": "ns/iter"
           }
         ]
