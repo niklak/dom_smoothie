@@ -33,10 +33,6 @@ fn clean(root_sel: &Selection) {
 }
 
 fn clean_styles(n: &NodeRef) {
-    if !n.is_element() {
-        return;
-    }
-
     if n.has_name("svg") {
         return;
     }
@@ -69,6 +65,7 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
         return false;
     }
 
+    // TODO: This is a rare case, probably it should be `pre` instead of `code`.
     if has_ancestor(node, Some(0), |n| n.has_name("code")) {
         return false;
     }
@@ -127,7 +124,10 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
                 return true;
             }
 
-            // TODO: this is not working, useless
+            // TODO: this check can probably be removed.
+            // If this is a large menu block, article_content will likely not include it,
+            // because it contains too little meaningful content.
+            // Otherwise, the magic number '100' seems way too high; the flow usually works fine with 10–20.
             let li = node.find_descendants("li").len() as f32 - 100.0;
             if !is_list && li > p {
                 return true;
@@ -233,6 +233,7 @@ fn mark_data_tables(base_sel: &Selection) {
             continue;
         }
 
+        // TODO: Pretty rare case (not covered by tests). Probably should be removed.
         if MINI_AINT_DATA_TABLE.match_node(table_node) {
             set_data_readability_table(table_node, false);
             continue;

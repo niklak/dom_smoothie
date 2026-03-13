@@ -4,13 +4,17 @@ use std::collections::hash_map::DefaultHasher;
 use std::error::Error;
 use std::hash::{Hash, Hasher};
 
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen_test::*;
+
 fn hash_text<T: Hash>(text: &T) -> u64 {
     let mut hasher = DefaultHasher::new();
     text.hash(&mut hasher);
     hasher.finish()
 }
 
-#[test]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 pub(crate) fn test_parse_with_policy() -> Result<(), Box<dyn Error>> {
     // this is a case when each policy produces a different result
     let source_contents = include_str!("../test-pages/ok/wikipedia-2/source.html");
@@ -35,7 +39,8 @@ pub(crate) fn test_parse_with_policy() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-#[test]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 pub(crate) fn test_parse_with_policy_fail() -> Result<(), Box<dyn Error>> {
     // Test that problematic HTML fails with Strict policy
     let source_contents = include_str!("../test-pages/readability/lazy-image-3/source.html");

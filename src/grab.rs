@@ -29,7 +29,7 @@ impl Readability {
             let article_node = self.attempt_grab_article(&doc, &flags);
             // Now that we've gone through the full algorithm, check to see if
             // we got any meaningful content. If we didn't, we may need to re-run
-            // grabArticle with different flags set. This gives us a higher likelihood of
+            // `grab_article` with different flags set. This gives us a higher likelihood of
             // finding the content, and the sieve approach gives us a higher likelihood of
             // finding the -right- content.
 
@@ -70,15 +70,14 @@ impl Readability {
         let selection = doc.select_single("body");
         let body_node = selection.nodes().first()?;
         let strip_unlikely = flags.contains(GrabFlags::StripUnlikelys);
-        let mut elements_to_score = collect_elements_to_score(body_node, strip_unlikely);
-        let article_node = self.handle_candidates(&mut elements_to_score, body_node, flags);
-        let res = article_node.map(|n| NodeRef::new(n.id, &doc.tree));
-        res
+        let elements_to_score = collect_elements_to_score(body_node, strip_unlikely);
+        let article_node = self.handle_candidates(&elements_to_score, body_node, flags);
+        article_node.map(|n| NodeRef::new(n.id, &doc.tree))
     }
 
     fn handle_candidates<'a>(
         &self,
-        elements_to_score: &mut Vec<NodeRef<'a>>,
+        elements_to_score: &[NodeRef<'a>],
         body_node: &'a NodeRef,
         flags: &FlagSet<GrabFlags>,
     ) -> Option<NodeRef<'a>> {
@@ -96,65 +95,62 @@ impl Readability {
 
             tree.reparent_children_of(&body_node.id, Some(tc.id));
             body_node.append_child(&tc);
-            init_node_score(&tc, flags.contains(GrabFlags::WeightClasses));
+            init_node_score(&tc, weigh_class);
             top_candidate = Some(tc);
-        } else if top_candidate.is_some() {
+        } else if let Some(mut tc) = top_candidate {
             if matches!(
                 self.config.candidate_select_mode,
                 CandidateSelectMode::DomSmoothie
             ) {
-                top_candidate =
-                    find_common_candidate_alt(top_candidate, &top_candidates, weigh_class);
+                tc = find_common_candidate_alt(tc, &top_candidates, weigh_class);
             } else {
-                // Find a better top candidate node if it contains (at least three) nodes which belong to `topCandidates` array
-                // and whose scores are quite closed with current `topCandidate` node.
-                top_candidate = find_common_candidate(top_candidate, &top_candidates, weigh_class);
+                // Find a better top candidate node if it contains (at least three) nodes which belong to `top_candidates` array
+                // and whose scores are quite closed with current `top_candidate` node.
+                tc = find_common_candidate(tc, &top_candidates, weigh_class);
             }
+
             // If the top candidate is the only child, use parent instead. This will help sibling
             // joining logic when adjacent content is actually located in parent's sibling node.
-            if let Some(ref tc) = top_candidate {
-                let mut parent_of_top_candidate = tc.parent();
+            let mut parent_of_top_candidate = tc.parent();
 
-                while let Some(ref tc_parent) = parent_of_top_candidate {
-                    if tc_parent.has_name("body") {
-                        break;
-                    }
-
-                    if tc_parent.element_children().len() != 1 {
-                        break;
-                    }
-                    top_candidate = parent_of_top_candidate;
-                    parent_of_top_candidate = tc_parent.parent();
+            while let Some(ref tc_parent) = parent_of_top_candidate {
+                if tc_parent.has_name("body") {
+                    break;
                 }
+
+                if tc_parent.element_children().len() != 1 {
+                    break;
+                }
+                tc = *tc_parent;
+                parent_of_top_candidate = tc_parent.parent();
             }
+            top_candidate = Some(tc);
         }
-        if let Some(ref tc) = top_candidate {
-            if !has_node_score(tc) {
-                init_node_score(tc, weigh_class);
-            }
-            // Now that we have the top candidate, look through its siblings for content
-            // that might also be related. Things like preambles, content split by ads
-            // that we removed, etc.
 
-            let article_content = tree.new_element("div");
+        let tc = top_candidate.as_ref()?;
 
-            assign_article_node(tc, &article_content);
-
-            //prepare the article
-            prep_article(&article_content, flags, &self.config);
-
-            if top_candidate_is_created {
-                tc.set_attr("id", CONTENT_ID);
-                tc.set_attr("class", "page");
-            } else {
-                // this code does the same this as mozilla's implementation, but it is more simpler.
-                article_content.set_attr("id", CONTENT_ID);
-                article_content.set_attr("class", "page");
-            }
-
-            return Some(article_content);
+        if !has_node_score(tc) {
+            init_node_score(tc, weigh_class);
         }
-        None
+        // Now that we have the top candidate, look through its siblings for content
+        // that might also be related. Things like preambles, content split by ads
+        // that we removed, etc.
+        let article_content = tree.new_element("div");
+        assign_article_node(tc, &article_content);
+
+        //prepare the article
+        prep_article(&article_content, flags, &self.config);
+
+        if top_candidate_is_created {
+            tc.set_attr("id", CONTENT_ID);
+            tc.set_attr("class", "page");
+        } else {
+            // this code does the same thing as mozilla's implementation, but it is more simpler.
+            article_content.set_attr("id", CONTENT_ID);
+            article_content.set_attr("class", "page");
+        }
+
+        Some(article_content)
     }
 }
 
@@ -257,12 +253,11 @@ fn div_into_p(node: &NodeRef) {
     // Put phrasing content into paragraphs.
     let mut child_node = node.first_child();
     while let Some(ref child) = child_node {
-        let next_sibling = wrap_pharsing_content(child);
-        child_node = next_sibling;
+        child_node = wrap_phrasing_content(child);
     }
 }
 
-fn wrap_pharsing_content<'a>(node: &NodeRef<'a>) -> Option<NodeRef<'a>> {
+fn wrap_phrasing_content<'a>(node: &NodeRef<'a>) -> Option<NodeRef<'a>> {
     if is_phrasing_content(node) && !is_whitespace(node) {
         let mut next_sibling = node.next_sibling();
         let p = node.tree.new_element("p");
@@ -277,14 +272,8 @@ fn wrap_pharsing_content<'a>(node: &NodeRef<'a>) -> Option<NodeRef<'a>> {
                 break;
             }
         }
-
-        while let Some(p_first_child) = p.first_child() {
-            if is_whitespace(&p_first_child) {
-                p_first_child.remove_from_parent();
-            } else {
-                break;
-            }
-        }
+        // Because `p` starts with phrasing content that is not whitespace,
+        // we can skip checking the first child for whitespace.
 
         while let Some(p_last_child) = p.last_child() {
             if is_whitespace(&p_last_child) {
@@ -308,7 +297,7 @@ fn has_child_block_element(node: &NodeRef) -> bool {
 }
 
 fn score_elements<'a>(
-    elements_to_score: &Vec<NodeRef<'a>>,
+    elements_to_score: &[NodeRef<'a>],
     tree: &'a Tree,
     cfg: &Config,
     flags: &FlagSet<GrabFlags>,
@@ -317,18 +306,12 @@ fn score_elements<'a>(
     let mut cc_cache = CharCounterCache::default();
 
     for element in elements_to_score {
-        if element.parent().is_none() {
-            continue;
-        }
         let content_len = cc_cache.char_count(element);
         if content_len < 25 {
             continue;
         }
+        // these elements have at least one ancestor -- their parent.
         let ancestors = element.ancestors(Some(5));
-
-        if ancestors.is_empty() {
-            continue;
-        }
 
         // Count commas in the element's text content without allocating a new StrTendril.
         // Equivalent to `1 + element.text().split(COMMAS).count()`, but more efficient.
@@ -400,7 +383,7 @@ fn assign_article_node(tc: &NodeRef, article_content: &NodeRef) {
     }
     // Keep potential top candidate's parent node to try to get text direction of it later.
     let Some(tc_parent) = tc.parent() else {
-        unreachable!()
+        unreachable!("Top candidate must have a parent")
     };
 
     let tc_class = tc.attr_or("class", "");
@@ -452,13 +435,11 @@ fn assign_article_node(tc: &NodeRef, article_content: &NodeRef) {
 
 /// Find a better top candidate across other candidates in a way that `mozilla/readability` does.
 fn find_common_candidate<'a>(
-    mut top_candidate: Option<NodeRef<'a>>,
+    mut top_candidate: NodeRef<'a>,
     top_candidates: &[NodeRef<'a>],
     weigh_class: bool,
-) -> Option<NodeRef<'a>> {
-    let Some(ref tc) = top_candidate else {
-        return top_candidate;
-    };
+) -> NodeRef<'a> {
+    let tc = &mut top_candidate;
     let tc_score = get_node_score(tc);
 
     let mut alternative_candidate_ancestors = vec![];
@@ -495,7 +476,7 @@ fn find_common_candidate<'a>(
             }
 
             if lists_containing_this_ancestor >= MIN_COMMON_ANCESTORS {
-                top_candidate = parent_of_top_candidate;
+                top_candidate = *tc_parent;
                 break;
             }
 
@@ -510,17 +491,14 @@ fn find_common_candidate<'a>(
 
 /// Find a better top candidate across other candidates (alternative approach).
 fn find_common_candidate_alt<'a>(
-    mut top_candidate: Option<NodeRef<'a>>,
-    top_candidates: &Vec<NodeRef<'a>>,
+    mut top_candidate: NodeRef<'a>,
+    top_candidates: &[NodeRef<'a>],
     weigh_class: bool,
-) -> Option<NodeRef<'a>> {
-    let Some(ref tc) = top_candidate else {
-        return top_candidate;
-    };
-
+) -> NodeRef<'a> {
     if top_candidates.len() < 2 {
         return top_candidate;
     }
+    let tc = &mut top_candidate;
 
     let tc_ancestors = get_node_ancestors_set(tc);
     let tc_score = get_node_score(tc);
@@ -548,10 +526,9 @@ fn find_common_candidate_alt<'a>(
         .max_by(|x, y| x.0.cmp(&y.0).then(x.1.cmp(&y.1)))
         .map(|n| n.0)
     {
-        let threshold = get_node_score(tc) / 3.0;
         let best_candidate = NodeRef::new(best_candidate_id, tc.tree);
-        if get_node_score(&best_candidate) > threshold {
-            top_candidate = Some(best_candidate);
+        if get_node_score(&best_candidate) > tc_score / 3.0 {
+            top_candidate = best_candidate;
             require_adjustment = false;
         }
     }
@@ -576,44 +553,43 @@ fn get_node_ancestors_set(node: &NodeRef) -> HashSet<NodeId> {
 }
 
 fn adjust_top_candidate_by_parent(
-    mut top_candidate: Option<NodeRef<'_>>,
+    mut top_candidate: NodeRef<'_>,
     weigh_class: bool,
-) -> Option<NodeRef<'_>> {
-    if let Some(ref tc) = top_candidate {
-        if !has_node_score(tc) {
-            init_node_score(tc, weigh_class);
+) -> NodeRef<'_> {
+    let tc = &mut top_candidate;
+    if !has_node_score(tc) {
+        init_node_score(tc, weigh_class);
+    }
+    // Because of our bonus system, parents of candidates might have scores
+    // themselves. They get half of the node. There won't be nodes with higher
+    // scores than our `top_candidate`, but if we see the score going *up* in the first
+    // few steps up the tree, that's a decent sign that there might be more content
+    // lurking in other places that we want to unify in. The sibling stuff
+    // below does some of that - but only if we've looked high enough up the DOM
+    // tree.
+    let mut last_score = get_node_score(tc);
+    let score_threshold = last_score / 3.0;
+    let mut parent_of_top_candidate = tc.parent();
+    while let Some(ref tc_parent) = parent_of_top_candidate {
+        if tc_parent.has_name("body") {
+            break;
         }
-        // Because of our bonus system, parents of candidates might have scores
-        // themselves. They get half of the node. There won't be nodes with higher
-        // scores than our topCandidate, but if we see the score going *up* in the first
-        // few steps up the tree, that's a decent sign that there might be more content
-        // lurking in other places that we want to unify in. The sibling stuff
-        // below does some of that - but only if we've looked high enough up the DOM
-        // tree.
-        let mut last_score = get_node_score(tc);
-        let score_threshold = last_score / 3.0;
-        let mut parent_of_top_candidate = tc.parent();
-        while let Some(ref tc_parent) = parent_of_top_candidate {
-            if tc_parent.has_name("body") {
-                break;
-            }
 
-            if !has_node_score(tc_parent) {
-                parent_of_top_candidate = tc_parent.parent();
-                continue;
-            }
-
-            let parent_score = get_node_score(tc_parent);
-            if parent_score < score_threshold {
-                break;
-            }
-            if parent_score > last_score {
-                top_candidate = parent_of_top_candidate;
-                break;
-            }
-            last_score = parent_score;
+        if !has_node_score(tc_parent) {
             parent_of_top_candidate = tc_parent.parent();
+            continue;
         }
+
+        let parent_score = get_node_score(tc_parent);
+        if parent_score < score_threshold {
+            break;
+        }
+        if parent_score > last_score {
+            top_candidate = *tc_parent;
+            break;
+        }
+        last_score = parent_score;
+        parent_of_top_candidate = tc_parent.parent();
     }
     top_candidate
 }
@@ -638,6 +614,7 @@ fn next_child_or_sibling<'a>(node: &NodeRef<'a>, ignore_child: bool) -> Option<N
     None
 }
 
+/// Collecting nodes to score. Also, it removes unlikely candidates and elements without content.
 fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -> Vec<NodeRef<'a>> {
     let tree = &root_node.tree;
     let mut elements_id_to_score: Vec<NodeId> = vec![];
@@ -794,8 +771,9 @@ mod tests {
 
         let doc = Document::from(contents);
         assert!(doc.select("*[role]").exists());
+        let body = doc.body().unwrap();
 
-        collect_elements_to_score(&doc.root(), true);
+        collect_elements_to_score(&body, true);
         assert!(!doc.select("*[role]").exists());
     }
 
@@ -901,8 +879,8 @@ mod tests {
 
         let doc = Document::from(contents);
         assert!(doc.select("div.banner").exists());
-
-        collect_elements_to_score(&doc.root(), true);
+        let body = doc.body().unwrap();
+        collect_elements_to_score(&body, true);
         assert!(!doc.select("div.banner").exists())
     }
     #[test]
@@ -918,7 +896,8 @@ mod tests {
 
         let doc = Document::from(contents);
         assert!(doc.select("a.banner").exists());
-        collect_elements_to_score(&doc.root(), true);
+        let body = doc.body().unwrap();
+        collect_elements_to_score(&body, true);
         assert!(doc.select("a.banner").exists())
     }
 }

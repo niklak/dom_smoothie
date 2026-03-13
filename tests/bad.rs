@@ -1,6 +1,10 @@
 use dom_smoothie::Readability;
 
-#[test]
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen_test::*;
+
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 fn test_skip_body_ancestor() {
     let contents = r#"
     <!DOCTYPE html>
@@ -28,7 +32,8 @@ fn test_skip_body_ancestor() {
     assert_eq!(got, expected);
 }
 
-#[test]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 fn test_skip_body_ancestor_fragment() {
     let contents = r#"
     <div>
@@ -47,7 +52,8 @@ fn test_skip_body_ancestor_fragment() {
     assert_eq!(got, expected);
 }
 
-#[test]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 fn test_fragments() {
     let contents_0 = r#"
     <body>
@@ -70,7 +76,8 @@ fn test_fragments() {
     }
 }
 
-#[test]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 fn test_frameset_fail() {
     let contents = r#"
      <frameset>

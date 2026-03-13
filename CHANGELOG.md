@@ -3,10 +3,16 @@
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ## [Unreleased]
+### Changed
+- Removed redundant whitespace check in `wrap_phrasing_content`.
+
+## [0.16.0] - 2026-03-09
 
 ### Changed
 - Minor internal code changes.
 - Refactored `div_into_p` function.
+- Simplify control flow in `Readability::handle_candidates`.
+- Updated `dom_query` version from `0.25.1` to `0.26.0`.
 
 ## [0.15.0] - 2026-01-18
 

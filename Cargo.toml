@@ -1,6 +1,6 @@
 
 [workspace.package]
-version = "0.15.0"
+version = "0.16.0"
 edition = "2021"
 license = "MIT"
 rust-version = "1.75"
@@ -23,8 +23,8 @@ readme = "README.md"
 exclude = [".*", "test-pages", "deny.toml"]
 
 [dependencies]
-dom_query = {version = "0.25.1", features = ["mini_selector", "markdown"]}
-tendril = {version = "0.4.3"}
+dom_query = {version = "0.26.0", features = ["mini_selector", "markdown"]}
+tendril = {version = "0.5.0"}
 once_cell = { version = "1" }
 serde = {version = "1.0", features = ["derive"], optional = true}
 gjson = {version = "0.8.1"}
@@ -39,6 +39,7 @@ aho-corasick = { version = "1.1.4", optional = true}
 [dev-dependencies]
 serde_json = {version = "1.0"}
 serde = {version = "1.0", features = ["derive"]}
+wasm-bindgen-test = "0.3.64"
 
 
 [features]
