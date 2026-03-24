@@ -373,7 +373,7 @@ This happens because unlikely candidates may include containers that wrap such e
 *It is possible to replicate the same filtering order as in `Readability.js`, but it is not yet clear if the drawbacks of the two-stage approach outweigh its advantages.*
 
 For convenience, all known cases of these differences are collected here:
-[test-pages/not-matching](https://github.com/niklak/dom_query/tree/main/test-pages/not-matching).
+[test-pages/not-matching](https://github.com/niklak/dom_smoothie/tree/main/test-pages/not-matching).
 
 ## See Also
 
