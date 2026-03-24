@@ -325,6 +325,55 @@ fn main() -> Result<(), Box<dyn Error>> {
 - `aho-corasick`: Enables the use of the `aho-corasick` crate for defining unlikely candidates and for the node scoring process. 
 This can speed up the parsing by 5-10% in some cases, at the cost of slightly higher memory usage and a larger binary size.
 
+## Differences from Mozilla/Readability.js
+
+### Absolute URL normalization
+- `dom_smoothie` does not modify `href` attributes if they contain absolute URLs — they remain untouched.
+- `Readability.js` normalizes URLs — it may add a trailing slash and normalize text case.
+
+**Example:**
+  
+  ```
+  https://fetch.spec.whatwg.org    // dom_smoothie
+  https://fetch.spec.whatwg.org/   // Readability.js
+  ```
+
+### DOM simplification
+- `dom_smoothie` more aggressively removes parent `<div>` elements when they contain only a single `<p>` or `<div>` element.
+
+### Attribute cleanup
+- `dom_smoothie` removes all `font` attributes and converts `<font>` elements to `<span>`.
+- `Readability.js` converts `<font>` to `<span>` but preserves all attributes.
+
+### Empty links handling
+- `dom_smoothie` removes `<a>` elements without an `href` attribute or without child nodes.
+- `Readability.js` keeps such elements.
+
+### Class preservation
+- In `dom_smoothie`, `class="page"` is preserved only for the article node (`id="readability-page-1"`),
+unless explicitly allowed via `Config.classes_to_preserve`.
+- `Readability.js` preserves it across the document.
+
+
+### Filtering order differences
+
+In `Readability.js`, element filtering (removal of unwanted nodes) and scoring are performed in a single stage.
+
+In `dom_smoothie`, part of the filtering is applied globally across all parsing attempts, 
+while another part is applied per attempt. This approach helps better eliminate "nested" 
+structures (e.g., `<div>` elements that contain only `<div>` or `<p>`).
+
+However, there is a trade-off — the output may slightly differ from `Readability.js` in terms of which elements remain.
+This mostly affects elements that overlap with *UNLIKELY CANDIDATES*.
+
+In practice, this may result in duplicate headings (`<h1>`, `<h2>`) and byline elements.
+
+This happens because unlikely candidates may include containers that wrap such elements.
+
+*It is possible to replicate the same filtering order as in `Readability.js`, but it is not yet clear if the drawbacks of the two-stage approach outweigh its advantages.*
+
+For convenience, all known cases of these differences are collected here:
+[test-pages/not-matching](https://github.com/niklak/dom_query/tree/main/test-pages/not-matching).
 
 ## See Also
 
