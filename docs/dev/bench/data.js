@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1774377800755,
+  "lastUpdate": 1774431256808,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -5045,6 +5045,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 40937568,
             "range": "± 176197",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3f896d5c7f906153e3cfd451c1c9ae7fe642d627",
+          "message": "Merge pull request #198 from niklak/refactor/simplify-nested-divs\n\nsimplify nested divs && apply selected clippy suggestions",
+          "timestamp": "2026-03-25T11:32:09+02:00",
+          "tree_id": "bf69bbc685f356c1436d9dc2b3cf3c69029626d3",
+          "url": "https://github.com/niklak/dom_smoothie/commit/3f896d5c7f906153e3cfd451c1c9ae7fe642d627"
+        },
+        "date": 1774431255890,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2286641,
+            "range": "± 29821",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 9849258,
+            "range": "± 267404",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 40191960,
+            "range": "± 1433122",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2308663,
+            "range": "± 15321",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8494258,
+            "range": "± 73071",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 39724106,
+            "range": "± 189103",
             "unit": "ns/iter"
           }
         ]
