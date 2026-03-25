@@ -7,7 +7,6 @@ use crate::config::ParsePolicy;
 use crate::config::TextMode;
 #[allow(clippy::wildcard_imports)]
 use crate::glob::*;
-use crate::grab;
 #[allow(clippy::wildcard_imports)]
 use crate::helpers::*;
 use crate::is_probably_readable;

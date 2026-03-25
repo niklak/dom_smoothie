@@ -155,48 +155,6 @@ impl Readability {
     }
 }
 
-pub(crate) fn pre_filter_document(doc: &Document, metadata: &Metadata) {
-    // Mozilla's implementation performs filtering for each approach of grabbing the article.
-    // However, I believe it is better to do it only once. Additionally, there is a lot of logic that relies
-    // on a certain element which is going to be removed in the next iteration.
-    let body_sel = doc.select_single("body");
-    let Some(body_node) = body_sel.nodes().first() else {
-        return;
-    };
-    let mut should_remove_title_header = !metadata.title.is_empty();
-    let mut next_node = next_child_or_sibling(body_node, false);
-    while let Some(node) = next_node {
-        if !is_probably_visible(&node) {
-            next_node = next_child_or_sibling(&node, true);
-            node.remove_from_parent();
-            continue;
-        }
-
-        if node.has_name("svg") {
-            next_node = next_child_or_sibling(&node, true);
-            continue;
-        }
-
-        if MATCHER_DIALOGS.match_element(&node) {
-            next_node = next_child_or_sibling(&node, true);
-            node.remove_from_parent();
-            continue;
-        }
-
-        if should_remove_title_header
-            && MATCHER_HEADING.match_element(&node)
-            && text_similarity(&metadata.title, &node.text()) > 0.75
-        {
-            should_remove_title_header = false;
-            next_node = next_child_or_sibling(&node, true);
-            node.remove_from_parent();
-            continue;
-        }
-
-        next_node = next_child_or_sibling(&node, false);
-    }
-}
-
 fn is_unlikely_candidate(node: &NodeRef) -> bool {
     // Assuming that `<body>` node can't can't reach this function
     if node.has_name("a") {
@@ -567,13 +525,16 @@ fn adjust_top_candidate_by_parent(
 }
 
 /// Collecting nodes to score. Also, it removes unlikely candidates and elements without content.
-fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool, metadata: &Metadata) -> Vec<NodeRef<'a>> {
+fn collect_elements_to_score<'a>(
+    root_node: &'a NodeRef,
+    strip_unlikely: bool,
+    metadata: &Metadata,
+) -> Vec<NodeRef<'a>> {
     let tree = &root_node.tree;
     let mut elements_id_to_score: Vec<NodeId> = vec![];
     let mut should_remove_title_header = !metadata.title.is_empty();
     let mut next_node = next_child_or_sibling(root_node, false);
     while let Some(mut node) = next_node {
-        
         if !is_probably_visible(&node) {
             next_node = next_child_or_sibling(&node, true);
             node.remove_from_parent();
@@ -704,9 +665,8 @@ mod tests {
         </html>"#;
 
         let doc = Document::from(contents);
-        let mut meta = Metadata::default();
-        pre_filter_document(&doc, &mut meta);
-
+        let body = doc.body().unwrap();
+        collect_elements_to_score(&body, true, &Metadata::default());
         assert_eq!(6, doc.select("p").length());
     }
 
@@ -725,8 +685,9 @@ mod tests {
 
         let doc = Document::from(contents);
         assert!(doc.select("#dialog1").exists());
+        let body = doc.body().unwrap();
+        collect_elements_to_score(&body, true, &Metadata::default());
 
-        pre_filter_document(&doc, &mut Metadata::default());
         assert!(!doc.select("#dialog1").exists());
         assert!(!doc.select("#close1").exists());
     }
@@ -795,11 +756,11 @@ mod tests {
         </html>"#;
 
         let readability = Readability::from(contents);
-        let mut metadata = readability.get_article_metadata(None);
+        let metadata = readability.get_article_metadata(None);
+        let body = readability.doc.body().unwrap();
 
         assert!(readability.doc.select("h1").exists());
-        pre_filter_document(&readability.doc, &mut metadata);
-
+        collect_elements_to_score(&body, true, &metadata);
         assert!(!readability.doc.select("h1").exists())
     }
 
