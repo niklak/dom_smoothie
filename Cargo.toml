@@ -62,6 +62,6 @@ opt-level = 3
 
 
 [lints.clippy]
-# See: <https://rust-lang.github.io/rust-clippy/master/index.html.
+# See: <https://rust-lang.github.io/rust-clippy/master/index.html>
 all = { level = "warn" }
 

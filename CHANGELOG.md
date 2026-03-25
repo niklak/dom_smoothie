@@ -3,7 +3,11 @@
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ## [Unreleased]
+
 ### Changed
+- Reworked the filtering pipeline to a single-pass approach (similar to `Readability.js`).
+  - The byline is now extracted (and removed from the document) during processing if it was not found earlier via `parse_json_ld` or `get_article_metadata`.
+  - This removes the two-stage filtering approach while preserving reliable byline detection.
 - Applied selected clippy suggestions (pedantic and nursery) to improve code quality.
 - Revised `simplify_nested_elements` to make it more flexible for future changes.
 - Removed redundant whitespace check in `wrap_phrasing_content`.
