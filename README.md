@@ -357,6 +357,8 @@ unless explicitly allowed via `Config.classes_to_preserve`.
 
 ### Filtering order differences
 
+> **Note:** This behavior applies to versions ≤ 0.16.0.
+
 In `Readability.js`, element filtering (removal of unwanted nodes) and scoring are performed in a single stage.
 
 In `dom_smoothie`, part of the filtering is applied globally across all parsing attempts, 
@@ -370,7 +372,6 @@ In practice, this may result in duplicate headings (`<h1>`, `<h2>`) and byline e
 
 This happens because unlikely candidates may include containers that wrap such elements.
 
-*It is possible to replicate the same filtering order as in `Readability.js`, but it is not yet clear if the drawbacks of the two-stage approach outweigh its advantages.*
 
 For convenience, all known cases of these differences are collected here:
 [test-pages/not-matching](https://github.com/niklak/dom_smoothie/tree/main/test-pages/not-matching).
