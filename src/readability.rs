@@ -438,6 +438,10 @@ impl Readability {
             self.parse_json_ld()
         };
         let mut metadata = self.get_article_metadata(ld_meta);
+        
+        if metadata.byline.is_none() {
+            metadata.byline = self.byline_adjustment();
+        }
 
         self.prepare();
 
@@ -785,9 +789,6 @@ impl Readability {
             }
         }
 
-        if metadata.byline.is_none() {
-            metadata.byline = self.byline_adjustment();
-        }
 
         // description
         if metadata.excerpt.is_none() {
@@ -1369,7 +1370,7 @@ mod tests {
         let metadata = ra.get_article_metadata(None);
 
         assert_eq!("Rust (programming language) - Wikipedia", metadata.title);
-        assert!(metadata.byline.is_some());
+        assert!(metadata.byline.is_none());
         assert!(metadata.excerpt.is_none());
         assert!(metadata.site_name.is_none());
         assert!(metadata.published_time.is_none());
@@ -1498,8 +1499,8 @@ mod tests {
         </html>"#;
 
         let doc = Document::from(contents);
-        let ra = Readability::with_document(doc, None, None).unwrap();
-        let _ = ra.get_article_metadata(None);
+        let mut ra = Readability::with_document(doc, None, None).unwrap();
+        let _ = ra.parse();
         // consuming byline during grabbing the article
         assert!(!ra.doc.select("a").exists())
     }
@@ -1524,4 +1525,5 @@ mod tests {
         // consuming byline during grabbing the article
         assert!(ra.doc.select("a").exists())
     }
+
 }
