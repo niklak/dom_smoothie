@@ -142,11 +142,7 @@ pub(crate) fn meta_property_name(property: &str) -> Option<&str> {
             if !META_PROPERTY_KEYS.contains(&key) {
                 continue;
             }
-            let pre_pos = if let Some(pos_l) = part[..pos_r].find(':') {
-                pos_l + 1
-            } else {
-                0
-            };
+            let pre_pos = part[..pos_r].find(':').map_or(0, |pos_l| pos_l + 1);
             let pre = &part[pre_pos..pos_r];
             if META_PROPERTY_PREFIXES.contains(&pre) {
                 return Some(&part[pre_pos..]);

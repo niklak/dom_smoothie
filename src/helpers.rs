@@ -233,13 +233,13 @@ pub(crate) struct BytePatternCheck<'a> {
 
 #[cfg(not(feature = "aho-corasick"))]
 impl<'a> BytePatternCheck<'a> {
-    pub(crate) fn new(haystack: &'a str) -> BytePatternCheck<'a> {
+    pub(crate) fn new(haystack: &'a str) -> Self {
         let mut char_map = [0u8; 256];
 
         for &b in haystack.as_bytes() {
             char_map[b as usize] = 1;
         }
-        BytePatternCheck { haystack, char_map }
+        Self { haystack, char_map }
     }
     #[inline]
     fn pre_check(&self, pat: &str) -> bool {

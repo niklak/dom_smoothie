@@ -4,6 +4,8 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ## [Unreleased]
 ### Changed
+- Applied selected clippy suggestions (pedantic and nursery) to improve code quality.
+- Revised `simplify_nested_elements` to make it more flexible for future changes.
 - Removed redundant whitespace check in `wrap_phrasing_content`.
 
 ## [0.16.0] - 2026-03-09

@@ -12,7 +12,7 @@ use crate::score::get_class_weight;
 use crate::Config;
 
 fn clean(root_sel: &Selection) {
-    for node in root_sel.select_matcher(&MATCHER_CLEAN).nodes().iter() {
+    for node in root_sel.select_matcher(&MATCHER_CLEAN).nodes() {
         // Allow youtube and vimeo videos through as people usually want to see those.
 
         if !node_name_in(node, &EMBED_ELEMENTS) {
@@ -43,7 +43,7 @@ fn clean_styles(n: &NodeRef) {
         n.remove_attrs(&["width", "height"]);
     }
 
-    for child_node in n.element_children().iter() {
+    for child_node in &n.element_children() {
         clean_styles(child_node);
     }
 }
@@ -87,8 +87,8 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
 
         let embeds_sel = sel.select_matcher(&MATCHER_EMBEDS);
 
-        for embed in embeds_sel.nodes().iter() {
-            for attr in embed.attrs().iter() {
+        for embed in embeds_sel.nodes() {
+            for attr in &embed.attrs() {
                 if is_video_url(&attr.value) {
                     return false;
                 }
@@ -272,7 +272,7 @@ fn mark_data_tables(base_sel: &Selection) {
 }
 
 fn fix_lazy_images(sel: &Selection) {
-    for node in sel.select("img,picture,figure").nodes().iter() {
+    for node in sel.select("img,picture,figure").nodes() {
         // In some sites (e.g. Kotaku), they put 1px square image as base64 data uri in the src attribute.
         // So, here we check if the data uri is too short, just might as well remove it.
         if let Some(src) = node.attr("src") {
@@ -307,7 +307,7 @@ fn fix_lazy_images(sel: &Selection) {
             continue;
         }
 
-        for attr in node.attrs().iter() {
+        for attr in &node.attrs() {
             if matches!(attr.name.local.as_ref(), "src" | "srcset" | "alt") {
                 continue;
             }
@@ -343,7 +343,7 @@ fn fix_lazy_images(sel: &Selection) {
 }
 
 fn clean_headers(sel: &Selection, flags: &FlagSet<GrabFlags>) {
-    for h_node in sel.select_matcher(&MATCHER_HEADING).nodes().iter() {
+    for h_node in sel.select_matcher(&MATCHER_HEADING).nodes() {
         if get_class_weight(h_node, flags.contains(GrabFlags::WeightClasses)) < 0.0 {
             h_node.remove_from_parent();
         }
