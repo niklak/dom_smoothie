@@ -2,7 +2,7 @@ use dom_query::Tree;
 use foldhash::{HashMap, HashSet};
 use std::vec;
 
-use dom_query::{Document, NodeId, NodeRef, Selection};
+use dom_query::{Document, NodeId, NodeRef};
 use flagset::FlagSet;
 
 use crate::config::CandidateSelectMode;
@@ -154,7 +154,7 @@ impl Readability {
     }
 }
 
-pub(crate) fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
+pub(crate) fn pre_filter_document(doc: &Document, metadata: &Metadata) {
     // Mozilla's implementation performs filtering for each approach of grabbing the article.
     // However, I believe it is better to do it only once. Additionally, there is a lot of logic that relies
     // on a certain element which is going to be removed in the next iteration.
@@ -192,33 +192,8 @@ pub(crate) fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
             continue;
         }
 
-        if metadata.byline.is_none() && is_valid_byline(&node) {
-            let byline = Selection::from(node)
-                .select_single("[itemprop=name]")
-                .nodes()
-                .first()
-                .map_or_else(|| node.text(), |prop_name| prop_name.text());
-
-            metadata.byline = Some(normalize_spaces(&byline));
-            next_node = next_child_or_sibling(&node, true);
-            node.remove_from_parent();
-            continue;
-        }
         next_node = next_child_or_sibling(&node, false);
     }
-}
-
-fn is_valid_byline(node: &NodeRef) -> bool {
-    let mut is_byline = MATCHER_BYLINE.match_element(node);
-    if !is_byline {
-        let match_string = get_node_matching_string(node);
-        is_byline = BYLINE_PATTERNS.iter().any(|p| match_string.contains(p));
-    }
-    if !is_byline {
-        return false;
-    }
-    let byline_len = node.text().trim().chars().count();
-    byline_len > 0 && byline_len < 100
 }
 
 fn is_unlikely_candidate(node: &NodeRef) -> bool {
@@ -590,26 +565,6 @@ fn adjust_top_candidate_by_parent(
     top_candidate
 }
 
-fn next_child_or_sibling<'a>(node: &NodeRef<'a>, ignore_child: bool) -> Option<NodeRef<'a>> {
-    if !ignore_child {
-        if let Some(first_child) = node.first_element_child() {
-            return Some(first_child);
-        }
-    }
-
-    if let Some(sibling) = node.next_element_sibling() {
-        return Some(sibling);
-    }
-    let mut parent = node.parent();
-    while let Some(parent_node) = parent {
-        if let Some(next_sibling) = parent_node.next_element_sibling() {
-            return Some(next_sibling);
-        }
-        parent = parent_node.parent();
-    }
-    None
-}
-
 /// Collecting nodes to score. Also, it removes unlikely candidates and elements without content.
 fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -> Vec<NodeRef<'a>> {
     let tree = &root_node.tree;
@@ -802,45 +757,6 @@ mod tests {
         let sel = clean_doc.select("body > *");
         let count_after = sel.nodes().iter().filter(|n| n.is_element()).count();
         assert_eq!(count_after, 1);
-    }
-
-    #[test]
-    fn test_consume_byline() {
-        let contents = r#"<!DOCTYPE>
-        <html>
-            <head><title>Test</title></head>
-            <body>
-                <div>
-                 <a class="site-title" rel="author" href="/">Cat's Blog</a>
-                <p>Content</p>
-                 </div>
-            </body>
-        </html>"#;
-
-        let doc = Document::from(contents);
-        // consuming byline during grabbing the article
-        pre_filter_document(&doc, &mut Metadata::default());
-        assert!(!doc.select("a").exists())
-    }
-
-    #[test]
-    fn test_skipping_byline() {
-        let contents = r#"<!DOCTYPE>
-        <html>
-            <head><title>Test</title></head>
-            <body>
-                 <a class="site-title" rel="author" href="/">Cat's Blog</a>
-            </body>
-        </html>"#;
-
-        let doc = Document::from(contents);
-        let mut metadata = Metadata {
-            byline: Some("Cat".to_string()),
-            ..Default::default()
-        };
-        // consuming byline during grabbing the article
-        pre_filter_document(&doc, &mut metadata);
-        assert!(doc.select("a").exists())
     }
 
     #[test]

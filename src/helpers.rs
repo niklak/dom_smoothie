@@ -223,6 +223,29 @@ pub(crate) fn get_node_matching_string(node: &NodeRef) -> StrTendril {
     buf
 }
 
+pub(crate) fn next_child_or_sibling<'a>(
+    node: &NodeRef<'a>,
+    ignore_child: bool,
+) -> Option<NodeRef<'a>> {
+    if !ignore_child {
+        if let Some(first_child) = node.first_element_child() {
+            return Some(first_child);
+        }
+    }
+
+    if let Some(sibling) = node.next_element_sibling() {
+        return Some(sibling);
+    }
+    let mut parent = node.parent();
+    while let Some(parent_node) = parent {
+        if let Some(next_sibling) = parent_node.next_element_sibling() {
+            return Some(next_sibling);
+        }
+        parent = parent_node.parent();
+    }
+    None
+}
+
 #[cfg(not(feature = "aho-corasick"))]
 /// A lightweight byte-level pre-checker used to quickly skip patterns
 /// that cannot occur in the haystack.

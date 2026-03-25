@@ -443,7 +443,7 @@ impl Readability {
         self.prepare();
 
         // Pre-filter the document by removing hidden elements, dialogs, duplicate article titles, and bylines.
-        grab::pre_filter_document(&self.doc, &mut metadata);
+        grab::pre_filter_document(&self.doc, &metadata);
 
         if let Some(policy) = policy {
             // When using a specific policy, make a single attempt to extract content
@@ -779,14 +779,18 @@ impl Readability {
         // author
         if metadata.byline.is_none() {
             metadata.byline = get_map_any_value(&values, META_BYLINE_KEYS);
-            // if metadata is still none
-            if metadata.byline.is_none() {
-                if let Some(v) = values.get("article:author") {
-                    if !is_absolute_url(v, true) {
-                        metadata.byline = Some(v.clone());
-                    }
+        }
+        // if metadata is still none
+        if metadata.byline.is_none() {
+            if let Some(v) = values.get("article:author") {
+                if !is_absolute_url(v, true) {
+                    metadata.byline = Some(v.clone());
                 }
             }
+        }
+
+        if metadata.byline.is_none() {
+            metadata.byline = self.byline_adjustment();
         }
 
         // description
@@ -828,6 +832,27 @@ impl Readability {
         }
 
         metadata.favicon = extract_favicon(&self.doc, self.parse_base_url());
+    }
+
+    fn byline_adjustment(&self) -> Option<String> {
+        let mut meta_byline: Option<String> = None;
+        let body_node = self.doc.body()?;
+        let mut next_node = next_child_or_sibling(&body_node, false);
+        while let Some(node) = next_node {
+            if is_valid_byline(&node) {
+                let byline = Selection::from(node)
+                    .select_single("[itemprop=name]")
+                    .nodes()
+                    .first()
+                    .map_or_else(|| node.text(), |prop_name| prop_name.text());
+
+                meta_byline = Some(normalize_spaces(&byline));
+                node.remove_from_parent();
+                break;
+            }
+            next_node = next_child_or_sibling(&node, false);
+        }
+        meta_byline
     }
 
     fn remove_comments(&self) {
@@ -1180,6 +1205,20 @@ fn decode_opt_html_entities(opt: &mut Option<String>) {
     }
 }
 
+fn is_valid_byline(node: &NodeRef) -> bool {
+    let mut is_byline = MATCHER_BYLINE.match_element(node);
+    if !is_byline {
+        let match_string = get_node_matching_string(node);
+        // TODO: use `match_string..split_whitespace().any(||)` for precicion.
+        is_byline = BYLINE_PATTERNS.iter().any(|p| match_string.contains(p));
+    }
+    if !is_byline {
+        return false;
+    }
+    let byline_len = node.text().trim().chars().count();
+    byline_len > 0 && byline_len < 100
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1334,7 +1373,7 @@ mod tests {
         let metadata = ra.get_article_metadata(None);
 
         assert_eq!("Rust (programming language) - Wikipedia", metadata.title);
-        assert!(metadata.byline.is_none());
+        assert!(metadata.byline.is_some());
         assert!(metadata.excerpt.is_none());
         assert!(metadata.site_name.is_none());
         assert!(metadata.published_time.is_none());
@@ -1447,5 +1486,46 @@ mod tests {
             ..Default::default()
         };
         assert!(!non_empty_meta_2.is_empty());
+    }
+
+    #[test]
+    fn test_consume_byline() {
+        let contents = r#"<!DOCTYPE>
+        <html>
+            <head><title>Test</title></head>
+            <body>
+                <div>
+                 <a class="site-title" rel="author" href="/">Cat's Blog</a>
+                <p>Content</p>
+                 </div>
+            </body>
+        </html>"#;
+
+        let doc = Document::from(contents);
+        let ra = Readability::with_document(doc, None, None).unwrap();
+        let _ = ra.get_article_metadata(None);
+        // consuming byline during grabbing the article
+        assert!(!ra.doc.select("a").exists())
+    }
+
+    #[test]
+    fn test_skipping_byline() {
+        let contents = r#"<!DOCTYPE>
+        <html>
+            <head><title>Test</title></head>
+            <body>
+                 <a class="site-title" rel="author" href="/">Cat's Blog</a>
+            </body>
+        </html>"#;
+
+        let doc = Document::from(contents);
+        let metadata = Metadata {
+            byline: Some("Cat".to_string()),
+            ..Default::default()
+        };
+        let ra = Readability::with_document(doc, None, None).unwrap();
+        let _ = ra.get_article_metadata(Some(metadata));
+        // consuming byline during grabbing the article
+        assert!(ra.doc.select("a").exists())
     }
 }
