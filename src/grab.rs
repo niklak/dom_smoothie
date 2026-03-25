@@ -21,12 +21,12 @@ use crate::Metadata;
 use crate::Readability;
 
 impl Readability {
-    pub(crate) fn grab_article(&self) -> Option<Document> {
+    pub(crate) fn grab_article(&self, metadata: &Metadata) -> Option<Document> {
         let mut flags: FlagSet<GrabFlags> = FlagSet::full();
         let mut best_attempt: Option<(Document, usize)> = None;
         loop {
             let doc = self.doc.clone();
-            let article_node = self.attempt_grab_article(&doc, &flags);
+            let article_node = self.attempt_grab_article(&doc, &flags, metadata);
             // Now that we've gone through the full algorithm, check to see if
             // we got any meaningful content. If we didn't, we may need to re-run
             // `grab_article` with different flags set. This gives us a higher likelihood of
@@ -66,11 +66,12 @@ impl Readability {
         &self,
         doc: &'a Document,
         flags: &FlagSet<GrabFlags>,
+        metadata: &Metadata,
     ) -> Option<NodeRef<'a>> {
         let selection = doc.select_single("body");
         let body_node = selection.nodes().first()?;
         let strip_unlikely = flags.contains(GrabFlags::StripUnlikelys);
-        let elements_to_score = collect_elements_to_score(body_node, strip_unlikely);
+        let elements_to_score = collect_elements_to_score(body_node, strip_unlikely, metadata);
         let article_node = self.handle_candidates(&elements_to_score, body_node, flags);
         article_node.map(|n| NodeRef::new(n.id, &doc.tree))
     }
@@ -566,13 +567,37 @@ fn adjust_top_candidate_by_parent(
 }
 
 /// Collecting nodes to score. Also, it removes unlikely candidates and elements without content.
-fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool) -> Vec<NodeRef<'a>> {
+fn collect_elements_to_score<'a>(root_node: &'a NodeRef, strip_unlikely: bool, metadata: &Metadata) -> Vec<NodeRef<'a>> {
     let tree = &root_node.tree;
     let mut elements_id_to_score: Vec<NodeId> = vec![];
+    let mut should_remove_title_header = !metadata.title.is_empty();
     let mut next_node = next_child_or_sibling(root_node, false);
     while let Some(mut node) = next_node {
+        
+        if !is_probably_visible(&node) {
+            next_node = next_child_or_sibling(&node, true);
+            node.remove_from_parent();
+            continue;
+        }
+
         if node.has_name("svg") {
             next_node = next_child_or_sibling(&node, true);
+            continue;
+        }
+
+        if MATCHER_DIALOGS.match_element(&node) {
+            next_node = next_child_or_sibling(&node, true);
+            node.remove_from_parent();
+            continue;
+        }
+
+        if should_remove_title_header
+            && MATCHER_HEADING.match_element(&node)
+            && text_similarity(&metadata.title, &node.text()) > 0.75
+        {
+            should_remove_title_header = false;
+            next_node = next_child_or_sibling(&node, true);
+            node.remove_from_parent();
             continue;
         }
 
@@ -724,7 +749,7 @@ mod tests {
         assert!(doc.select("*[role]").exists());
         let body = doc.body().unwrap();
 
-        collect_elements_to_score(&body, true);
+        collect_elements_to_score(&body, true, &Metadata::default());
         assert!(!doc.select("*[role]").exists());
     }
 
@@ -753,7 +778,7 @@ mod tests {
 
         assert_eq!(count_before, 10);
 
-        let clean_doc = ra.grab_article().unwrap();
+        let clean_doc = ra.grab_article(&Metadata::default()).unwrap();
         let sel = clean_doc.select("body > *");
         let count_after = sel.nodes().iter().filter(|n| n.is_element()).count();
         assert_eq!(count_after, 1);
@@ -792,7 +817,7 @@ mod tests {
         let doc = Document::from(contents);
         assert!(doc.select("div.banner").exists());
         let body = doc.body().unwrap();
-        collect_elements_to_score(&body, true);
+        collect_elements_to_score(&body, true, &Metadata::default());
         assert!(!doc.select("div.banner").exists())
     }
     #[test]
@@ -809,7 +834,7 @@ mod tests {
         let doc = Document::from(contents);
         assert!(doc.select("a.banner").exists());
         let body = doc.body().unwrap();
-        collect_elements_to_score(&body, true);
+        collect_elements_to_score(&body, true, &Metadata::default());
         assert!(doc.select("a.banner").exists())
     }
 }

@@ -442,20 +442,17 @@ impl Readability {
 
         self.prepare();
 
-        // Pre-filter the document by removing hidden elements, dialogs, duplicate article titles, and bylines.
-        grab::pre_filter_document(&self.doc, &metadata);
-
         if let Some(policy) = policy {
             // When using a specific policy, make a single attempt to extract content
             if self
-                .attempt_grab_article(&self.doc, &policy.into())
+                .attempt_grab_article(&self.doc, &policy.into(), &metadata)
                 .is_none()
             {
                 return Err(ReadabilityError::GrabFailed);
             }
         } else {
             // When no policy is specified, use the multi-attempt approach for better results
-            let Some(doc) = self.grab_article() else {
+            let Some(doc) = self.grab_article(&metadata) else {
                 return Err(ReadabilityError::GrabFailed);
             };
             self.doc = doc;
