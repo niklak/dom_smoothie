@@ -796,7 +796,7 @@ impl Readability {
 
         //site name
         if metadata.site_name.is_none() {
-            metadata.site_name = values.get("og:site_name").map(|v| v.clone());
+            metadata.site_name = values.get("og:site_name").cloned();
         }
 
         //published time
@@ -1000,7 +1000,7 @@ impl Readability {
 }
 
 fn get_map_any_value(map: &HashMap<String, String>, keys: &[&str]) -> Option<String> {
-    keys.iter().find_map(|&key| map.get(key).map(|v| v.clone()))
+    keys.iter().find_map(|&key| map.get(key).cloned())
 }
 
 fn next_significant_node(node: Option<NodeRef>) -> Option<NodeRef> {
