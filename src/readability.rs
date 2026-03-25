@@ -1,3 +1,4 @@
+use dom_query::local_name;
 use dom_query::{Document, NodeRef, Selection};
 use foldhash::HashMap;
 use tendril::StrTendril;
@@ -1053,15 +1054,27 @@ fn simplify_nested_elements(root_sel: &Selection) {
         }
         td_node.remove_from_parent();
     }
+    simplify_nested_divs(root_sel);
+}
 
-    let only_sel = root_sel
-        .select("div, section")
-        .select(":is(div, section) > :is(div, section):only-child");
-
-    for node in only_sel.nodes().iter() {
-        let Some(parent) = node.parent() else {
+fn simplify_nested_divs(root_sel: &Selection) {
+    let sel = root_sel.select("div, section");
+    for parent in sel.nodes().iter().rev() {
+        let Some(node) = parent.first_element_child() else {
             continue;
         };
+
+        if node.next_element_sibling().is_some() {
+            continue;
+        }
+
+        if !node
+            .qual_name_ref()
+            .is_some_and(|name| matches!(name.local, local_name!("div") | local_name!("section")))
+        {
+            continue;
+        }
+
         for attr in parent.attrs() {
             node.set_attr(&attr.name.local, &attr.value);
         }
