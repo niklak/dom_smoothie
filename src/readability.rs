@@ -1,3 +1,4 @@
+use dom_query::local_name;
 use dom_query::{Document, NodeRef, Selection};
 use foldhash::HashMap;
 use tendril::StrTendril;
@@ -65,7 +66,7 @@ pub struct Article {
 }
 
 /// This struct represents the metadata extracted from the document
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 pub struct Metadata {
@@ -315,7 +316,7 @@ impl Readability {
     fn replace_brs(&mut self) {
         let sel = self.doc.select_matcher(&MATCHER_BR);
 
-        for br in sel.nodes().iter() {
+        for br in sel.nodes() {
             let mut next_sibling = br.next_sibling();
             let mut replaced = false;
 
@@ -368,7 +369,7 @@ impl Readability {
     }
 
     fn remove_empty_imgs(&mut self) {
-        for node in self.doc.select_matcher(&MATCHER_IMG).nodes().iter() {
+        for node in self.doc.select_matcher(&MATCHER_IMG).nodes() {
             let has_src = node.query_or(false, |n| {
                 n.as_element().is_some_and(|el| {
                     el.attrs.iter().any(|a| {
@@ -388,7 +389,7 @@ impl Readability {
 
     fn unwrap_noscript_images(&self) {
         let noscript_sel = self.doc.select("noscript:has(img:only-child)");
-        for noscript_node in noscript_sel.nodes().iter() {
+        for noscript_node in noscript_sel.nodes() {
             let Some(prev_sibling) = noscript_node.prev_element_sibling() else {
                 continue;
             };
@@ -573,7 +574,7 @@ impl Readability {
             let clipped_content: String;
 
             if parsed.kind() == gjson::Kind::Array {
-                for it in parsed.array().iter() {
+                for it in &parsed.array() {
                     let typ = it.get("^type");
                     if typ.kind() == gjson::Kind::String
                         && JSONLD_ARTICLE_TYPES.iter().any(|p| typ.str().contains(p))
@@ -741,7 +742,7 @@ impl Readability {
 
         let selection = self.doc.select_matcher(&MATCHER_META);
 
-        for node in selection.nodes().iter() {
+        for node in selection.nodes() {
             if let Some(content) = node.attr("content") {
                 let content = content.trim();
                 if content.is_empty() {
@@ -782,7 +783,7 @@ impl Readability {
             if metadata.byline.is_none() {
                 if let Some(v) = values.get("article:author") {
                     if !is_absolute_url(v, true) {
-                        metadata.byline = Some(v.to_string());
+                        metadata.byline = Some(v.clone());
                     }
                 }
             }
@@ -795,7 +796,7 @@ impl Readability {
 
         //site name
         if metadata.site_name.is_none() {
-            metadata.site_name = values.get("og:site_name").map(|v| v.to_string());
+            metadata.site_name = values.get("og:site_name").cloned();
         }
 
         //published time
@@ -886,7 +887,7 @@ impl Readability {
 
         let class_sel = sel.select(&format!(".page {class_selector}"));
 
-        for node in class_sel.nodes().iter() {
+        for node in class_sel.nodes() {
             let Some(class_string) = node.class() else {
                 unreachable!();
             };
@@ -961,7 +962,7 @@ impl Readability {
         } else {
             r#"a[href]:not([href^="http"])"#
         };
-        for a in root_sel.select(url_sel).nodes().iter() {
+        for a in root_sel.select(url_sel).nodes() {
             let Some(href) = a.attr("href") else {
                 unreachable!();
             };
@@ -969,7 +970,7 @@ impl Readability {
             a.set_attr("href", abs_url.as_str());
         }
 
-        for media in root_sel.select_matcher(&MATCHER_SOURCES).nodes().iter() {
+        for media in root_sel.select_matcher(&MATCHER_SOURCES).nodes() {
             if let Some(src) = media.attr("src") {
                 let abs_src = to_absolute_url(&src, &base_url);
                 media.set_attr("src", abs_src.as_str());
@@ -999,8 +1000,7 @@ impl Readability {
 }
 
 fn get_map_any_value(map: &HashMap<String, String>, keys: &[&str]) -> Option<String> {
-    keys.iter()
-        .find_map(|&key| map.get(key).map(|v| v.to_string()))
+    keys.iter().find_map(|&key| map.get(key).cloned())
 }
 
 fn next_significant_node(node: Option<NodeRef>) -> Option<NodeRef> {
@@ -1018,7 +1018,7 @@ fn next_significant_node(node: Option<NodeRef>) -> Option<NodeRef> {
 fn fix_links(root_sel: &Selection) {
     // Handle links with javascript: URIs, since
     // they won't work after scripts have been removed from the page.
-    for a in root_sel.select_matcher(&MATCHER_JS_LINK).nodes().iter() {
+    for a in root_sel.select_matcher(&MATCHER_JS_LINK).nodes() {
         let children = a.children();
         if children.len() == 1 {
             let child = &children[0];
@@ -1037,7 +1037,7 @@ fn fix_links(root_sel: &Selection) {
     }
 
     // Handle links without href attributes.
-    for a in root_sel.select("a:not([href])").nodes().iter() {
+    for a in root_sel.select("a:not([href])").nodes() {
         if a.children().is_empty() {
             a.remove_from_parent();
         }
@@ -1045,7 +1045,7 @@ fn fix_links(root_sel: &Selection) {
 }
 
 fn simplify_nested_elements(root_sel: &Selection) {
-    for td_node in root_sel.select("*:not(tr) > td").nodes().iter() {
+    for td_node in root_sel.select("*:not(tr) > td").nodes() {
         if let Some(parent) = td_node.parent() {
             if let Some(first_child) = td_node.first_child() {
                 parent.append_children(&first_child);
@@ -1053,15 +1053,27 @@ fn simplify_nested_elements(root_sel: &Selection) {
         }
         td_node.remove_from_parent();
     }
+    simplify_nested_divs(root_sel);
+}
 
-    let only_sel = root_sel
-        .select("div, section")
-        .select(":is(div, section) > :is(div, section):only-child");
-
-    for node in only_sel.nodes().iter() {
-        let Some(parent) = node.parent() else {
+fn simplify_nested_divs(root_sel: &Selection) {
+    let sel = root_sel.select("div, section");
+    for parent in sel.nodes().iter().rev() {
+        let Some(node) = parent.first_element_child() else {
             continue;
         };
+
+        if node.next_element_sibling().is_some() {
+            continue;
+        }
+
+        if !node
+            .qual_name_ref()
+            .is_some_and(|name| matches!(name.local, local_name!("div") | local_name!("section")))
+        {
+            continue;
+        }
+
         for attr in parent.attrs() {
             node.set_attr(&attr.name.local, &attr.value);
         }

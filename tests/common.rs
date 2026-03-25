@@ -106,7 +106,7 @@ pub(crate) fn test_alt_text(data: TestData, text_mode: TextMode) {
     let article = readability.parse().unwrap();
     let article_text = article.text_content.as_ref();
     let expected = data.expected_contents.trim();
-    check!("text_content",article_text, expected, &data.path);
+    check!("text_content", article_text, expected, &data.path);
 }
 
 pub(crate) fn test_readability(data: TestData) {

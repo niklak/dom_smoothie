@@ -193,15 +193,11 @@ pub(crate) fn pre_filter_document(doc: &Document, metadata: &mut Metadata) {
         }
 
         if metadata.byline.is_none() && is_valid_byline(&node) {
-            let byline = if let Some(item_prop_name) = Selection::from(node)
+            let byline = Selection::from(node)
                 .select_single("[itemprop=name]")
                 .nodes()
                 .first()
-            {
-                item_prop_name.text()
-            } else {
-                node.text()
-            };
+                .map_or_else(|| node.text(), |prop_name| prop_name.text());
 
             metadata.byline = Some(normalize_spaces(&byline));
             next_node = next_child_or_sibling(&node, true);
@@ -388,7 +384,7 @@ fn assign_article_node(tc: &NodeRef, article_content: &NodeRef) {
 
     let tc_class = tc.attr_or("class", "");
     let siblings: Vec<NodeRef> = tc_parent.element_children();
-    for sibling in siblings.iter() {
+    for sibling in &siblings {
         let mut append = false;
         if sibling.id == tc.id {
             append = true;
