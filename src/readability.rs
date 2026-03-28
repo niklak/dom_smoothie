@@ -438,7 +438,7 @@ impl Readability {
             self.parse_json_ld()
         };
         let mut metadata = self.get_article_metadata(ld_meta);
-        
+
         if metadata.byline.is_none() {
             metadata.byline = self.byline_adjustment();
         }
@@ -788,7 +788,6 @@ impl Readability {
                 }
             }
         }
-
 
         // description
         if metadata.excerpt.is_none() {
@@ -1525,5 +1524,4 @@ mod tests {
         // consuming byline during grabbing the article
         assert!(ra.doc.select("a").exists())
     }
-
 }
