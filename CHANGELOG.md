@@ -5,6 +5,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ## [Unreleased]
 
 ### Changed
+- Updated `dom_query` version from `0.26.0` to `0.27.0`.
 - Reworked the filtering pipeline to a single-pass approach (similar to `Readability.js`).
   - The byline is now extracted (and removed from the document) during processing if it was not found earlier via `parse_json_ld` or `get_article_metadata`.
   - This removes the two-stage filtering approach while preserving reliable byline detection.
