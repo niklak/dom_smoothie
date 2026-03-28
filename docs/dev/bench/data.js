@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1774688729407,
+  "lastUpdate": 1774688944159,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -5225,6 +5225,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 39243773,
             "range": "± 168357",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "distinct": true,
+          "id": "0254ba9da8010a10c8f2d7c6b81c37cbff4de946",
+          "message": "build(deps): bump once_cell from 1.21.3 to 1.21.4\n\nBumps [once_cell](https://github.com/matklad/once_cell) from 1.21.3 to 1.21.4.\n- [Changelog](https://github.com/matklad/once_cell/blob/master/CHANGELOG.md)\n- [Commits](https://github.com/matklad/once_cell/compare/v1.21.3...v1.21.4)\n\n---\nupdated-dependencies:\n- dependency-name: once_cell\n  dependency-version: 1.21.4\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>",
+          "timestamp": "2026-03-28T11:06:56+02:00",
+          "tree_id": "295642eb87f032acafc8e92877b5993a71f23595",
+          "url": "https://github.com/niklak/dom_smoothie/commit/0254ba9da8010a10c8f2d7c6b81c37cbff4de946"
+        },
+        "date": 1774688943021,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2106381,
+            "range": "± 10415",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 9094986,
+            "range": "± 30688",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 38561570,
+            "range": "± 250787",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2151814,
+            "range": "± 19101",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 7923207,
+            "range": "± 52741",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 39024333,
+            "range": "± 2478910",
             "unit": "ns/iter"
           }
         ]
