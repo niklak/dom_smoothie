@@ -2,7 +2,7 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
-## [Unreleased]
+## [0.17.0] - 2026-03-28
 
 ### Changed
 - Updated `dom_query` version from `0.26.0` to `0.27.0`.
