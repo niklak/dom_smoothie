@@ -70,6 +70,13 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
         return false;
     }
 
+    // Preserve elements marked by upstream preprocessors (e.g., listing card
+    // containers on directory pages). The attribute signals that the element
+    // was intentionally kept despite high link density.
+    if is_preserved(node) {
+        return false;
+    }
+
     let weight = get_class_weight(node, flags.contains(GrabFlags::WeightClasses));
 
     if weight < 0.0 {

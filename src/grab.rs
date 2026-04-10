@@ -22,6 +22,16 @@ use crate::Readability;
 
 impl Readability {
     pub(crate) fn grab_article(&self, metadata: &Metadata) -> Option<Document> {
+        // Mark elements matching preserve_selectors with a data attribute
+        // once, on the source document, before cloning into retry loops.
+        // These elements will be exempt from link density penalty, conditional
+        // cleanup, and unlikely candidate stripping.
+        for selector in &self.config.preserve_selectors {
+            if let Some(sel) = self.doc.try_select(selector) {
+                sel.set_attr("data-readability-preserve", "true");
+            }
+        }
+
         let mut flags: FlagSet<GrabFlags> = FlagSet::full();
         let mut best_attempt: Option<(Document, usize)> = None;
         loop {
@@ -285,8 +295,13 @@ fn score_elements<'a>(
         .filter(|(_, score)| *score > 0.0)
         .map(|(node_id, prev_score)| {
             let candidate = NodeRef::new(node_id, tree);
-            // Skipping adjustment of low score
-            let score = if prev_score > cfg.min_score_to_adjust {
+            // Skipping adjustment of low score.
+            // Also skip link density penalty for preserved containers — these
+            // have intentionally high link density (e.g., listing cards).
+            let is_preserved = is_preserved(&candidate);
+            let score = if is_preserved {
+                prev_score
+            } else if prev_score > cfg.min_score_to_adjust {
                 prev_score * (1.0 - link_density_fn(&candidate, None, |n| cc_cache.char_count(n)))
             } else {
                 prev_score
@@ -563,14 +578,18 @@ fn collect_elements_to_score<'a>(
         }
 
         if strip_unlikely {
-            let strip = is_unlikely_candidate(&node)
-                || node
-                    .attr("role")
-                    .is_some_and(|role| UNLIKELY_ROLES.contains(&role));
-            if strip {
-                next_node = next_child_or_sibling(&node, true);
-                node.remove_from_parent();
-                continue;
+            // Don't strip elements inside data-readability-preserve containers.
+            let is_preserved = is_preserved(&node);
+            if !is_preserved {
+                let strip = is_unlikely_candidate(&node)
+                    || node
+                        .attr("role")
+                        .is_some_and(|role| UNLIKELY_ROLES.contains(&role));
+                if strip {
+                    next_node = next_child_or_sibling(&node, true);
+                    node.remove_from_parent();
+                    continue;
+                }
             }
         }
         if node_name_in(&node, &TAGS_WITH_CONTENT) && is_element_without_content(&node) {
@@ -797,5 +816,228 @@ mod tests {
         let body = doc.body().unwrap();
         collect_elements_to_score(&body, true, &Metadata::default());
         assert!(doc.select("a.banner").exists())
+    }
+
+    #[test]
+    fn test_preserve_selectors_prevents_unlikely_candidate_stripping() {
+        // Without preserve_selectors, the "banner" section would be stripped
+        // as an unlikely candidate. With preserve_selectors matching it,
+        // it should be kept.
+        let contents = r#"<!DOCTYPE>
+        <html>
+            <head><title>Test</title></head>
+            <body>
+                 <h1>Test</h1>
+                 <section class="banner" id="preserved">
+                    <p>Some content to preserve</p>
+                 </section>
+            </body>
+        </html>"#;
+
+        // First verify that without preserve_selectors, the element IS stripped
+        let doc_without = Document::from(contents);
+        assert!(doc_without.select("section.banner").exists());
+        let body = doc_without.body().unwrap();
+        collect_elements_to_score(&body, true, &Metadata::default());
+        assert!(
+            !doc_without.select("section.banner").exists(),
+            "banner should be stripped without preserve_selectors"
+        );
+
+        // Now verify that with preserve_selectors, the element is kept
+        let mut cfg = Config::default();
+        cfg.preserve_selectors = vec!["#preserved".to_string()];
+        let ra = Readability::new(contents, None, Some(cfg)).unwrap();
+
+        ra.grab_article(&Metadata::default());
+
+        assert!(
+            ra.doc.select("section.banner").exists(),
+            "banner should be preserved with preserve_selectors"
+        );
+    }
+
+    #[test]
+    fn test_preserve_selectors_child_elements_are_kept() {
+        // Children inside a preserved container should also be kept,
+        // even if they would normally be stripped as unlikely candidates.
+        let contents = r#"<!DOCTYPE>
+        <html>
+            <head><title>Test</title></head>
+            <body>
+                 <h1>Test</h1>
+                 <section id="listing">
+                    <section class="banner"><p>Card 1</p></section>
+                    <section class="banner"><p>Card 2</p></section>
+                 </section>
+            </body>
+        </html>"#;
+
+        // First verify that without preserve_selectors, the children ARE stripped
+        let doc_without = Document::from(contents);
+        let body = doc_without.body().unwrap();
+        collect_elements_to_score(&body, true, &Metadata::default());
+        assert_eq!(
+            doc_without.select("section.banner").length(),
+            0,
+            "banners should be stripped without preserve_selectors"
+        );
+
+        // Now verify that with preserve_selectors, the children are kept
+        let mut cfg = Config::default();
+        cfg.preserve_selectors = vec!["#listing".to_string()];
+        let ra = Readability::new(contents, None, Some(cfg)).unwrap();
+
+        ra.grab_article(&Metadata::default());
+
+        assert_eq!(
+            ra.doc.select("section.banner").length(),
+            2,
+            "banners should be preserved inside preserved container"
+        );
+    }
+
+    #[test]
+    fn test_preserve_selectors_empty_does_not_affect_behavior() {
+        // With empty preserve_selectors (default), behavior should be unchanged:
+        // banner divs should still be stripped as unlikely candidates.
+        let contents = r#"<!DOCTYPE>
+        <html>
+            <head><title>Test</title></head>
+            <body>
+                 <h1>Test</h1>
+                 <div class="banner">Some annoying content</div>
+            </body>
+        </html>"#;
+
+        let doc = Document::from(contents);
+        assert!(doc.select("div.banner").exists());
+        let body = doc.body().unwrap();
+        collect_elements_to_score(&body, true, &Metadata::default());
+        assert!(!doc.select("div.banner").exists());
+    }
+
+    #[test]
+    fn test_preserve_selectors_skips_link_density_penalty() {
+        // A preserved element with high link density should keep its raw score
+        // (no link density penalty applied), while a non-preserved element
+        // with the same structure gets its score reduced.
+        let make_html = |id: &str| {
+            format!(
+                r#"<!DOCTYPE>
+            <html>
+                <head><title>Test</title></head>
+                <body>
+                    <div id="{}">
+                        <p>Some meaningful text content here to generate a base score
+                        that exceeds the minimum score to adjust threshold value.</p>
+                        <p><a href="/1">link</a> <a href="/2">link</a> <a href="/3">link</a>
+                        <a href="/4">link</a> <a href="/5">link</a> <a href="/6">link</a></p>
+                    </div>
+                </body>
+            </html>"#,
+                id
+            )
+        };
+
+        // Without preserve: score gets link density penalty
+        let cfg_without = Config::default();
+        let ra_without = Readability::new(make_html("content"), None, Some(cfg_without)).unwrap();
+        ra_without.grab_article(&Metadata::default());
+        let node_without = ra_without.doc.select("#content");
+        let score_without = get_node_score(node_without.nodes().first().unwrap());
+
+        // With preserve: score keeps its raw value (no penalty)
+        let mut cfg_with = Config::default();
+        cfg_with.preserve_selectors = vec!["#content".to_string()];
+        let ra_with = Readability::new(make_html("content"), None, Some(cfg_with)).unwrap();
+        ra_with.grab_article(&Metadata::default());
+        let node_with = ra_with.doc.select("#content");
+        let score_with = get_node_score(node_with.nodes().first().unwrap());
+
+        // The preserved score should be >= the non-preserved score,
+        // because the non-preserved one gets reduced by link density.
+        assert!(
+            score_with >= score_without,
+            "preserved score ({}) should be >= non-preserved score ({})",
+            score_with,
+            score_without
+        );
+    }
+
+    #[test]
+    fn test_preserve_selectors_skips_conditional_cleanup() {
+        // A div with high link density (>0.2) inside the article content
+        // would normally be removed by clean_conditionally.
+        // With preserve_selectors, it should be kept.
+        //
+        // Build enough real content so the article is extracted, then
+        // include a high-link-density div that would trigger conditional cleanup.
+        let contents = r#"<!DOCTYPE>
+        <html>
+            <head><title>Test Article</title></head>
+            <body>
+                <div id="main">
+                    <p>This is a long paragraph of real article content that helps
+                    establish this div as the top candidate for readability extraction.
+                    It contains enough text to pass the character threshold requirements
+                    and score well during the candidate selection process. We need
+                    sufficient content here to make the algorithm happy.</p>
+                    <p>Another substantial paragraph with meaningful content that
+                    contributes to the overall score of this container element.
+                    The more real text we have here, the better the scoring will be
+                    for this particular node in the document tree.</p>
+                    <div id="links-section">
+                        <a href="/page1">Page 1</a>
+                        <a href="/page2">Page 2</a>
+                        <a href="/page3">Page 3</a>
+                        <a href="/page4">Page 4</a>
+                    </div>
+                </div>
+            </body>
+        </html>"#;
+
+        // Without preserve: the links-section div gets cleaned up
+        let ra_without = Readability::new(contents, None, None).unwrap();
+        let doc_without = ra_without.grab_article(&Metadata::default());
+        assert!(doc_without.is_some());
+        let doc_without = doc_without.unwrap();
+        assert!(
+            !doc_without.select("#links-section").exists(),
+            "links-section should be removed without preserve_selectors"
+        );
+
+        // With preserve: the links-section div is kept
+        let mut cfg = Config::default();
+        cfg.preserve_selectors = vec!["#links-section".to_string()];
+        let ra_with = Readability::new(contents, None, Some(cfg)).unwrap();
+        let doc_with = ra_with.grab_article(&Metadata::default());
+        assert!(doc_with.is_some());
+        let doc_with = doc_with.unwrap();
+        assert!(
+            doc_with.select("#links-section").exists(),
+            "links-section should be preserved with preserve_selectors"
+        );
+    }
+
+    #[test]
+    fn test_preserve_selectors_invalid_selector_is_ignored() {
+        // Invalid CSS selectors should be silently ignored,
+        // not cause a panic or error.
+        let contents = r#"<!DOCTYPE>
+        <html>
+            <head><title>Test</title></head>
+            <body>
+                 <h1>Test</h1>
+                 <div class="banner">Some content</div>
+            </body>
+        </html>"#;
+
+        let mut cfg = Config::default();
+        cfg.preserve_selectors = vec!["[invalid!!!".to_string()];
+        let ra = Readability::new(contents, None, Some(cfg)).unwrap();
+
+        // Should not panic
+        ra.grab_article(&Metadata::default());
     }
 }
