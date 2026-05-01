@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1774692018422,
+  "lastUpdate": 1777633418513,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -5465,6 +5465,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 39602784,
             "range": "± 267476",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fee84ec0e45ef12c6fd878a593330b9fbcafed44",
+          "message": "Merge pull request #205 from niklak/refactor/clippy-pedantic\n\nrefactor: apply clippy pedantic lints.",
+          "timestamp": "2026-05-01T14:01:10+03:00",
+          "tree_id": "2656d1d3728289a0031e9c3538549bacc587553f",
+          "url": "https://github.com/niklak/dom_smoothie/commit/fee84ec0e45ef12c6fd878a593330b9fbcafed44"
+        },
+        "date": 1777633417922,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2271689,
+            "range": "± 16558",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 10071879,
+            "range": "± 168280",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 40316204,
+            "range": "± 692979",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2277827,
+            "range": "± 17021",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8479594,
+            "range": "± 32094",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 39888310,
+            "range": "± 389699",
             "unit": "ns/iter"
           }
         ]
