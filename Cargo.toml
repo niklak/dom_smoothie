@@ -19,6 +19,7 @@ rust-version.workspace = true
 description = "A Rust crate for extracting relevant content from web pages"
 documentation = "https://docs.rs/dom_smoothie/latest"
 keywords = ["html", "readability"]
+categories = ["web-programming", "text-processing"]
 readme = "README.md"
 exclude = [".*", "test-pages", "deny.toml"]
 
@@ -39,7 +40,8 @@ aho-corasick = { version = "1.1.4", optional = true}
 [dev-dependencies]
 serde_json = {version = "1.0"}
 serde = {version = "1.0", features = ["derive"]}
-wasm-bindgen-test = "0.3.65"
+wasm-bindgen-test = "=0.3.67"
+
 
 
 [features]
@@ -62,5 +64,16 @@ opt-level = 3
 
 
 [lints.clippy]
-all = { level = "warn" }
-
+all = { level = "warn", priority = -1 }
+cargo = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+must_use_candidate = "allow"
+return_self_not_must_use = "allow"
+redundant_closure_for_method_calls = "allow"
+similar_names = "allow"
+needless_pass_by_value = "allow"
+trivially_copy_pass_by_ref = "allow"
+range_plus_one = "allow"
+should_panic_without_expect = "allow"
+doc_comment_double_space_linebreaks = "allow"
+cast_precision_loss = "allow"

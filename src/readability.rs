@@ -556,6 +556,7 @@ impl Readability {
     ///
     /// A [Metadata] object containing the metadata extracted from the JSON-LD block.
     /// If no valid JSON-LD block is found, this method returns `None`.
+    #[allow(clippy::too_many_lines)]
     pub fn parse_json_ld(&self) -> Option<Metadata> {
         for sel in self.doc.select_matcher(&MATCHER_JSONLD).iter() {
             let text = sel.text();
@@ -716,7 +717,7 @@ impl Readability {
 
     /// Extracts metadata from a web page.
     ///
-    /// This function takes into account standard metadata formats like OpenGraph, Dublin Core,
+    /// This function takes into account standard metadata formats like `OpenGraph`, Dublin Core,
     /// schema.org, and also tries to extract some metadata from HTML tags like `<title>`.
     ///
     /// The function takes an optional `Metadata` object as input, which is used as a fallback
@@ -1222,7 +1223,7 @@ mod tests {
 
     #[test]
     fn test_simplify_nested_divs() {
-        let contents = r#"<!DOCTYPE>
+        let contents = r"<!DOCTYPE>
         <html>
             <head><title>Test</title></head>
             <body>
@@ -1234,7 +1235,7 @@ mod tests {
                     </div>
                 </div>
             </body>
-        </html>"#;
+        </html>";
         let doc = Document::from(contents);
         let body_sel = doc.select_single("body");
 
@@ -1285,7 +1286,7 @@ mod tests {
 
         let title = readability.get_article_title();
 
-        assert_eq!(&title, "Rust (programming language) - Wikipedia")
+        assert_eq!(&title, "Rust (programming language) - Wikipedia");
     }
 
     #[test]
@@ -1399,11 +1400,11 @@ mod tests {
 
     #[test]
     fn test_get_title_with_separator_only() {
-        let contents = r#"<!DOCTYPE>
+        let contents = r"<!DOCTYPE>
         <html>
             <head><title>/</title></head>
             <body></body>
-        </html>"#;
+        </html>";
         let readability = Readability::from(contents);
         let title = readability.get_article_title();
         assert_eq!(&title, "/");
@@ -1411,11 +1412,11 @@ mod tests {
 
     #[test]
     fn test_bad_document_url() {
-        let contents = r#"<!DOCTYPE html>
+        let contents = r"<!DOCTYPE html>
     <html>
         <head><title>Title</title></head>
         <body>Content</body>
-    </html>"#;
+    </html>";
 
         let result = Readability::new(contents, Some("example.com"), None);
         assert!(
@@ -1501,7 +1502,7 @@ mod tests {
         let mut ra = Readability::with_document(doc, None, None).unwrap();
         let _ = ra.parse();
         // consuming byline during grabbing the article
-        assert!(!ra.doc.select("a").exists())
+        assert!(!ra.doc.select("a").exists());
     }
 
     #[test]
@@ -1522,6 +1523,6 @@ mod tests {
         let ra = Readability::with_document(doc, None, None).unwrap();
         let _ = ra.get_article_metadata(Some(metadata));
         // consuming byline during grabbing the article
-        assert!(ra.doc.select("a").exists())
+        assert!(ra.doc.select("a").exists());
     }
 }

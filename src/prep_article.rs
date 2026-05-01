@@ -114,13 +114,13 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
             is_list = list_density > 0.9;
         }
 
-        let img = node.find_descendants("img").len() as f32;
-
+        let img = node.find_descendants("img").len();
+        let img_f32 = img as f32;
         let should_remove = || {
             let is_figure_child = has_ancestor(node, None, |n| n.has_name("figure"));
             let p = node.find_descendants("p").len() as f32;
 
-            if !is_figure_child && img > 1.0 && p / img < 0.5 {
+            if !is_figure_child && img_f32 > 1.0 && p / img_f32 < 0.5 {
                 return true;
             }
 
@@ -143,7 +143,7 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
             if !is_list
                 && !is_figure_child
                 && char_count < 25
-                && (img == 0.0 || img > 2.0)
+                && (img == 0 || img > 2)
                 && link_density > 0.0
                 && text_density(node, "h1,h2,h3,h4,h5,h6", Some(char_count)) < 0.9
             {
@@ -161,7 +161,7 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
                 return true;
             }
 
-            if img == 0.0 && text_density(node, TEXTISH_TAGS, Some(char_count)) == 0.0 {
+            if img == 0 && text_density(node, TEXTISH_TAGS, Some(char_count)) == 0.0 {
                 return true;
             }
             false
@@ -175,7 +175,7 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
                 }
             }
             let li_count = node.find_descendants("li").len();
-            return !(img == li_count as f32);
+            return img != li_count;
         }
 
         return have_to_remove;
@@ -285,7 +285,7 @@ fn fix_lazy_images(sel: &Selection) {
                 // If it doesn't, then this src is important and shouldn't be removed.
                 let mut src_could_be_removed = false;
 
-                for attr in node.attrs().iter() {
+                for attr in &node.attrs() {
                     if &attr.name.local == "src" {
                         continue;
                     }

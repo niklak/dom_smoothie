@@ -75,6 +75,12 @@ impl TestData {
         }
     }
 
+    /// Creates a `TestData` instance from a test path, source file, and expected file.
+    /// 
+    /// 
+    /// # Errors
+    /// 
+    /// Returns an error if the source or expected file cannot be read.
     pub fn from_path<P>(
         test_path: P,
         source_file: Option<&str>,
@@ -140,6 +146,12 @@ pub(crate) fn test_readability(data: TestData) {
     check!("content", a_html, e_html, data.path);
 }
 
+
+/// Tests that the metadata is extracted correctly from the article.
+/// 
+/// # Panics
+/// 
+/// Panics if the test fails.
 pub fn test_metadata(data: TestData, host: Option<&str>) {
     let cfg = dom_smoothie::Config {
         classes_to_preserve: vec!["caption".into()],
@@ -168,6 +180,11 @@ pub fn test_metadata(data: TestData, host: Option<&str>) {
     check!("image", &article.image, &exp.image, data.path);
 }
 
+/// Tests that the favicon is extracted correctly from the article metadata.
+/// 
+/// # Panics
+/// 
+/// Panics if the test fails.
 pub fn test_favicon<P>(test_path: P, host: Option<&str>, expected: Option<&str>)
 where
     P: AsRef<Path>,

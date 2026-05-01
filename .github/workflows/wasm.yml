@@ -25,7 +25,7 @@ jobs:
     - name: Install wasm-pack & wasm-bindgen-cli
       uses: taiki-e/install-action@v2
       with:
-        tool: wasm-pack,wasm-bindgen-cli
+        tool: wasm-pack,wasm-bindgen-cli@0.2.117
     - uses: Swatinem/rust-cache@v2
       with:
         workspaces: .       

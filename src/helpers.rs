@@ -147,7 +147,7 @@ pub(crate) fn single_child_element<'a>(node: &NodeRef<'a>, tag: &str) -> Option<
     let children = node.element_children();
     if children.len() != 1 {
         return None;
-    };
+    }
 
     let first = children.first()?;
 
@@ -300,6 +300,8 @@ mod tests {
 
     use super::*;
 
+    const FLOAT_TOLERANCE: f64 = 0.00001;
+
     #[test]
     fn test_text_similarity() {
         let text_a = "The quick brown fox";
@@ -313,7 +315,7 @@ mod tests {
         let text_a = "the quick brown fox jumps over the lazy dog";
         let text_b = "The Quick Brown Fox";
         let similarity = text_similarity(text_a, text_b);
-        assert_eq!(similarity, 1.0);
+        assert!(1.0 - similarity < FLOAT_TOLERANCE);
     }
 
     #[test]
@@ -321,7 +323,7 @@ mod tests {
         let text_a = "DeepMind新电脑已可利用记忆自学 人工智能迈上新台阶_科技_腾讯网";
         let text_b = "DeepMind新电脑已可利用记忆自学 人工智能迈上新台阶";
         let similarity = text_similarity(text_a, text_b);
-        assert_eq!(similarity, 1.0);
+        assert!(1.0 - similarity < FLOAT_TOLERANCE);
     }
 
     #[test]

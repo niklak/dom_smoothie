@@ -716,7 +716,7 @@ mod tests {
 
     #[test]
     fn test_remove_empty() {
-        let contents = r#"<!DOCTYPE>
+        let contents = r"<!DOCTYPE>
         <html>
             <head><title>Test</title></head>
             <body>
@@ -731,7 +731,7 @@ mod tests {
                  <h5></h5>
                  <h6></h6>
             </body>
-        </html>"#;
+        </html>";
 
         let ra = Readability::new(contents, None, None).unwrap();
         let sel = ra.doc.select("body > *");
@@ -747,13 +747,13 @@ mod tests {
 
     #[test]
     fn test_remove_title_duplicates() {
-        let contents = r#"<!DOCTYPE>
+        let contents = r"<!DOCTYPE>
         <html>
             <head><title>Rust (programming language) - Wikipedia</title></head>
             <body>
                  <h1>Rust (programming language)</h1>
             </body>
-        </html>"#;
+        </html>";
 
         let readability = Readability::from(contents);
         let metadata = readability.get_article_metadata(None);
@@ -761,7 +761,7 @@ mod tests {
 
         assert!(readability.doc.select("h1").exists());
         collect_elements_to_score(&body, true, &metadata);
-        assert!(!readability.doc.select("h1").exists())
+        assert!(!readability.doc.select("h1").exists());
     }
 
     #[test]
@@ -779,7 +779,7 @@ mod tests {
         assert!(doc.select("div.banner").exists());
         let body = doc.body().unwrap();
         collect_elements_to_score(&body, true, &Metadata::default());
-        assert!(!doc.select("div.banner").exists())
+        assert!(!doc.select("div.banner").exists());
     }
     #[test]
     fn test_skip_ok_maybe_candidates() {
@@ -796,6 +796,6 @@ mod tests {
         assert!(doc.select("a.banner").exists());
         let body = doc.body().unwrap();
         collect_elements_to_score(&body, true, &Metadata::default());
-        assert!(doc.select("a.banner").exists())
+        assert!(doc.select("a.banner").exists());
     }
 }
