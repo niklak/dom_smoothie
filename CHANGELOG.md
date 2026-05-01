@@ -2,6 +2,11 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
+## [Unreleased]
+### Changed
+- Applied selected Clippy suggestions (pedantic) to improve code quality. 
+
+
 ## [0.17.0] - 2026-03-28
 
 ### Changed

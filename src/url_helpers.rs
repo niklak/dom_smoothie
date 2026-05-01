@@ -177,8 +177,7 @@ mod tests {
             let result = url_join(base, relative);
             assert_eq!(
                 result, expected,
-                "Failed for base: {}, relative: {}",
-                base, relative
+                "Failed for base: {base}, relative: {relative}",
             );
         }
     }
