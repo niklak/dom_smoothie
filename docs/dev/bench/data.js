@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1777633418513,
+  "lastUpdate": 1778242979330,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -5525,6 +5525,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 39888310,
             "range": "± 389699",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "426cb6dfaf2dee3fc734e805f80a55193b1ea177",
+          "message": "Merge pull request #206 from dflock/add-stdin-to-cli\n\nfeat(cli): add stdin/stdout support for pipeline usage",
+          "timestamp": "2026-05-08T15:20:57+03:00",
+          "tree_id": "aec9a986b695e3b36993e1ece817de5866d2cc92",
+          "url": "https://github.com/niklak/dom_smoothie/commit/426cb6dfaf2dee3fc734e805f80a55193b1ea177"
+        },
+        "date": 1778242978890,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2272571,
+            "range": "± 30241",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 10047619,
+            "range": "± 320201",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 40008008,
+            "range": "± 541086",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2293108,
+            "range": "± 11771",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8543628,
+            "range": "± 62106",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 39899938,
+            "range": "± 144288",
             "unit": "ns/iter"
           }
         ]
