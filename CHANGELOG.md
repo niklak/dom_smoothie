@@ -3,9 +3,13 @@
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ## [Unreleased]
-### Changed
-- Applied selected Clippy suggestions (pedantic) to improve code quality. 
 
+### Added
+- **cli**: added stdin/stdout support for pipeline usage (by @dflock).
+
+### Changed
+- Updated `dom_query`: `0.27.0` -> `0.28.0`.
+- Applied selected Clippy suggestions (pedantic) to improve code quality. 
 
 ## [0.17.0] - 2026-03-28
 

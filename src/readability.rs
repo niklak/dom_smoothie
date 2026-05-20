@@ -558,7 +558,7 @@ impl Readability {
     /// If no valid JSON-LD block is found, this method returns `None`.
     #[allow(clippy::too_many_lines)]
     pub fn parse_json_ld(&self) -> Option<Metadata> {
-        for sel in self.doc.select_matcher(&MATCHER_JSONLD).iter() {
+        for sel in &self.doc.select_matcher(&MATCHER_JSONLD) {
             let text = sel.text();
             let content = strip_cdata(&text);
 
