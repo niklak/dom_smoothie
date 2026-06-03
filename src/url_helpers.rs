@@ -40,23 +40,23 @@ pub(crate) fn is_absolute_url(s: &str, strict: bool) -> bool {
 }
 
 pub(crate) fn to_absolute_url(raw_url: &str, base_uri: &str) -> String {
-    let u = if raw_url.starts_with("file://") {
-        raw_url.replace("|/", ":/")
+    if raw_url.starts_with("file://") {
+        let u = raw_url.replacen("|/", ":/", 1);
+        url_join(base_uri, &u)
     } else {
-        raw_url.to_string()
-    };
-    url_join(base_uri, &u)
+        url_join(base_uri, raw_url)
+    }
 }
 
 pub(crate) fn url_join(base: &str, relative: &str) -> String {
+    if is_absolute_url(relative, false) {
+        return relative.to_string();
+    }
+
     let rel = relative.trim();
     if rel.is_empty() {
         return base.to_string();
     }
-    if is_absolute_url(rel, false) {
-        return rel.to_string();
-    }
-
     // 1. Find the scheme of the base URL
     let Some(scheme_end) = base.find(':') else {
         return rel.to_string();
@@ -110,8 +110,15 @@ pub(crate) fn url_join(base: &str, relative: &str) -> String {
         }
     }
 
-    let final_path = path_segments.join("/");
-    format!("{origin}/{final_path}")
+    let mut out = String::with_capacity(
+        origin.len() + path_segments.iter().map(|s| s.len() + 1).sum::<usize>(),
+    );
+    out.push_str(origin);
+    for seg in path_segments {
+        out.push('/');
+        out.push_str(seg);
+    }
+    out
 }
 
 #[cfg(test)]
@@ -163,6 +170,7 @@ mod tests {
             "blob:http://www.independent.co.uk/112e1cb2-b0b1-e146-be22-fc6d052f7ddd"),
             ("http://fakehost/test/", "./W020170310313653868929.jpg", "http://fakehost/test/W020170310313653868929.jpg"),
             ("http://fakehost/test/", "../../../../366/logo_bana/corner_2.gif", "http://fakehost/366/logo_bana/corner_2.gif"),
+            ("http://fakehost/", "../../../../366/logo_bana/corner_2.gif", "http://fakehost/366/logo_bana/corner_2.gif"),
             ("http://example.com/path/page.html", "foo//bar", "http://example.com/path/foo//bar"),
             ("http://example.com/", "data:text/plain,hello", "data:text/plain,hello"),
             ("http://example.com/", "../foo", "http://example.com/foo"),
@@ -171,6 +179,16 @@ mod tests {
             ("http://example.com/path/page.html", "?id=123", "http://example.com/path/page.html?id=123"),
             // no punycode conversion
             ("https://café.com", "menu.html", "https://café.com/menu.html"),
+
+            ("http://example.com/path/page.html",
+            "#comments",
+            "http://example.com/path/page.html#comments",
+            ),
+
+            ("http://example.com/path/page.html?a=1#top",
+            "?b=2",
+            "http://example.com/path/page.html?b=2",
+            ),
         ];
 
         for (base, relative, expected) in tests {
