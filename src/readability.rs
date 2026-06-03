@@ -985,23 +985,12 @@ impl Readability {
             r#"a[href]:not([href^="http"])"#
         };
         for a in root_sel.select(url_sel).nodes() {
-            let Some(href) = a.attr("href") else {
-                unreachable!();
-            };
-            let abs_url = to_absolute_url(&href, &base_url);
-            a.set_attr("href", abs_url.as_str());
+            set_attr_absolute_url(a, "href", &base_url);
         }
 
         for media in root_sel.select_matcher(&MATCHER_SOURCES).nodes() {
-            if let Some(src) = media.attr("src") {
-                let abs_src = to_absolute_url(&src, &base_url);
-                media.set_attr("src", abs_src.as_str());
-            }
-
-            if let Some(poster) = media.attr("poster") {
-                let abs_poster = to_absolute_url(&poster, &base_url);
-                media.set_attr("poster", abs_poster.as_str());
-            }
+            set_attr_absolute_url(media, "src", &base_url);
+            set_attr_absolute_url(media, "poster", &base_url);
 
             if let Some(srcset) = media.attr("srcset") {
                 let abs_srcset: Vec<String> = srcset
@@ -1035,6 +1024,13 @@ fn next_significant_node(node: Option<NodeRef>) -> Option<NodeRef> {
         }
     }
     next
+}
+fn set_attr_absolute_url(node: &NodeRef, attr_key: &str, base_uri: &str) {
+    let Some(attr) = node.attr(attr_key) else {
+        return;
+    };
+    let abs_url = to_absolute_url(&attr, base_uri);
+    node.set_attr(attr_key, abs_url.as_str());
 }
 
 fn fix_links(root_sel: &Selection) {
