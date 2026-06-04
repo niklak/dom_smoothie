@@ -46,7 +46,7 @@ pub(crate) fn to_absolute_url<'a>(base: &'a str, relative: &'a str) -> Cow<'a, s
         // this url is absolute
         relative.replacen("|/", ":/", 1).into()
     } else {
-        resolve_url(base, relative).into()
+        resolve_url(base, relative)
     }
 }
 
