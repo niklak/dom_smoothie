@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 fn delimiter(s: &str) -> &str {
     let mut count = 0;
     for (i, c) in s.char_indices() {
@@ -39,34 +41,34 @@ pub(crate) fn is_absolute_url(s: &str, strict: bool) -> bool {
     false
 }
 
-pub(crate) fn to_absolute_url(base: &str, relative: &str) -> String {
+pub(crate) fn to_absolute_url<'a>(base: &'a str, relative: &'a str) -> Cow<'a, str> {
     if relative.starts_with("file://") {
         // this url is absolute
-        relative.replacen("|/", ":/", 1)
+        relative.replacen("|/", ":/", 1).into()
     } else {
-        resolve_url(base, relative)
+        resolve_url(base, relative).into()
     }
 }
 
 /// Resolves a relative or absolute URL against a given base URL.
-pub(crate) fn resolve_url(base: &str, relative: &str) -> String {
+pub(crate) fn resolve_url<'a>(base: &'a str, relative: &'a str) -> Cow<'a, str> {
     if is_absolute_url(relative, false) {
-        return relative.to_string();
+        return Cow::Borrowed(relative);
     }
 
     let rel = relative.trim();
     if rel.is_empty() {
-        return base.to_string();
+        return Cow::Borrowed(base);
     }
     // 1. Find the scheme of the base URL
     let Some(scheme_end) = base.find(':') else {
-        return rel.to_string();
+        return Cow::Borrowed(relative);
     };
     let scheme = &base[..scheme_end];
 
     // 2. Handle relative URLs starting with "//": //example.com/path
     if rel.starts_with("//") {
-        return format!("{scheme}:{rel}");
+        return format!("{scheme}:{rel}").into();
     }
 
     // 3. Find the end of origin (scheme://authority)
@@ -79,7 +81,7 @@ pub(crate) fn resolve_url(base: &str, relative: &str) -> String {
 
     // 4. Links, starting with root: /path/to/file
     if rel.starts_with('/') {
-        return format!("{origin}{rel}");
+        return format!("{origin}{rel}").into();
     }
 
     // 5. Split path from query and fragment in base URL
@@ -91,7 +93,7 @@ pub(crate) fn resolve_url(base: &str, relative: &str) -> String {
 
     // 6. Links with query/fragment: ?id=123 or #anchor
     if rel.starts_with(['?', '#']) {
-        return format!("{origin}{base_path}{rel}");
+        return format!("{origin}{base_path}{rel}").into();
     }
     // 7. The most complex case: relative paths (cat.jpg, ../img/dog.jpg)
 
@@ -119,7 +121,7 @@ pub(crate) fn resolve_url(base: &str, relative: &str) -> String {
         out.push('/');
         out.push_str(seg);
     }
-    out
+    Cow::Owned(out)
 }
 
 #[cfg(test)]

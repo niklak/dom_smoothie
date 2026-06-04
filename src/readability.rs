@@ -966,7 +966,7 @@ impl Readability {
         };
 
         if let Some(doc_url) = self.doc_url.as_ref() {
-            resolve_url(doc_url, &base_uri).into()
+            resolve_url(doc_url, &base_uri).to_string().into()
         } else {
             Some(base_uri.to_string())
         }
@@ -1000,7 +1000,7 @@ impl Readability {
                             let abs_src = to_absolute_url(&base_url, src.trim());
                             format!("{abs_src} {cond}")
                         } else {
-                            to_absolute_url( &base_url, s.trim())
+                            to_absolute_url( &base_url, s.trim()).into()
                         }
                     })
                     .collect();
@@ -1030,7 +1030,7 @@ fn set_attr_absolute_url(node: &NodeRef, attr_key: &str, base_uri: &str) {
         return;
     };
     let abs_url = to_absolute_url( base_uri, &attr);
-    node.set_attr(attr_key, abs_url.as_str());
+    node.set_attr(attr_key, &abs_url);
 }
 
 fn fix_links(root_sel: &Selection) {
@@ -1180,7 +1180,7 @@ fn extract_favicon(root_node: &Document, base_url: Option<String>) -> Option<Str
         .map(|(href, _)| href);
     // Transform to absolute URL if base_url is provided
     if let Some(ref base_url) = base_url {
-        favicon_url = favicon_url.map(|u| to_absolute_url( base_url, &u));
+        favicon_url = favicon_url.map(|u| to_absolute_url( base_url, &u).into());
     }
     favicon_url
 }
