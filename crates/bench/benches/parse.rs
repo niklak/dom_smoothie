@@ -4,7 +4,7 @@ use std::hint::black_box;
 use dom_smoothie::{Article, Config, Readability, ReadabilityError};
 
 fn dom_smoothie_parse(contents: &str, cfg: &Config) -> Result<Article, ReadabilityError> {
-    let mut readability = Readability::new(contents, None, Some(cfg.clone()))?;
+    let mut readability = Readability::new(contents, Some("https://fakehost/test"), Some(cfg.clone()))?;
     readability.parse()
 }
 

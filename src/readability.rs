@@ -1029,9 +1029,6 @@ fn set_attr_absolute_url(node: &NodeRef, attr_key: &str, base_uri: &str) {
     let Some(attr) = node.attr(attr_key) else {
         return;
     };
-    if is_absolute_url(&attr, false) && !(attr.starts_with("file://") && attr.contains("|/")) {
-        return;
-    }
     let abs_url = to_absolute_url( base_uri, &attr);
     node.set_attr(attr_key, abs_url.as_str());
 }
