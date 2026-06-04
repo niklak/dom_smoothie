@@ -41,8 +41,8 @@ pub(crate) fn is_absolute_url(s: &str, strict: bool) -> bool {
 
 pub(crate) fn to_absolute_url(raw_url: &str, base_uri: &str) -> String {
     if raw_url.starts_with("file://") {
-        let u = raw_url.replacen("|/", ":/", 1);
-        url_join(base_uri, &u)
+        // this url is absolute
+        raw_url.replacen("|/", ":/", 1)
     } else {
         url_join(base_uri, raw_url)
     }
@@ -134,6 +134,7 @@ mod tests {
         assert!(is_absolute_url("a-b://x", true));
         assert!(is_absolute_url("x.y://zzz", true));
         assert!(is_absolute_url("mailto:foo@bar.com", false));
+        assert!(is_absolute_url("file:///C:/report.html", true));
     }
 
     #[test]
