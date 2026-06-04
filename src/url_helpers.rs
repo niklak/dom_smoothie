@@ -39,12 +39,12 @@ pub(crate) fn is_absolute_url(s: &str, strict: bool) -> bool {
     false
 }
 
-pub(crate) fn to_absolute_url(raw_url: &str, base_uri: &str) -> String {
-    if raw_url.starts_with("file://") {
+pub(crate) fn to_absolute_url(base: &str, relative: &str) -> String {
+    if relative.starts_with("file://") {
         // this url is absolute
-        raw_url.replacen("|/", ":/", 1)
+        relative.replacen("|/", ":/", 1)
     } else {
-        resolve_url(base_uri, raw_url)
+        resolve_url(base, relative)
     }
 }
 

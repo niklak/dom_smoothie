@@ -12,7 +12,7 @@ use crate::helpers::*;
 use crate::is_probably_readable;
 #[allow(clippy::wildcard_imports)]
 use crate::matching::*;
-use crate::url_helpers::{is_absolute_url, to_absolute_url, resolve_url};
+use crate::url_helpers::{is_absolute_url, resolve_url, to_absolute_url};
 use crate::Config;
 use crate::ReadabilityError;
 
@@ -997,10 +997,10 @@ impl Readability {
                     .split(", ")
                     .map(|s| {
                         if let Some((src, cond)) = s.split_once(' ') {
-                            let abs_src = to_absolute_url(src.trim(), &base_url);
+                            let abs_src = to_absolute_url(&base_url, src.trim());
                             format!("{abs_src} {cond}")
                         } else {
-                            to_absolute_url(s.trim(), &base_url)
+                            to_absolute_url( &base_url, s.trim())
                         }
                     })
                     .collect();
@@ -1029,7 +1029,10 @@ fn set_attr_absolute_url(node: &NodeRef, attr_key: &str, base_uri: &str) {
     let Some(attr) = node.attr(attr_key) else {
         return;
     };
-    let abs_url = to_absolute_url(&attr, base_uri);
+    if is_absolute_url(&attr, false) && !(attr.starts_with("file://") && attr.contains("|/")) {
+        return;
+    }
+    let abs_url = to_absolute_url( base_uri, &attr);
     node.set_attr(attr_key, abs_url.as_str());
 }
 
@@ -1180,7 +1183,7 @@ fn extract_favicon(root_node: &Document, base_url: Option<String>) -> Option<Str
         .map(|(href, _)| href);
     // Transform to absolute URL if base_url is provided
     if let Some(ref base_url) = base_url {
-        favicon_url = favicon_url.map(|u| to_absolute_url(&u, base_url));
+        favicon_url = favicon_url.map(|u| to_absolute_url( base_url, &u));
     }
     favicon_url
 }
