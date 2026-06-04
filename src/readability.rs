@@ -12,7 +12,7 @@ use crate::helpers::*;
 use crate::is_probably_readable;
 #[allow(clippy::wildcard_imports)]
 use crate::matching::*;
-use crate::url_helpers::{is_absolute_url, to_absolute_url, url_join};
+use crate::url_helpers::{is_absolute_url, to_absolute_url, resolve_url};
 use crate::Config;
 use crate::ReadabilityError;
 
@@ -966,7 +966,7 @@ impl Readability {
         };
 
         if let Some(doc_url) = self.doc_url.as_ref() {
-            url_join(doc_url, &base_uri).into()
+            resolve_url(doc_url, &base_uri).into()
         } else {
             Some(base_uri.to_string())
         }

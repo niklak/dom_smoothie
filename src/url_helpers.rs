@@ -44,11 +44,12 @@ pub(crate) fn to_absolute_url(raw_url: &str, base_uri: &str) -> String {
         // this url is absolute
         raw_url.replacen("|/", ":/", 1)
     } else {
-        url_join(base_uri, raw_url)
+        resolve_url(base_uri, raw_url)
     }
 }
 
-pub(crate) fn url_join(base: &str, relative: &str) -> String {
+/// Resolves a relative or absolute URL against a given base URL.
+pub(crate) fn resolve_url(base: &str, relative: &str) -> String {
     if is_absolute_url(relative, false) {
         return relative.to_string();
     }
@@ -156,6 +157,7 @@ mod tests {
     fn test_url_join() {
         let tests = [
             // (base, relative, expected)
+            ("example.com", "image.jpg", "image.jpg"),
             ("http://example.com/path/page.html", "image.jpg", "http://example.com/path/image.jpg"),
             ("http://example.com/path/page.html", "/image.jpg", "http://example.com/image.jpg"),
 
@@ -193,7 +195,7 @@ mod tests {
         ];
 
         for (base, relative, expected) in tests {
-            let result = url_join(base, relative);
+            let result = resolve_url(base, relative);
             assert_eq!(
                 result, expected,
                 "Failed for base: {base}, relative: {relative}",
