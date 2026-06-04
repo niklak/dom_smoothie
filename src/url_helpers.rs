@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 fn delimiter(s: &str) -> &str {
     let mut count = 0;
     for (i, c) in s.char_indices() {
@@ -39,33 +41,34 @@ pub(crate) fn is_absolute_url(s: &str, strict: bool) -> bool {
     false
 }
 
-pub(crate) fn to_absolute_url(raw_url: &str, base_uri: &str) -> String {
-    let u = if raw_url.starts_with("file://") {
-        raw_url.replace("|/", ":/")
+pub(crate) fn to_absolute_url<'a>(base: &'a str, relative: &'a str) -> Cow<'a, str> {
+    if relative.starts_with("file://") {
+        // this url is absolute
+        relative.replacen("|/", ":/", 1).into()
     } else {
-        raw_url.to_string()
-    };
-    url_join(base_uri, &u)
+        resolve_url(base, relative)
+    }
 }
 
-pub(crate) fn url_join(base: &str, relative: &str) -> String {
-    let rel = relative.trim();
-    if rel.is_empty() {
-        return base.to_string();
-    }
-    if is_absolute_url(rel, false) {
-        return rel.to_string();
+/// Resolves a relative or absolute URL against a given base URL.
+pub(crate) fn resolve_url<'a>(base: &'a str, relative: &'a str) -> Cow<'a, str> {
+    if is_absolute_url(relative, false) {
+        return Cow::Borrowed(relative);
     }
 
+    let rel = relative.trim();
+    if rel.is_empty() {
+        return Cow::Borrowed(base);
+    }
     // 1. Find the scheme of the base URL
     let Some(scheme_end) = base.find(':') else {
-        return rel.to_string();
+        return Cow::Borrowed(relative);
     };
     let scheme = &base[..scheme_end];
 
     // 2. Handle relative URLs starting with "//": //example.com/path
     if rel.starts_with("//") {
-        return format!("{scheme}:{rel}");
+        return format!("{scheme}:{rel}").into();
     }
 
     // 3. Find the end of origin (scheme://authority)
@@ -78,7 +81,7 @@ pub(crate) fn url_join(base: &str, relative: &str) -> String {
 
     // 4. Links, starting with root: /path/to/file
     if rel.starts_with('/') {
-        return format!("{origin}{rel}");
+        return format!("{origin}{rel}").into();
     }
 
     // 5. Split path from query and fragment in base URL
@@ -90,7 +93,7 @@ pub(crate) fn url_join(base: &str, relative: &str) -> String {
 
     // 6. Links with query/fragment: ?id=123 or #anchor
     if rel.starts_with(['?', '#']) {
-        return format!("{origin}{base_path}{rel}");
+        return format!("{origin}{base_path}{rel}").into();
     }
     // 7. The most complex case: relative paths (cat.jpg, ../img/dog.jpg)
 
@@ -110,8 +113,15 @@ pub(crate) fn url_join(base: &str, relative: &str) -> String {
         }
     }
 
-    let final_path = path_segments.join("/");
-    format!("{origin}/{final_path}")
+    let mut out = String::with_capacity(
+        origin.len() + path_segments.iter().map(|s| s.len() + 1).sum::<usize>(),
+    );
+    out.push_str(origin);
+    for seg in path_segments {
+        out.push('/');
+        out.push_str(seg);
+    }
+    Cow::Owned(out)
 }
 
 #[cfg(test)]
@@ -127,6 +137,7 @@ mod tests {
         assert!(is_absolute_url("a-b://x", true));
         assert!(is_absolute_url("x.y://zzz", true));
         assert!(is_absolute_url("mailto:foo@bar.com", false));
+        assert!(is_absolute_url("file:///C:/report.html", true));
     }
 
     #[test]
@@ -148,6 +159,7 @@ mod tests {
     fn test_url_join() {
         let tests = [
             // (base, relative, expected)
+            ("example.com", "image.jpg", "image.jpg"),
             ("http://example.com/path/page.html", "image.jpg", "http://example.com/path/image.jpg"),
             ("http://example.com/path/page.html", "/image.jpg", "http://example.com/image.jpg"),
 
@@ -163,6 +175,7 @@ mod tests {
             "blob:http://www.independent.co.uk/112e1cb2-b0b1-e146-be22-fc6d052f7ddd"),
             ("http://fakehost/test/", "./W020170310313653868929.jpg", "http://fakehost/test/W020170310313653868929.jpg"),
             ("http://fakehost/test/", "../../../../366/logo_bana/corner_2.gif", "http://fakehost/366/logo_bana/corner_2.gif"),
+            ("http://fakehost/", "../../../../366/logo_bana/corner_2.gif", "http://fakehost/366/logo_bana/corner_2.gif"),
             ("http://example.com/path/page.html", "foo//bar", "http://example.com/path/foo//bar"),
             ("http://example.com/", "data:text/plain,hello", "data:text/plain,hello"),
             ("http://example.com/", "../foo", "http://example.com/foo"),
@@ -171,10 +184,20 @@ mod tests {
             ("http://example.com/path/page.html", "?id=123", "http://example.com/path/page.html?id=123"),
             // no punycode conversion
             ("https://café.com", "menu.html", "https://café.com/menu.html"),
+
+            ("http://example.com/path/page.html",
+            "#comments",
+            "http://example.com/path/page.html#comments",
+            ),
+
+            ("http://example.com/path/page.html?a=1#top",
+            "?b=2",
+            "http://example.com/path/page.html?b=2",
+            ),
         ];
 
         for (base, relative, expected) in tests {
-            let result = url_join(base, relative);
+            let result = resolve_url(base, relative);
             assert_eq!(
                 result, expected,
                 "Failed for base: {base}, relative: {relative}",

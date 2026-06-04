@@ -12,7 +12,7 @@ use crate::helpers::*;
 use crate::is_probably_readable;
 #[allow(clippy::wildcard_imports)]
 use crate::matching::*;
-use crate::url_helpers::{is_absolute_url, to_absolute_url, url_join};
+use crate::url_helpers::{is_absolute_url, resolve_url, to_absolute_url};
 use crate::Config;
 use crate::ReadabilityError;
 
@@ -966,7 +966,7 @@ impl Readability {
         };
 
         if let Some(doc_url) = self.doc_url.as_ref() {
-            url_join(doc_url, &base_uri).into()
+            resolve_url(doc_url, &base_uri).to_string().into()
         } else {
             Some(base_uri.to_string())
         }
@@ -985,33 +985,22 @@ impl Readability {
             r#"a[href]:not([href^="http"])"#
         };
         for a in root_sel.select(url_sel).nodes() {
-            let Some(href) = a.attr("href") else {
-                unreachable!();
-            };
-            let abs_url = to_absolute_url(&href, &base_url);
-            a.set_attr("href", abs_url.as_str());
+            set_attr_absolute_url(a, "href", &base_url);
         }
 
         for media in root_sel.select_matcher(&MATCHER_SOURCES).nodes() {
-            if let Some(src) = media.attr("src") {
-                let abs_src = to_absolute_url(&src, &base_url);
-                media.set_attr("src", abs_src.as_str());
-            }
-
-            if let Some(poster) = media.attr("poster") {
-                let abs_poster = to_absolute_url(&poster, &base_url);
-                media.set_attr("poster", abs_poster.as_str());
-            }
+            set_attr_absolute_url(media, "src", &base_url);
+            set_attr_absolute_url(media, "poster", &base_url);
 
             if let Some(srcset) = media.attr("srcset") {
                 let abs_srcset: Vec<String> = srcset
                     .split(", ")
                     .map(|s| {
                         if let Some((src, cond)) = s.split_once(' ') {
-                            let abs_src = to_absolute_url(src.trim(), &base_url);
+                            let abs_src = to_absolute_url(&base_url, src.trim());
                             format!("{abs_src} {cond}")
                         } else {
-                            to_absolute_url(s.trim(), &base_url)
+                            to_absolute_url(&base_url, s.trim()).into()
                         }
                     })
                     .collect();
@@ -1035,6 +1024,13 @@ fn next_significant_node(node: Option<NodeRef>) -> Option<NodeRef> {
         }
     }
     next
+}
+fn set_attr_absolute_url(node: &NodeRef, attr_key: &str, base_uri: &str) {
+    let Some(attr) = node.attr(attr_key) else {
+        return;
+    };
+    let abs_url = to_absolute_url(base_uri, &attr);
+    node.set_attr(attr_key, &abs_url);
 }
 
 fn fix_links(root_sel: &Selection) {
@@ -1184,7 +1180,7 @@ fn extract_favicon(root_node: &Document, base_url: Option<String>) -> Option<Str
         .map(|(href, _)| href);
     // Transform to absolute URL if base_url is provided
     if let Some(ref base_url) = base_url {
-        favicon_url = favicon_url.map(|u| to_absolute_url(&u, base_url));
+        favicon_url = favicon_url.map(|u| to_absolute_url(base_url, &u).into());
     }
     favicon_url
 }

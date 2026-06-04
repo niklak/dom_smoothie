@@ -153,8 +153,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Determine if we're in stdout mode:
     // explicitly via --stdout, or implicitly when input is stdin and no --output given
-    let is_stdin =
-        cli.input.is_none() || cli.input.as_deref() == Some(std::path::Path::new("-"));
+    let is_stdin = cli.input.is_none() || cli.input.as_deref() == Some(std::path::Path::new("-"));
     let use_stdout = cli.stdout || (is_stdin && cli.output.is_none());
 
     let text_mode = if cli.formatted_text {
