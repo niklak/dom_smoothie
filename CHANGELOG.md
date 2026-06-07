@@ -2,7 +2,7 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
-## [Unreleased]
+## [0.18.0] - 2026-06-07
 
 ### Added
 - **cli**: added stdin/stdout support for pipeline usage (by @dflock).
