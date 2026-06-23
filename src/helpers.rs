@@ -74,6 +74,11 @@ where
     node.ancestors_it(max_depth).any(|a| filter_fn(&a))
 }
 
+pub(crate) fn is_preserved(node: &NodeRef) -> bool {
+    node.has_attr("data-readability-preserve")
+        || has_ancestor(node, None, |n| n.has_attr("data-readability-preserve"))
+}
+
 pub(crate) fn text_density(node: &NodeRef, selector: &str, char_count: Option<usize>) -> f32 {
     let sel = Selection::from(*node).select(selector);
     let sel_nodes = sel.nodes();

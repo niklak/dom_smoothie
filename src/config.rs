@@ -59,6 +59,16 @@ pub struct Config {
     pub candidate_select_mode: CandidateSelectMode,
     /// Allows to set the text mode, whether it should be raw (as-is), formatted or markdown
     pub text_mode: TextMode,
+    /// CSS selectors for elements that should be preserved during extraction.
+    /// Matched elements (and their ancestors/descendants) are exempt from:
+    /// - Link density score penalty
+    /// - Conditional cleanup (div/ul/table removal)
+    /// - Unlikely candidate stripping
+    ///
+    /// Use this to protect content that readability would otherwise drop due
+    /// to high link density or structural patterns (e.g., listing cards on
+    /// directory pages, product catalogs, search results).
+    pub preserve_selectors: Vec<String>,
 }
 
 impl Default for Config {
@@ -75,6 +85,7 @@ impl Default for Config {
             readable_min_content_length: MIN_CONTENT_LENGTH,
             candidate_select_mode: CandidateSelectMode::Readability,
             text_mode: TextMode::Raw,
+            preserve_selectors: Vec::new(),
         }
     }
 }
