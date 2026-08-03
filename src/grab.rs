@@ -257,18 +257,15 @@ fn score_elements<'a>(
                 1 => 2.0,
                 _ => (level * 3) as f32,
             };
+            let extra_score = content_score as f32 / score_divider;
 
-            let mut ancestor_score = if let Some(score) = score_map.get(&ancestor.id) {
-                *score
-            } else {
-                score_map.insert(ancestor.id, 0.0);
-                determine_node_score(ancestor, flags.contains(GrabFlags::WeightClasses))
-            };
-
-            ancestor_score += content_score as f32 / score_divider;
             score_map
                 .entry(ancestor.id)
-                .and_modify(|s| *s = ancestor_score);
+                .and_modify(|e| *e += extra_score)
+                .or_insert_with(|| {
+                    extra_score
+                        + determine_node_score(ancestor, flags.contains(GrabFlags::WeightClasses))
+                });
 
             if ancestor.has_name("body") {
                 break;
@@ -283,13 +280,13 @@ fn score_elements<'a>(
     let mut scored_candidates: Vec<_> = score_map
         .into_iter()
         .filter(|(_, score)| *score > 0.0)
-        .map(|(node_id, prev_score)| {
+        .map(|(node_id, base_score)| {
             let candidate = NodeRef::new(node_id, tree);
             // Skipping adjustment of low score
-            let score = if prev_score > cfg.min_score_to_adjust {
-                prev_score * (1.0 - link_density_fn(&candidate, None, |n| cc_cache.char_count(n)))
+            let score = if base_score > cfg.min_score_to_adjust {
+                base_score * (1.0 - link_density_fn(&candidate, None, |n| cc_cache.char_count(n)))
             } else {
-                prev_score
+                base_score
             };
             set_node_score(&candidate, score);
             (candidate, score)
