@@ -8,7 +8,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 - Refactored the internal `score_elements` function.
 
 ### Fixed
-- `score_elements` breaks score ties by the order candidates were first scored (mozilla/readability's `candidates` array) instead of the hash map's per-process iteration order, so the same document yields the same article in every process.
+- Candidate tie-breaking order in `score_elements` when scores are tied (by @ThibautMelen).
 
 ## [0.18.0] - 2026-06-07
 

@@ -233,10 +233,7 @@ fn score_elements<'a>(
     flags: &FlagSet<GrabFlags>,
 ) -> Vec<NodeRef<'a>> {
     let mut score_map: HashMap<NodeId, f32> = HashMap::default();
-    // The order candidates were first scored -- mozilla/readability's
-    // `candidates` array. The stable sort below breaks score ties by this
-    // order, never by the hash map's (randomly seeded, per-process) iteration
-    // order, so the same document yields the same top candidate in every run.
+    // Preserves the initial order of candidates to ensure deterministic tie-breaking.
     let mut candidate_order: Vec<NodeId> = Vec::new();
     let mut cc_cache = CharCounterCache::default();
 
@@ -645,11 +642,7 @@ mod tests {
     use super::*;
     use crate::readability::Readability;
 
-    /// Candidates with equal scores keep the order they were first scored in
-    /// (mozilla/readability's `candidates` array). Before this test the stable
-    /// sort broke ties by the hash map's per-process iteration order, so the
-    /// same document could pick a different top candidate from one run to the
-    /// next (measured on a real page: two different articles across 40 runs).
+    /// Ensures candidates with equal scores preserve their order to keep ranking deterministic.
     #[test]
     fn test_equal_score_candidates_keep_their_first_scored_order() {
         // Two paragraphs per div: a div holding a single <p> is folded into
