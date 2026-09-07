@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785752857269,
+  "lastUpdate": 1788774704986,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -5825,6 +5825,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 39071412,
             "range": "± 746163",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6885172790e24f7613c27fa079c651ce932be119",
+          "message": "Merge pull request #213 from supernovae-st/fix/deterministic-candidate-order\n\nfix: break candidate score ties by first-scored order, not hash-map order",
+          "timestamp": "2026-09-07T12:49:22+03:00",
+          "tree_id": "e3d5e7ace3a88e2863d0d67c6a551a347a640ee9",
+          "url": "https://github.com/niklak/dom_smoothie/commit/6885172790e24f7613c27fa079c651ce932be119"
+        },
+        "date": 1788774703767,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 1824338,
+            "range": "± 16168",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 8069351,
+            "range": "± 146681",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 32109549,
+            "range": "± 237955",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 1841797,
+            "range": "± 56646",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 6898891,
+            "range": "± 246827",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 33812112,
+            "range": "± 866675",
             "unit": "ns/iter"
           }
         ]
