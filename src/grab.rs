@@ -233,6 +233,11 @@ fn score_elements<'a>(
     flags: &FlagSet<GrabFlags>,
 ) -> Vec<NodeRef<'a>> {
     let mut score_map: HashMap<NodeId, f32> = HashMap::default();
+    // The order candidates were first scored -- mozilla/readability's
+    // `candidates` array. The stable sort below breaks score ties by this
+    // order, never by the hash map's (randomly seeded, per-process) iteration
+    // order, so the same document yields the same top candidate in every run.
+    let mut candidate_order: Vec<NodeId> = Vec::new();
     let mut cc_cache = CharCounterCache::default();
 
     for element in elements_to_score {
@@ -263,6 +268,7 @@ fn score_elements<'a>(
                 .entry(ancestor.id)
                 .and_modify(|e| *e += extra_score)
                 .or_insert_with(|| {
+                    candidate_order.push(ancestor.id);
                     extra_score
                         + determine_node_score(ancestor, flags.contains(GrabFlags::WeightClasses))
                 });
@@ -277,8 +283,9 @@ fn score_elements<'a>(
     // should have a relatively small link density (5% or less) and be mostly
     // unaffected by this operation.
 
-    let mut scored_candidates: Vec<_> = score_map
+    let mut scored_candidates: Vec<_> = candidate_order
         .into_iter()
+        .filter_map(|node_id| score_map.get(&node_id).map(|score| (node_id, *score)))
         .filter(|(_, score)| *score > 0.0)
         .map(|(node_id, base_score)| {
             let candidate = NodeRef::new(node_id, tree);
@@ -637,6 +644,37 @@ mod tests {
 
     use super::*;
     use crate::readability::Readability;
+
+    /// Candidates with equal scores keep the order they were first scored in
+    /// (mozilla/readability's `candidates` array). Before this test the stable
+    /// sort broke ties by the hash map's per-process iteration order, so the
+    /// same document could pick a different top candidate from one run to the
+    /// next (measured on a real page: two different articles across 40 runs).
+    #[test]
+    fn test_equal_score_candidates_keep_their_first_scored_order() {
+        // Two paragraphs per div: a div holding a single <p> is folded into
+        // that <p> before scoring (`div_into_p`) and would not be a candidate.
+        let block = "<p>Seven words, with two commas, and enough characters to score.</p>\
+                     <p>Another line, with two commas, and enough characters to score.</p>";
+        let contents = format!(
+            "<!DOCTYPE html><html><head><title>Test</title></head><body>\
+             <div id=\"a\">{block}</div><div id=\"b\">{block}</div>\
+             <div id=\"c\">{block}</div><div id=\"d\">{block}</div>\
+             </body></html>"
+        );
+        let doc = Document::from(contents.as_str());
+        let body = doc.body().unwrap();
+        let elements = collect_elements_to_score(&body, true, &Metadata::default());
+        let cfg = Config::default();
+        let flags: FlagSet<GrabFlags> = FlagSet::full();
+        let top = score_elements(&elements, body.tree, &cfg, &flags);
+        let divs: Vec<String> = top
+            .iter()
+            .map(|n| n.attr_or("id", "").to_string())
+            .filter(|id| !id.is_empty())
+            .collect();
+        assert_eq!(divs, ["a", "b", "c", "d"]);
+    }
 
     #[test]
     fn test_removing_probably_invisible_nodes() {
