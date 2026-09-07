@@ -2,7 +2,7 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
-## [Unreleased]
+## [0.18.1] - 2026-09-07
 
 ### Changed
 - Refactored the internal `score_elements` function.
