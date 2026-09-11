@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1788780174714,
+  "lastUpdate": 1789139303699,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -5945,6 +5945,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 42655177,
             "range": "± 409516",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0be9d2b44bf03a82e17d4acd0df3f1901b8eb646",
+          "message": "Merge pull request #219 from gurov/fix/loading-lazy-keeps-working-src\n\nfix: don't let `loading=\"lazy\"` overwrite a working image `src`",
+          "timestamp": "2026-09-11T18:05:48+03:00",
+          "tree_id": "ca331988755995ff156a83bbc18198ccf0006688",
+          "url": "https://github.com/niklak/dom_smoothie/commit/0be9d2b44bf03a82e17d4acd0df3f1901b8eb646"
+        },
+        "date": 1789139302526,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 2221357,
+            "range": "± 18041",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 10205919,
+            "range": "± 68403",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 39550295,
+            "range": "± 882512",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 2231998,
+            "range": "± 7180",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 8267862,
+            "range": "± 161010",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 42708134,
+            "range": "± 321248",
             "unit": "ns/iter"
           }
         ]
