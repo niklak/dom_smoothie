@@ -271,6 +271,22 @@ fn mark_data_tables(base_sel: &Selection) {
     }
 }
 
+/// Checks if the image address may be a lazy-loading placeholder, so that
+/// other attributes of the node are allowed to replace it.
+///
+/// A `lazy` class is the hint `Readability.js` trusts, and it is trusted here
+/// as well. `loading="lazy"` is a different thing: it is a rendering hint that
+/// says nothing about the address, and plenty of pages put it on images whose
+/// `src` is perfectly good. Taken as a sign of a placeholder, it lets any
+/// attribute that merely looks like an image path overwrite a working address:
+/// on Wikipedia that is `resource`, which points at the file description page,
+/// not at the image. So the `loading` hint counts only while the node has no
+/// usable address of its own.
+fn is_lazy_image(node: &NodeRef) -> bool {
+    node.is_match(&MATCHER_LAZY_CLASS)
+        || (node.is_match(&MATCHER_LAZY_LOADING) && !has_image_address(node))
+}
+
 fn fix_lazy_images(sel: &Selection) {
     for node in sel.select("img,picture,figure").nodes() {
         // In some sites (e.g. Kotaku), they put 1px square image as base64 data uri in the src attribute.
@@ -303,7 +319,7 @@ fn fix_lazy_images(sel: &Selection) {
             }
         }
 
-        if (node.has_attr("src") || node.has_attr("srcset")) && !node.is_match(&MATCHER_LAZY_IMG) {
+        if (node.has_attr("src") || node.has_attr("srcset")) && !is_lazy_image(node) {
             continue;
         }
 
@@ -447,5 +463,87 @@ fn remove_share_elements(root_sel: &Selection, share_element_threshold: usize) {
         if has_share_sign && child.normalized_char_count() < share_element_threshold {
             child.remove_from_parent();
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use dom_query::Document;
+
+    use super::*;
+
+    fn fix_images(contents: &str) -> Document {
+        let doc = Document::from(contents);
+        fix_lazy_images(&doc.select("body"));
+        doc
+    }
+
+    /// `loading="lazy"` alone is not a sign of a placeholder address:
+    /// Wikipedia puts it on images that have a working `src`, next to a
+    /// `resource` attribute pointing at the file description page.
+    #[test]
+    fn test_loading_lazy_keeps_a_working_src() {
+        let contents = r#"<!DOCTYPE html>
+        <html>
+            <head><title>Test</title></head>
+            <body>
+                <img loading="lazy"
+                     src="https://upload.wikimedia.org/wikipedia/commons/1/17/Portrait.jpg"
+                     resource="./File:Portrait.jpg">
+            </body>
+        </html>"#;
+
+        let doc = fix_images(contents);
+        assert_eq!(
+            doc.select("img").attr_or("src", "").to_string(),
+            "https://upload.wikimedia.org/wikipedia/commons/1/17/Portrait.jpg"
+        );
+    }
+
+    /// With no usable address of its own the `loading` hint still works:
+    /// the real address is taken from another attribute. The placeholder here
+    /// is too long to be dropped by the base64 check above.
+    #[test]
+    fn test_loading_lazy_replaces_a_data_url_src() {
+        let placeholder = "R0lGODlhAQABAAAA".repeat(20);
+        let contents = format!(
+            r#"<!DOCTYPE html>
+        <html>
+            <head><title>Test</title></head>
+            <body>
+                <img loading="lazy"
+                     src="data:image/gif;base64,{placeholder}"
+                     data-src="https://example.com/real.jpg">
+            </body>
+        </html>"#
+        );
+
+        let doc = fix_images(&contents);
+        assert_eq!(
+            doc.select("img").attr_or("src", "").to_string(),
+            "https://example.com/real.jpg"
+        );
+    }
+
+    /// A `lazy` class keeps its meaning: such markup does hold a placeholder
+    /// address, even when it looks like a usable one.
+    #[test]
+    fn test_lazy_class_replaces_src() {
+        let contents = r#"<!DOCTYPE html>
+        <html>
+            <head><title>Test</title></head>
+            <body>
+                <img class="lazyload"
+                     src="https://example.com/placeholder.png"
+                     data-src="https://example.com/real.jpg">
+            </body>
+        </html>"#;
+
+        let doc = fix_images(contents);
+        assert_eq!(
+            doc.select("img").attr_or("src", "").to_string(),
+            "https://example.com/real.jpg"
+        );
     }
 }
