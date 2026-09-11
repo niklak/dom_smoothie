@@ -2,6 +2,11 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- `fix_lazy_images` no longer replaces a working `src` on images marked with `loading="lazy"` (by @gurov in #218).
+
 ## [0.18.1] - 2026-09-07
 
 ### Changed

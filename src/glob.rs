@@ -14,6 +14,7 @@ pub(crate) static SCORE_ATTR: &str = "data-readability-score";
 pub(crate) static MIN_SCORE: f32 = 20.0;
 pub(crate) static MIN_CONTENT_LENGTH: usize = 140;
 
+pub(crate) static DATA_URL_PFX: &str = "data:";
 pub(crate) static BASE64_MARKER: &str = ";base64,";
 pub(crate) static BASE64_MARKER_LEN: usize = BASE64_MARKER.len();
 
@@ -57,8 +58,8 @@ pub(crate) static MATCHER_DATA_TABLE: Lazy<Matcher> =
 pub(crate) static MATCHER_TABLE: Lazy<Matcher> = lazy_matcher!("table");
 pub(crate) static MATCHER_TABLE_MEMBERS: Lazy<Matcher> =
     lazy_matcher!("caption,col,colgroup,tfoot,thead,th");
-pub(crate) static MATCHER_LAZY_IMG: Lazy<Matcher> =
-    lazy_matcher!(r#"[class*="lazy"],img[loading="lazy"]"#);
+pub(crate) static MATCHER_LAZY_CLASS: Lazy<Matcher> = lazy_matcher!(r#"[class*="lazy"]"#);
+pub(crate) static MATCHER_LAZY_LOADING: Lazy<Matcher> = lazy_matcher!(r#"img[loading="lazy"]"#);
 pub(crate) static MATCHER_FAVICON: Lazy<Matcher> =
     lazy_matcher!(r#"link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]"#);
 

@@ -271,6 +271,16 @@ fn mark_data_tables(base_sel: &Selection) {
     }
 }
 
+/// Checks if the image address may be a placeholder that other attributes are
+/// allowed to replace. A `lazy` class always means so, as in `Readability.js`;
+/// `loading="lazy"` is only a rendering hint, so it counts while the node has
+/// no usable address of its own -- otherwise an attribute that merely looks
+/// like an image path (Wikipedia's `resource`) overwrites a working `src`.
+fn is_lazy_image(node: &NodeRef) -> bool {
+    node.is_match(&MATCHER_LAZY_CLASS)
+        || (node.is_match(&MATCHER_LAZY_LOADING) && !has_image_address(node))
+}
+
 fn fix_lazy_images(sel: &Selection) {
     for node in sel.select("img,picture,figure").nodes() {
         // In some sites (e.g. Kotaku), they put 1px square image as base64 data uri in the src attribute.
@@ -303,7 +313,7 @@ fn fix_lazy_images(sel: &Selection) {
             }
         }
 
-        if (node.has_attr("src") || node.has_attr("srcset")) && !node.is_match(&MATCHER_LAZY_IMG) {
+        if (node.has_attr("src") || node.has_attr("srcset")) && !is_lazy_image(node) {
             continue;
         }
 
@@ -446,6 +456,46 @@ fn remove_share_elements(root_sel: &Selection, share_element_threshold: usize) {
 
         if has_share_sign && child.normalized_char_count() < share_element_threshold {
             child.remove_from_parent();
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use dom_query::Document;
+
+    use super::*;
+
+    #[test]
+    fn test_fix_lazy_images() {
+        // Long enough to survive the base64 length check in `fix_lazy_images`.
+        let stub = format!("data:image/gif;base64,{}", "R0lGODlhAQABAAAA".repeat(9));
+        let real = "https://example.com/real.jpg";
+        let cases = [
+            // `loading="lazy"` alone is no sign of a placeholder: wikipedia sets it on
+            // images with a working `src`, next to a `resource` attribute pointing at
+            // the file description page.
+            format!(r#"loading="lazy" src="{real}" resource="./File:Real.jpg""#),
+            // With no usable address of its own the hint still works.
+            format!(r#"loading="lazy" src="{stub}" data-src="{real}""#),
+            // Whitespace is not an address either.
+            format!(r#"loading="lazy" src="   " data-src="{real}""#),
+            // A `lazy` class means a placeholder even when `src` looks usable.
+            format!(r#"class="lazyload" src="https://example.com/ph.png" data-src="{real}""#),
+            // No lazy hint at all: the address stays as it is.
+            format!(r#"src="{real}" data-src="https://example.com/other.jpg""#),
+        ];
+
+        for attrs in cases {
+            let contents = format!("<html><body><img {attrs}></body></html>");
+            let doc = Document::from(contents.as_str());
+            fix_lazy_images(&doc.select("body"));
+            assert_eq!(
+                doc.select("img").attr_or("src", "").to_string(),
+                real,
+                "<img {attrs}>"
+            );
         }
     }
 }

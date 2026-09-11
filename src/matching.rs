@@ -163,8 +163,25 @@ pub(crate) fn contains_share_elements(value: &str) -> bool {
         .any(|part| SHARE_WORDS.iter().any(|&w| part.eq_ignore_ascii_case(w)))
 }
 
+/// Checks if the node already carries a usable image address. A `data:` url
+/// doesn't count: it's a placeholder, with the real address in another attribute.
+pub(crate) fn has_image_address(node: &NodeRef) -> bool {
+    node.attrs().iter().any(|attr| {
+        matches!(attr.name.local.as_ref(), "src" | "srcset") && {
+            let value = attr.value.trim();
+            !value.is_empty() && !is_data_url(value)
+        }
+    })
+}
+
+#[inline]
+fn is_data_url(src: &str) -> bool {
+    src.get(..DATA_URL_PFX.len())
+        .is_some_and(|pfx| pfx.eq_ignore_ascii_case(DATA_URL_PFX))
+}
+
 pub(crate) fn split_base64_url(src: &str) -> Option<(&str, &str)> {
-    if let Some(rest) = src.strip_prefix("data:") {
+    if let Some(rest) = src.strip_prefix(DATA_URL_PFX) {
         if let Some(pos) = rest.find(BASE64_MARKER) {
             let image_type = &rest[..pos];
             let image_data = &rest[pos + BASE64_MARKER_LEN..];
