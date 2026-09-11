@@ -271,17 +271,11 @@ fn mark_data_tables(base_sel: &Selection) {
     }
 }
 
-/// Checks if the image address may be a lazy-loading placeholder, so that
-/// other attributes of the node are allowed to replace it.
-///
-/// A `lazy` class is the hint `Readability.js` trusts, and it is trusted here
-/// as well. `loading="lazy"` is a different thing: it is a rendering hint that
-/// says nothing about the address, and plenty of pages put it on images whose
-/// `src` is perfectly good. Taken as a sign of a placeholder, it lets any
-/// attribute that merely looks like an image path overwrite a working address:
-/// on Wikipedia that is `resource`, which points at the file description page,
-/// not at the image. So the `loading` hint counts only while the node has no
-/// usable address of its own.
+/// Checks if the image address may be a placeholder that other attributes are
+/// allowed to replace. A `lazy` class always means so, as in `Readability.js`;
+/// `loading="lazy"` is only a rendering hint, so it counts while the node has
+/// no usable address of its own -- otherwise an attribute that merely looks
+/// like an image path (Wikipedia's `resource`) overwrites a working `src`.
 fn is_lazy_image(node: &NodeRef) -> bool {
     node.is_match(&MATCHER_LAZY_CLASS)
         || (node.is_match(&MATCHER_LAZY_LOADING) && !has_image_address(node))
@@ -473,77 +467,35 @@ mod tests {
 
     use super::*;
 
-    fn fix_images(contents: &str) -> Document {
-        let doc = Document::from(contents);
-        fix_lazy_images(&doc.select("body"));
-        doc
-    }
-
-    /// `loading="lazy"` alone is not a sign of a placeholder address:
-    /// Wikipedia puts it on images that have a working `src`, next to a
-    /// `resource` attribute pointing at the file description page.
     #[test]
-    fn test_loading_lazy_keeps_a_working_src() {
-        let contents = r#"<!DOCTYPE html>
-        <html>
-            <head><title>Test</title></head>
-            <body>
-                <img loading="lazy"
-                     src="https://upload.wikimedia.org/wikipedia/commons/1/17/Portrait.jpg"
-                     resource="./File:Portrait.jpg">
-            </body>
-        </html>"#;
+    fn test_fix_lazy_images() {
+        // Long enough to survive the base64 length check in `fix_lazy_images`.
+        let stub = format!("data:image/gif;base64,{}", "R0lGODlhAQABAAAA".repeat(9));
+        let real = "https://example.com/real.jpg";
+        let cases = [
+            // `loading="lazy"` alone is no sign of a placeholder: wikipedia sets it on
+            // images with a working `src`, next to a `resource` attribute pointing at
+            // the file description page.
+            format!(r#"loading="lazy" src="{real}" resource="./File:Real.jpg""#),
+            // With no usable address of its own the hint still works.
+            format!(r#"loading="lazy" src="{stub}" data-src="{real}""#),
+            // Whitespace is not an address either.
+            format!(r#"loading="lazy" src="   " data-src="{real}""#),
+            // A `lazy` class means a placeholder even when `src` looks usable.
+            format!(r#"class="lazyload" src="https://example.com/ph.png" data-src="{real}""#),
+            // No lazy hint at all: the address stays as it is.
+            format!(r#"src="{real}" data-src="https://example.com/other.jpg""#),
+        ];
 
-        let doc = fix_images(contents);
-        assert_eq!(
-            doc.select("img").attr_or("src", "").to_string(),
-            "https://upload.wikimedia.org/wikipedia/commons/1/17/Portrait.jpg"
-        );
-    }
-
-    /// With no usable address of its own the `loading` hint still works:
-    /// the real address is taken from another attribute. The placeholder here
-    /// is too long to be dropped by the base64 check above.
-    #[test]
-    fn test_loading_lazy_replaces_a_data_url_src() {
-        let placeholder = "R0lGODlhAQABAAAA".repeat(20);
-        let contents = format!(
-            r#"<!DOCTYPE html>
-        <html>
-            <head><title>Test</title></head>
-            <body>
-                <img loading="lazy"
-                     src="data:image/gif;base64,{placeholder}"
-                     data-src="https://example.com/real.jpg">
-            </body>
-        </html>"#
-        );
-
-        let doc = fix_images(&contents);
-        assert_eq!(
-            doc.select("img").attr_or("src", "").to_string(),
-            "https://example.com/real.jpg"
-        );
-    }
-
-    /// A `lazy` class keeps its meaning: such markup does hold a placeholder
-    /// address, even when it looks like a usable one.
-    #[test]
-    fn test_lazy_class_replaces_src() {
-        let contents = r#"<!DOCTYPE html>
-        <html>
-            <head><title>Test</title></head>
-            <body>
-                <img class="lazyload"
-                     src="https://example.com/placeholder.png"
-                     data-src="https://example.com/real.jpg">
-            </body>
-        </html>"#;
-
-        let doc = fix_images(contents);
-        assert_eq!(
-            doc.select("img").attr_or("src", "").to_string(),
-            "https://example.com/real.jpg"
-        );
+        for attrs in cases {
+            let contents = format!("<html><body><img {attrs}></body></html>");
+            let doc = Document::from(contents.as_str());
+            fix_lazy_images(&doc.select("body"));
+            assert_eq!(
+                doc.select("img").attr_or("src", "").to_string(),
+                real,
+                "<img {attrs}>"
+            );
+        }
     }
 }

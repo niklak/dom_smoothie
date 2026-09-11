@@ -5,9 +5,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ## [Unreleased]
 
 ### Fixed
-- `fix_lazy_images` no longer replaces a working `src` on images marked with `loading="lazy"`.
-The hint is now taken into account only while the image has no usable address of its own,
-which is closer to `Readability.js`, where only a `lazy` class enables the attribute scan (#218).
+- `fix_lazy_images` no longer replaces a working `src` on images marked with `loading="lazy"` (by @gurov in #218).
 
 ## [0.18.1] - 2026-09-07
 

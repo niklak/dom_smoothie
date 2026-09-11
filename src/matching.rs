@@ -163,16 +163,14 @@ pub(crate) fn contains_share_elements(value: &str) -> bool {
         .any(|part| SHARE_WORDS.iter().any(|&w| part.eq_ignore_ascii_case(w)))
 }
 
-/// Checks if the node already carries a usable image address.
-///
-/// A `data:` url does not count: lazy-loading markup puts a placeholder there
-/// and keeps the real address in another attribute.
+/// Checks if the node already carries a usable image address. A `data:` url
+/// doesn't count: it's a placeholder, with the real address in another attribute.
 pub(crate) fn has_image_address(node: &NodeRef) -> bool {
-    ["src", "srcset"].iter().any(|name| {
-        node.attr(name).is_some_and(|value| {
-            let value = value.trim();
+    node.attrs().iter().any(|attr| {
+        matches!(attr.name.local.as_ref(), "src" | "srcset") && {
+            let value = attr.value.trim();
             !value.is_empty() && !is_data_url(value)
-        })
+        }
     })
 }
 
