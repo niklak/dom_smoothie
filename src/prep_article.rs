@@ -340,7 +340,8 @@ fn fix_lazy_images(sel: &Selection) {
                 } else if tag_name.as_ref() == "figure" {
                     let figure_sel = Selection::from(*node);
                     if !figure_sel.select("img, picture").exists() {
-                        //if the item is a <figure> that does not contain an image or picture, create one and place it inside the figure
+                        //if the item is a <figure> that does not contain an image or picture,
+                        //create one and place it inside the figure
                         //see the nytimes-3 testcase for an example
                         let img_node = node.tree.new_element("img");
                         img_node.set_attr(copy_to, &attr.value);
@@ -469,6 +470,11 @@ mod tests {
 
     #[test]
     fn test_fix_lazy_images() {
+        struct TestCase<'a> {
+            fragment: String,
+            expected_attr_name: &'a str,
+        }
+
         // Long enough to survive the base64 length check in `fix_lazy_images`.
         let stub = format!("data:image/gif;base64,{}", "R0lGODlhAQABAAAA".repeat(9));
         let real = "https://example.com/real.jpg";
@@ -476,23 +482,59 @@ mod tests {
             // `loading="lazy"` alone is no sign of a placeholder: wikipedia sets it on
             // images with a working `src`, next to a `resource` attribute pointing at
             // the file description page.
-            format!(r#"loading="lazy" src="{real}" resource="./File:Real.jpg""#),
+            TestCase {
+                fragment: format!(r#"loading="lazy" src="{real}" resource="./File:Real.jpg""#),
+                expected_attr_name: "src",
+            },
+            TestCase {
+                fragment: format!(r#"loading="lazy" srcset="{real}" resource="./File:Real.jpg""#),
+                expected_attr_name: "srcset",
+            },
             // With no usable address of its own the hint still works.
-            format!(r#"loading="lazy" src="{stub}" data-src="{real}""#),
+            TestCase {
+                fragment: format!(r#"loading="lazy" src="{stub}" data-src="{real}""#),
+                expected_attr_name: "src",
+            },
+            TestCase {
+                fragment: format!(r#"loading="lazy" srcset="{stub}" data-srcset="{real}""#),
+                expected_attr_name: "src",
+            },
+            TestCase {
+                fragment: format!(r#"loading="lazy" src=" {stub}" data-src="{real}""#),
+                expected_attr_name: "src",
+            },
             // Whitespace is not an address either.
-            format!(r#"loading="lazy" src="   " data-src="{real}""#),
+            TestCase {
+                fragment: format!(r#"loading="lazy" src="   " data-src="{real}""#),
+                expected_attr_name: "src",
+            },
+            TestCase {
+                fragment: format!(r#"loading="lazy" srcset="   " data-srcset="{real}""#),
+                expected_attr_name: "src",
+            },
             // A `lazy` class means a placeholder even when `src` looks usable.
-            format!(r#"class="lazyload" src="https://example.com/ph.png" data-src="{real}""#),
+            TestCase {
+                fragment: format!(
+                    r#"class="lazyload" src="https://example.com/ph.png" data-src="{real}""#
+                ),
+                expected_attr_name: "src",
+            },
             // No lazy hint at all: the address stays as it is.
-            format!(r#"src="{real}" data-src="https://example.com/other.jpg""#),
+            TestCase {
+                fragment: format!(r#"src="{real}" data-src="https://example.com/other.jpg""#),
+                expected_attr_name: "src",
+            },
         ];
 
-        for attrs in cases {
+        for case in cases {
+            let attrs = case.fragment;
             let contents = format!("<html><body><img {attrs}></body></html>");
             let doc = Document::from(contents.as_str());
             fix_lazy_images(&doc.select("body"));
             assert_eq!(
-                doc.select("img").attr_or("src", "").to_string(),
+                doc.select("img")
+                    .attr_or(case.expected_attr_name, "")
+                    .to_string(),
                 real,
                 "<img {attrs}>"
             );
