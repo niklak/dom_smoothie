@@ -21,11 +21,23 @@ use crate::Metadata;
 use crate::Readability;
 
 impl Readability {
-    pub(crate) fn grab_article(&self, metadata: &Metadata) -> Option<Document> {
+    /// Runs up to four extraction attempts, relaxing one flag per failed attempt.
+    ///
+    /// Returns the document the winning attempt worked on. On return `self.doc` is
+    /// still the unmodified parsed document, so attempts never see each other's edits.
+    pub(crate) fn grab_article(&mut self, metadata: &Metadata) -> Option<Document> {
         let mut flags: FlagSet<GrabFlags> = FlagSet::full();
         let mut best_attempt: Option<(Document, usize)> = None;
         loop {
-            let doc = self.doc.clone();
+            // Run the attempt on `self.doc` and keep the clone as the pristine copy for the
+            // next attempt. `Tree::clone` allocates exactly `len` nodes, so the first node
+            // an attempt creates (a `<p>` from `div_into_p`, the article `<div>`) would
+            // double a clone's node array. `self.doc` usually still has spare capacity
+            // left over from parsing, so the attempt fits in place. This relies on parse
+            // leaving spare capacity: if `Tree` ever shrinks to fit after parsing, the
+            // gain disappears.
+            let pristine = self.doc.clone();
+            let doc = std::mem::replace(&mut self.doc, pristine);
             let article_node = self.attempt_grab_article(&doc, &flags, metadata);
             // Now that we've gone through the full algorithm, check to see if
             // we got any meaningful content. If we didn't, we may need to re-run
@@ -761,7 +773,7 @@ mod tests {
             </body>
         </html>";
 
-        let ra = Readability::new(contents, None, None).unwrap();
+        let mut ra = Readability::new(contents, None, None).unwrap();
         let sel = ra.doc.select("body > *");
         let count_before = sel.nodes().iter().filter(|n| n.is_element()).count();
 
@@ -771,6 +783,68 @@ mod tests {
         let sel = clean_doc.select("body > *");
         let count_after = sel.nodes().iter().filter(|n| n.is_element()).count();
         assert_eq!(count_after, 1);
+    }
+
+    const GRAB_WITH_SIDEBAR: &str = r#"<!DOCTYPE>
+        <html>
+            <head><title>Test</title></head>
+            <body>
+                <div class="sidebar">
+                    <p>Some words, a few commas, and enough text to count as content
+                    on this page, repeated so that the candidate is long enough to pass
+                    the character threshold only when it is not stripped as unlikely.
+                    Some words, a few commas, and enough text to count as content.</p>
+                </div>
+            </body>
+        </html>"#;
+
+    fn readability_with_threshold(html: &str, char_threshold: usize) -> Readability {
+        let cfg = Config {
+            char_threshold,
+            ..Default::default()
+        };
+        Readability::new(html, None, Some(cfg)).unwrap()
+    }
+
+    #[test]
+    fn test_grab_article_leaves_self_doc_pristine() {
+        // A successful first attempt edits the document it ran on (the `<div>` is
+        // wrapped into the article container), but `self.doc` must stay untouched.
+        let html = GRAB_WITH_SIDEBAR.replace("sidebar", "content");
+        let mut ra = readability_with_threshold(&html, 0);
+        let before = ra.doc.html().to_string();
+
+        let grabbed = ra.grab_article(&Metadata::default()).unwrap();
+
+        assert!(grabbed.select("#readability-page-1").exists());
+        assert!(!ra.doc.select("#readability-page-1").exists());
+        assert_eq!(ra.doc.html().to_string(), before);
+    }
+
+    #[test]
+    fn test_grab_article_retries_start_from_pristine_doc() {
+        // The first attempt strips `.sidebar` as an unlikely candidate and comes up
+        // short. The retry (without `StripUnlikelys`) only sees the text if it starts
+        // from the original document, not from the first attempt's edited one.
+        let mut ra = readability_with_threshold(GRAB_WITH_SIDEBAR, 200);
+
+        let grabbed = ra.grab_article(&Metadata::default()).unwrap();
+
+        assert!(grabbed.select("#readability-page-1 p").exists());
+        assert!(ra.doc.select(".sidebar p").exists());
+        assert!(!ra.doc.select("#readability-page-1").exists());
+    }
+
+    #[test]
+    fn test_grab_article_exhausted_attempts_leave_self_doc_pristine() {
+        // The threshold is unreachable, so all four attempts run and the best one wins.
+        let mut ra = readability_with_threshold(GRAB_WITH_SIDEBAR, usize::MAX);
+        let before = ra.doc.html().to_string();
+
+        let grabbed = ra.grab_article(&Metadata::default()).unwrap();
+
+        assert!(grabbed.select("#readability-page-1 p").exists());
+        assert_eq!(ra.doc.html().to_string(), before);
     }
 
     #[test]
