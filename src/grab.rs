@@ -22,20 +22,13 @@ use crate::Readability;
 
 impl Readability {
     /// Runs up to four extraction attempts, relaxing one flag per failed attempt.
-    ///
-    /// Returns the document the winning attempt worked on. On return `self.doc` is
-    /// still the unmodified parsed document, so attempts never see each other's edits.
+    /// `self.doc` is left unmodified.
     pub(crate) fn grab_article(&mut self, metadata: &Metadata) -> Option<Document> {
         let mut flags: FlagSet<GrabFlags> = FlagSet::full();
         let mut best_attempt: Option<(Document, usize)> = None;
         loop {
-            // Run the attempt on `self.doc` and keep the clone as the pristine copy for the
-            // next attempt. `Tree::clone` allocates exactly `len` nodes, so the first node
-            // an attempt creates (a `<p>` from `div_into_p`, the article `<div>`) would
-            // double a clone's node array. `self.doc` usually still has spare capacity
-            // left over from parsing, so the attempt fits in place. This relies on parse
-            // leaving spare capacity: if `Tree` ever shrinks to fit after parsing, the
-            // gain disappears.
+            // Run the attempt on `self.doc` to reuse its tree capacity,
+            // leaving a pristine clone in `self.doc` for subsequent attempts.
             let pristine = self.doc.clone();
             let doc = std::mem::replace(&mut self.doc, pristine);
             let article_node = self.attempt_grab_article(&doc, &flags, metadata);
@@ -808,8 +801,7 @@ mod tests {
 
     #[test]
     fn test_grab_article_leaves_self_doc_pristine() {
-        // A successful first attempt edits the document it ran on (the `<div>` is
-        // wrapped into the article container), but `self.doc` must stay untouched.
+        // The attempt edits its own document; `self.doc` must stay untouched.
         let html = GRAB_WITH_SIDEBAR.replace("sidebar", "content");
         let mut ra = readability_with_threshold(&html, 0);
         let before = ra.doc.html().to_string();
@@ -823,9 +815,8 @@ mod tests {
 
     #[test]
     fn test_grab_article_retries_start_from_pristine_doc() {
-        // The first attempt strips `.sidebar` as an unlikely candidate and comes up
-        // short. The retry (without `StripUnlikelys`) only sees the text if it starts
-        // from the original document, not from the first attempt's edited one.
+        // The first attempt strips `.sidebar` and falls short; the retry only
+        // sees the text if it starts from the original document.
         let mut ra = readability_with_threshold(GRAB_WITH_SIDEBAR, 200);
 
         let grabbed = ra.grab_article(&Metadata::default()).unwrap();
@@ -837,7 +828,7 @@ mod tests {
 
     #[test]
     fn test_grab_article_exhausted_attempts_leave_self_doc_pristine() {
-        // The threshold is unreachable, so all four attempts run and the best one wins.
+        // Unreachable threshold: all four attempts run.
         let mut ra = readability_with_threshold(GRAB_WITH_SIDEBAR, usize::MAX);
         let before = ra.doc.html().to_string();
 
