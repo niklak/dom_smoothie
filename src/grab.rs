@@ -28,9 +28,9 @@ impl Readability {
         let mut best_attempt: Option<(Document, usize)> = None;
         loop {
             // Run the attempt on `self.doc` to reuse its tree capacity,
-            // leaving a pristine clone in `self.doc` for subsequent attempts.
-            let pristine = self.doc.clone();
-            let doc = std::mem::replace(&mut self.doc, pristine);
+            // leaving an unmodified clone in `self.doc` for subsequent attempts.
+            let next_doc = self.doc.clone();
+            let doc = std::mem::replace(&mut self.doc, next_doc);
             let article_node = self.attempt_grab_article(&doc, &flags, metadata);
             // Now that we've gone through the full algorithm, check to see if
             // we got any meaningful content. If we didn't, we may need to re-run
@@ -800,7 +800,7 @@ mod tests {
     }
 
     #[test]
-    fn test_grab_article_leaves_self_doc_pristine() {
+    fn test_grab_article_leaves_self_doc_unchanged() {
         // The attempt edits its own document; `self.doc` must stay untouched.
         let html = GRAB_WITH_SIDEBAR.replace("sidebar", "content");
         let mut ra = readability_with_threshold(&html, 0);
@@ -814,7 +814,7 @@ mod tests {
     }
 
     #[test]
-    fn test_grab_article_retries_start_from_pristine_doc() {
+    fn test_grab_article_retries_start_from_original_doc() {
         // The first attempt strips `.sidebar` and falls short; the retry only
         // sees the text if it starts from the original document.
         let mut ra = readability_with_threshold(GRAB_WITH_SIDEBAR, 200);
@@ -827,7 +827,7 @@ mod tests {
     }
 
     #[test]
-    fn test_grab_article_exhausted_attempts_leave_self_doc_pristine() {
+    fn test_grab_article_exhausted_attempts_leave_self_doc_unchanged() {
         // Unreachable threshold: all four attempts run.
         let mut ra = readability_with_threshold(GRAB_WITH_SIDEBAR, usize::MAX);
         let before = ra.doc.html().to_string();
