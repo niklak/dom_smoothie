@@ -445,12 +445,12 @@ fn remove_share_elements(root_sel: &Selection, share_element_threshold: usize) {
             let attrs = &el.attrs;
             has_share_sign = attrs
                 .iter()
-                .find(|a| a.name.local.as_ref() == "class")
+                .find(|a| &a.name.local == "class")
                 .is_some_and(|s| contains_share_elements(&s.value));
             if !has_share_sign {
                 has_share_sign = attrs
                     .iter()
-                    .find(|a| a.name.local.as_ref() == "id")
+                    .find(|a| &a.name.local == "id")
                     .is_some_and(|s| contains_share_elements(&s.value));
             }
         }
