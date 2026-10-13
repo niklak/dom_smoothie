@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791206078756,
+  "lastUpdate": 1791878976683,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -6185,6 +6185,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 38705455,
             "range": "± 660248",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "3262610+emschwartz@users.noreply.github.com",
+            "name": "Evan Schwartz",
+            "username": "emschwartz"
+          },
+          "committer": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "distinct": true,
+          "id": "512cd51ed99fc57bc8092639196490cb42867f6c",
+          "message": "chore: compare attribute names without `as_ref()`\n\n`a.name.local.as_ref() == \"class\"` is ambiguous once `Atom` also\nimplements `AsRef<[u8]>`, which string_cache 0.11 adds (pulled in by\nhtml5ever 0.40, which dom_query main uses). Use the\n`&a.name.local == \"..\"` form already used elsewhere in this file; it\ncompiles with both versions.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-13T11:07:16+03:00",
+          "tree_id": "a3f053eecbcec5f0df7c399becbb99f7d9bd5fee",
+          "url": "https://github.com/niklak/dom_smoothie/commit/512cd51ed99fc57bc8092639196490cb42867f6c"
+        },
+        "date": 1791878975823,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 1800412,
+            "range": "± 19197",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 7868822,
+            "range": "± 294401",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 31385492,
+            "range": "± 233262",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 1832822,
+            "range": "± 22970",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 6799126,
+            "range": "± 18130",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 31256639,
+            "range": "± 931183",
             "unit": "ns/iter"
           }
         ]
