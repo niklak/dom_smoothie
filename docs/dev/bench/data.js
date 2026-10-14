@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791878976683,
+  "lastUpdate": 1791975412553,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -6245,6 +6245,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 31256639,
             "range": "± 931183",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "3262610+emschwartz@users.noreply.github.com",
+            "name": "Evan Schwartz",
+            "username": "emschwartz"
+          },
+          "committer": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "distinct": true,
+          "id": "0e0b8771ddc4d8f0fb09bd3708d5ec375448e586",
+          "message": "perf: precompile the selectors that were parsed on every call\n\nThirteen call sites passed a selector string on every call, so the string\nwas reparsed for every block `should_clean_conditionally` looks at (three\n`text_density` selectors), every table row (`tr`, `td`), every paragraph\n(`img,object,embed,iframe`), every figure and every `noscript` image, plus\nthe two `clean_conditionally` calls per attempt. The rest of the crate\nalready keeps its matchers in `Lazy` statics in glob.rs; this moves these\nsites onto the same pattern. `TEXTISH_TAGS` becomes `MATCHER_TEXTISH`,\nits only use.\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>",
+          "timestamp": "2026-10-14T13:50:28+03:00",
+          "tree_id": "60d0619ae15e395a096deafc74d5e2321d167f10",
+          "url": "https://github.com/niklak/dom_smoothie/commit/0e0b8771ddc4d8f0fb09bd3708d5ec375448e586"
+        },
+        "date": 1791975411763,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 1154317,
+            "range": "± 27858",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 5417855,
+            "range": "± 340450",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 22269443,
+            "range": "± 611706",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 1163734,
+            "range": "± 41160",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 4629058,
+            "range": "± 127505",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 21340785,
+            "range": "± 540649",
             "unit": "ns/iter"
           }
         ]
