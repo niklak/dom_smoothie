@@ -43,6 +43,18 @@ pub(crate) static MATCHER_JS_LINK: Lazy<Matcher> = lazy_matcher!(r#"a[href^="jav
 pub(crate) static MATCHER_JSONLD: Lazy<Matcher> =
     lazy_matcher!(r#"script[type="application/ld+json"]"#);
 pub(crate) static MATCHER_HEADING: Lazy<Matcher> = lazy_matcher!(r"h1,h2");
+pub(crate) static MATCHER_H1_H6: Lazy<Matcher> = lazy_matcher!("h1,h2,h3,h4,h5,h6");
+pub(crate) static MATCHER_UL_OL: Lazy<Matcher> = lazy_matcher!("ul,ol");
+pub(crate) static MATCHER_TEXTISH: Lazy<Matcher> =
+    lazy_matcher!("blockquote,dl,div,img,ol,p,pre,table,ul,span,li,td");
+pub(crate) static MATCHER_FORM_FIELDSET: Lazy<Matcher> = lazy_matcher!("form,fieldset");
+pub(crate) static MATCHER_TABLE_UL_DIV: Lazy<Matcher> = lazy_matcher!("table,ul,div");
+pub(crate) static MATCHER_TR: Lazy<Matcher> = lazy_matcher!("tr");
+pub(crate) static MATCHER_TD: Lazy<Matcher> = lazy_matcher!("td");
+pub(crate) static MATCHER_IMG_PICTURE: Lazy<Matcher> = lazy_matcher!("img, picture");
+pub(crate) static MATCHER_IMG_ONLY_CHILD: Lazy<Matcher> = lazy_matcher!("img:only-child");
+pub(crate) static MATCHER_HAS_IMG_ONLY_CHILD: Lazy<Matcher> =
+    lazy_matcher!("*:has( > img:only-child)");
 pub(crate) static MATCHER_DIALOGS: Lazy<Matcher> =
     lazy_matcher!(r#"dialog,[aria-modal="true"][role="dialog"]"#);
 pub(crate) static MATCHER_BYLINE: Lazy<Matcher> =
@@ -51,6 +63,7 @@ pub(crate) static MATCHER_SOURCES: Lazy<Matcher> =
     lazy_matcher!("img,picture,figure,video,audio,source");
 pub(crate) static MATCHER_P: Lazy<Matcher> = lazy_matcher!("p");
 pub(crate) static MATCHER_EMBEDS: Lazy<Matcher> = lazy_matcher!("object,embed,iframe");
+pub(crate) static MATCHER_IMG_EMBEDS: Lazy<Matcher> = lazy_matcher!("img,object,embed,iframe");
 pub(crate) static MATCHER_CLEAN: Lazy<Matcher> =
     lazy_matcher!("object,embed,footer,link,aside,iframe,input,textarea,select,button");
 pub(crate) static MATCHER_DATA_TABLE: Lazy<Matcher> =
@@ -73,8 +86,6 @@ pub(crate) static MINI_PRESENTATION: Lazy<MiniSelector> =
     Lazy::new(|| MiniSelector::new(r#"[role="presentation"]"#).unwrap());
 pub(crate) static MINI_AINT_DATA_TABLE: Lazy<MiniSelector> =
     Lazy::new(|| MiniSelector::new(r#"[datatable="0"]"#).unwrap());
-
-pub(crate) static TEXTISH_TAGS: &str = "blockquote,dl,div,img,ol,p,pre,table,ul,span,li,td";
 
 pub(crate) static META_TITLE_KEYS: &[&str] = &[
     "dc:title",

@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use foldhash::HashMap;
 use unicode_segmentation::UnicodeSegmentation;
 
-use dom_query::{NodeId, NodeRef, Selection};
+use dom_query::{Matcher, NodeId, NodeRef, Selection};
 
 use tendril::StrTendril;
 
@@ -74,8 +74,8 @@ where
     node.ancestors_it(max_depth).any(|a| filter_fn(&a))
 }
 
-pub(crate) fn text_density(node: &NodeRef, selector: &str, char_count: Option<usize>) -> f32 {
-    let sel = Selection::from(*node).select(selector);
+pub(crate) fn text_density(node: &NodeRef, matcher: &Matcher, char_count: Option<usize>) -> f32 {
+    let sel = Selection::from(*node).select_matcher(matcher);
     let sel_nodes = sel.nodes();
 
     let children_length: f32 = sel_nodes
