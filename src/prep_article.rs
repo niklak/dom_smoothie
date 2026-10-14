@@ -1,4 +1,4 @@
-use dom_query::{NodeRef, Selection};
+use dom_query::{Matcher, NodeRef, Selection};
 use flagset::FlagSet;
 
 #[allow(clippy::wildcard_imports)]
@@ -110,7 +110,7 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
         let tag = qual_name.local.as_ref();
         let mut is_list = matches!(tag, "ul" | "ol");
         if !is_list {
-            let list_density = text_density(node, "ul,ol", Some(char_count));
+            let list_density = text_density(node, &MATCHER_UL_OL, Some(char_count));
             is_list = list_density > 0.9;
         }
 
@@ -145,7 +145,7 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
                 && char_count < 25
                 && (img == 0 || img > 2)
                 && link_density > 0.0
-                && text_density(node, "h1,h2,h3,h4,h5,h6", Some(char_count)) < 0.9
+                && text_density(node, &MATCHER_H1_H6, Some(char_count)) < 0.9
             {
                 return true;
             }
@@ -161,7 +161,7 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
                 return true;
             }
 
-            if img == 0 && text_density(node, TEXTISH_TAGS, Some(char_count)) == 0.0 {
+            if img == 0 && text_density(node, &MATCHER_TEXTISH, Some(char_count)) == 0.0 {
                 return true;
             }
             false
@@ -183,12 +183,12 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
     false
 }
 
-fn clean_conditionally(sel: &Selection, tags: &str, flags: &FlagSet<GrabFlags>) {
+fn clean_conditionally(sel: &Selection, matcher: &Matcher, flags: &FlagSet<GrabFlags>) {
     if !flags.contains(GrabFlags::CleanConditionally) {
         return;
     }
 
-    let tag_sel = sel.select(tags);
+    let tag_sel = sel.select_matcher(matcher);
     // traversing tag nodes in reverse order,
     // so that how children nodes will appear before parent nodes
     for tag_node in tag_sel.nodes().iter().rev() {
@@ -209,14 +209,14 @@ fn set_data_readability_table(n: &NodeRef, is_data_table: bool) {
 fn get_row_and_col_count(table: &Selection) -> (usize, usize) {
     let mut rows = 0usize;
     let mut cols = 0usize;
-    for tr in &table.select("tr") {
+    for tr in &table.select_matcher(&MATCHER_TR) {
         // No need to adjust row count by the `row span` at all
         rows += 1;
 
         //Now look for column-related info
         let mut columns_in_this_row = 0;
 
-        for cell in &tr.select("td") {
+        for cell in &tr.select_matcher(&MATCHER_TD) {
             let colspan = cell.attr_or("colspan", "1");
             columns_in_this_row += colspan.parse::<usize>().unwrap_or(1);
         }
@@ -339,7 +339,7 @@ fn fix_lazy_images(sel: &Selection) {
                     node.set_attr(copy_to, &attr.value);
                 } else if tag_name.as_ref() == "figure" {
                     let figure_sel = Selection::from(*node);
-                    if !figure_sel.select("img, picture").exists() {
+                    if !figure_sel.select_matcher(&MATCHER_IMG_PICTURE).exists() {
                         //if the item is a <figure> that does not contain an image or picture,
                         //create one and place it inside the figure
                         //see the nytimes-3 testcase for an example
@@ -377,7 +377,7 @@ pub(crate) fn prep_article(article_node: &NodeRef, flags: &FlagSet<GrabFlags>, c
 
     fix_lazy_images(&article_sel);
 
-    clean_conditionally(&article_sel, "form,fieldset", flags);
+    clean_conditionally(&article_sel, &MATCHER_FORM_FIELDSET, flags);
 
     // Clean out junk from the article content
     clean(&article_sel);
@@ -386,7 +386,7 @@ pub(crate) fn prep_article(article_node: &NodeRef, flags: &FlagSet<GrabFlags>, c
 
     // Do these last as the previous stuff may have removed junk
     // that will affect these
-    clean_conditionally(&article_sel, "table,ul,div", flags);
+    clean_conditionally(&article_sel, &MATCHER_TABLE_UL_DIV, flags);
 
     // replace H1 with H2 as H1 should be only title that is displayed separately
     article_sel.select("h1").rename("h2");
@@ -399,7 +399,7 @@ pub(crate) fn prep_article(article_node: &NodeRef, flags: &FlagSet<GrabFlags>, c
     // ones remain.
     for p_node in article_sel.select("p").nodes() {
         let p_sel = Selection::from(*p_node);
-        let content_el_count = p_sel.select("img,object,embed,iframe").length();
+        let content_el_count = p_sel.select_matcher(&MATCHER_IMG_EMBEDS).length();
         if content_el_count == 0 && p_node.normalized_char_count() == 0 {
             p_sel.remove();
         }

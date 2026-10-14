@@ -394,15 +394,15 @@ impl Readability {
             };
             let prev_sel = Selection::from(prev_sibling);
             
-            let prev_img: NodeRef = if prev_sel.is("img") {
+            let prev_img: NodeRef = if prev_sel.is_matcher(&MATCHER_IMG) {
                 prev_sibling
-            } else if prev_sel.is("*:has( > img:only-child)") {
-                let prev_sel_img = prev_sel.select("img:only-child");
+            } else if prev_sel.is_matcher(&MATCHER_HAS_IMG_ONLY_CHILD) {
+                let prev_sel_img = prev_sel.select_matcher(&MATCHER_IMG_ONLY_CHILD);
                 prev_sel_img.nodes()[0]
             } else {
                 continue;
             };
-            let noscript_img_sel = Selection::from(*noscript_node).select("img");
+            let noscript_img_sel = Selection::from(*noscript_node).select_matcher(&MATCHER_IMG);
             // at this point noscript_img_sel always has one element
             let new_img = &noscript_img_sel.nodes()[0];
 
