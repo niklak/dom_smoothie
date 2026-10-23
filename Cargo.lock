@@ -388,7 +388,6 @@ dependencies = [
  "foldhash",
  "gjson",
  "html-escape",
- "once_cell",
  "phf",
  "serde",
  "serde_json",
