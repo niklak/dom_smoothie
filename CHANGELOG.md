@@ -5,6 +5,11 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ## [Unreleased]
 
 ### Changed
+- Update dependencies:
+  - `phf`: 0.13.1 -> 0.14.0
+- set rust edition to 2024
+- set msrv to 1.85
+- refactor code for rust 1.85 compatibility
 - `Readability::parse` lowers its peak memory: each extraction attempt now runs on the parsed document's spare node capacity instead of doubling the node array of a fresh clone (#222).
 - Precompiled the selectors used inside per-node loops of the cleanup pass; `Readability::parse` is slightly faster (#225).
 
