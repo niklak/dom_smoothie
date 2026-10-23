@@ -1,16 +1,14 @@
 #![allow(dead_code)]
 
 use std::{
-    fs, io,
-    path::{Path, PathBuf},
+    fs, io, path::{Path, PathBuf}, sync::LazyLock,
 };
 
 use dom_query::{Document, Matcher};
 use dom_smoothie::{CandidateSelectMode, Config, Readability, TextMode};
 
-use once_cell::sync::Lazy;
-pub(crate) static R_MATCHER: Lazy<Matcher> =
-    Lazy::new(|| Matcher::new("#readability-page-1").unwrap());
+pub(crate) static R_MATCHER: LazyLock<Matcher> =
+    LazyLock::new(|| Matcher::new("#readability-page-1").unwrap());
 
 macro_rules! check {
     ($field:expr, $left:expr, $right:expr, $path:expr) => {

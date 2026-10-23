@@ -1,5 +1,7 @@
+use std::sync::LazyLock as Lazy;
+
 use dom_query::{mini_selector::MiniSelector, Matcher};
-use once_cell::sync::Lazy;
+
 use phf::phf_set;
 
 macro_rules! lazy_matcher {
