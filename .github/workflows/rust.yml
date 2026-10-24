@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust: [ stable, nightly, 1.75.0 ]
+        rust: [ stable, nightly, 1.85.0 ]
 
     steps:
     - uses: actions/checkout@v5
@@ -32,7 +32,7 @@ jobs:
     - name: Install cargo-nextest
       uses: taiki-e/install-action@v2
       with:
-        tool: cargo-nextest    
+        tool: cargo-nextest
     - name: Build
       run: cargo build --verbose
     - name: Run tests
