@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792861040726,
+  "lastUpdate": 1792866136546,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -6425,6 +6425,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 31615085,
             "range": "± 956218",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "distinct": true,
+          "id": "bce1248f556c49a63c905d4c02eaddcdb6d5e3ae",
+          "message": "fix: clamp colspan to the HTML limit\n\nHostile or corrupt colspan values like usize::MAX overflowed column counting in debug builds. Clamp each cell to 1..=1000 as browsers do and use saturating arithmetic.",
+          "timestamp": "2026-10-24T21:13:14+03:00",
+          "tree_id": "7e72187836e43840069458d612f701e43eabc4f0",
+          "url": "https://github.com/niklak/dom_smoothie/commit/bce1248f556c49a63c905d4c02eaddcdb6d5e3ae"
+        },
+        "date": 1792866136021,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 1497029,
+            "range": "± 15006",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 7314223,
+            "range": "± 91819",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 24763141,
+            "range": "± 104716",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 1507971,
+            "range": "± 7732",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 5915246,
+            "range": "± 9358",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 24607820,
+            "range": "± 47387",
             "unit": "ns/iter"
           }
         ]
