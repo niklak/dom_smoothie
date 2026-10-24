@@ -21,7 +21,7 @@ documentation = "https://docs.rs/dom_smoothie/latest"
 keywords = ["html", "readability"]
 categories = ["web-programming", "text-processing"]
 readme = "README.md"
-exclude = [".*", "test-pages", "deny.toml"]
+exclude = [".*", "test-pages", "deny.toml", "AGENTS.md"]
 
 [dependencies]
 dom_query = {version = "0.29.0", features = ["mini_selector", "markdown"]}
