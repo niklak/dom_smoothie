@@ -15,7 +15,9 @@ jobs:
   msrv-verify:
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
+      with:
+        persist-credentials: false
     - uses: dtolnay/rust-toolchain@master
       with:
         toolchain: 1.85.0
@@ -29,7 +31,9 @@ jobs:
   audit:
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
+      with:
+        persist-credentials: false
     - name: Run clippy
       run: cargo clippy --verbose --all-targets --all-features -- -D warnings
     - name: Install cargo deny
