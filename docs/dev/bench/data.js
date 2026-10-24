@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792834155055,
+  "lastUpdate": 1792861040726,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -6365,6 +6365,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 30711979,
             "range": "± 200550",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "distinct": true,
+          "id": "fbb13efab84c409fc515e4b013613af4634e7438",
+          "message": "fix: stop parsing classes_to_preserve as a CSS selector\n\nBuild class names into selectors made valid utility classes like md:flex\nor w-1/2 panic. Filter class tokens directly instead.",
+          "timestamp": "2026-10-24T19:10:57+03:00",
+          "tree_id": "aa4b891014c68441084c2581a268d9afd14752c5",
+          "url": "https://github.com/niklak/dom_smoothie/commit/fbb13efab84c409fc515e4b013613af4634e7438"
+        },
+        "date": 1792861039991,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 1925685,
+            "range": "± 39844",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 9175124,
+            "range": "± 172324",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 31778861,
+            "range": "± 451981",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 1928602,
+            "range": "± 13176",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 7487228,
+            "range": "± 149901",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 31615085,
+            "range": "± 956218",
             "unit": "ns/iter"
           }
         ]
