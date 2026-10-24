@@ -7,6 +7,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ### Changed
 - Drop `once_cell` dependency (clippy suggestion).
 - Update dependencies:
+  - `dom_query`: `0.28.0` -> `0.29.0`.
   - `phf`: 0.13.1 -> 0.14.0
 - set rust edition to 2024
 - set msrv to 1.85
