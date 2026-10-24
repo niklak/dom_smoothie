@@ -393,7 +393,7 @@ impl Readability {
                 continue;
             };
             let prev_sel = Selection::from(prev_sibling);
-            
+
             let prev_img: NodeRef = if prev_sel.is_matcher(&MATCHER_IMG) {
                 prev_sibling
             } else if prev_sel.is_matcher(&MATCHER_HAS_IMG_ONLY_CHILD) {
@@ -898,27 +898,19 @@ impl Readability {
             .map(String::as_str)
             .collect();
 
-        let class_selector = classes_to_preserve
-            .iter()
-            .map(|s| format!(".{s}"))
-            .collect::<Vec<String>>()
-            .join(",");
-
-        let other_class_sel = sel.select(&format!(".page *[class]:not({class_selector})"));
-        other_class_sel.remove_attr("class");
-
-        let class_sel = sel.select(&format!(".page {class_selector}"));
-
-        for node in class_sel.nodes() {
+        for node in sel.select("*[class]").nodes() {
             let Some(class_string) = node.class() else {
-                unreachable!();
+                continue;
             };
-            let classes_to_remove = class_string
+            let kept_classes = class_string
                 .split_whitespace()
-                .filter(|s| !classes_to_preserve.contains(s))
-                .collect::<Vec<&str>>()
-                .join(" ");
-            node.remove_class(classes_to_remove.as_str());
+                .filter(|s| classes_to_preserve.contains(s))
+                .collect::<Vec<&str>>();
+            if kept_classes.is_empty() {
+                node.remove_attr("class");
+            } else {
+                node.set_attr("class", &kept_classes.join(" "));
+            }
         }
     }
 

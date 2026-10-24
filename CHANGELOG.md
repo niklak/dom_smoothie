@@ -4,6 +4,9 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- `Config::classes_to_preserve` no longer builds a CSS selector from class names, so values like `md:flex` or `w-1/2` are preserved instead of panicking.
+
 ### Changed
 - Drop `once_cell` dependency (clippy suggestion).
 - Update dependencies:
