@@ -13,6 +13,8 @@ jobs:
       CARGO_TERM_COLOR: always
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
       - name: Update Rust
         run: rustup update stable
       - name: Install cargo-llvm-cov
