@@ -6,6 +6,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ### Fixed
 - `Config::classes_to_preserve` no longer builds a CSS selector from class names, so values like `md:flex` or `w-1/2` are preserved instead of panicking.
+- `colspan` values are clamped to the HTML limit of 1000 and summed with saturation, so hostile or corrupt values no longer panic debug builds or skew table classification.
 
 ### Changed
 - Drop `once_cell` dependency (clippy suggestion).

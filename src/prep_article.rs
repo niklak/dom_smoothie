@@ -1,6 +1,7 @@
 use dom_query::{Matcher, NodeRef, Selection};
 use flagset::FlagSet;
 
+use crate::Config;
 #[allow(clippy::wildcard_imports)]
 use crate::glob::*;
 use crate::grab_flags::GrabFlags;
@@ -9,7 +10,6 @@ use crate::helpers::*;
 #[allow(clippy::wildcard_imports)]
 use crate::matching::*;
 use crate::score::get_class_weight;
-use crate::Config;
 
 fn clean(root_sel: &Selection) {
     for node in root_sel.select_matcher(&MATCHER_CLEAN).nodes() {
@@ -214,11 +214,18 @@ fn get_row_and_col_count(table: &Selection) -> (usize, usize) {
         rows += 1;
 
         //Now look for column-related info
-        let mut columns_in_this_row = 0;
+        let mut columns_in_this_row = 0usize;
 
         for cell in &tr.select_matcher(&MATCHER_TD) {
-            let colspan = cell.attr_or("colspan", "1");
-            columns_in_this_row += colspan.parse::<usize>().unwrap_or(1);
+            // HTML clamps colspan to 1000; invalid and zero values count as 1.
+            let raw = cell.attr_or("colspan", "1");
+            let colspan = match raw.parse::<usize>() {
+                Ok(value) => value.clamp(1, 1000),
+                // A valid decimal beyond usize::MAX is still capped by HTML, not reset to 1.
+                Err(_) if !raw.is_empty() && raw.bytes().all(|b| b.is_ascii_digit()) => 1000,
+                Err(_) => 1,
+            };
+            columns_in_this_row = columns_in_this_row.saturating_add(colspan);
         }
         cols = std::cmp::max(cols, columns_in_this_row);
     }
@@ -267,7 +274,7 @@ fn mark_data_tables(base_sel: &Selection) {
             set_data_readability_table(table_node, true);
             continue;
         }
-        set_data_readability_table(table_node, (rows * cols) > 10);
+        set_data_readability_table(table_node, rows.saturating_mul(cols) > 10);
     }
 }
 
@@ -538,6 +545,30 @@ mod tests {
                 real,
                 "<img {attrs}>"
             );
+        }
+    }
+
+    #[test]
+    fn test_colspan_values() {
+        let cases = [
+            // zero is clamped to 1
+            ("0", 2),
+            //oversized decimal is clamped
+            ("99999999999999999999999", 1001),
+            //usize::MAX is clamped
+            (&usize::MAX.to_string(), 1001),
+            // negative values give 1 colspan
+            ("-1", 2),
+            // bad value gives 1 colspan
+            ("abc", 2),
+        ];
+
+        for (case, col_count) in cases {
+            let html = format!(
+                r#"<table><tr><td colspan="{case}">a</td><td colspan="1">b</td></tr></table>"#
+            );
+            let doc = Document::from(html);
+            assert_eq!(get_row_and_col_count(&doc.select("table")), (1, col_count));
         }
     }
 }

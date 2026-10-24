@@ -30,3 +30,21 @@ fn test_preserve_classes_with_css_special_chars() {
         Some("page")
     );
 }
+
+#[test]
+fn test_colspan_overflow_does_not_panic() {
+    let max = usize::MAX.to_string();
+    let cases = [ "1", &max, "99999999999999999999999"];
+    for case in cases {
+        let html = format!(
+            r#"<html><body><article>
+            <p>First paragraph with enough text to be considered content by the extractor. It keeps going for a while.</p>
+            <table><tr><td colspan="{case}">a</td><td colspan="{case}">b</td></tr></table>
+            <p>Second paragraph with enough text to be considered content by the extractor. It also keeps going for a while.</p>
+        </article></body></html>"#
+        );
+        let mut ra = Readability::new(html.as_str(), None, Some(Config::default())).unwrap();
+        assert!(ra.parse().is_ok());
+    }
+    
+}
