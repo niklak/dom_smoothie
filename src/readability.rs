@@ -1191,8 +1191,9 @@ fn extract_favicon(root_node: &Document, base_url: Option<String>) -> Option<Str
                 priority += 50.0;
             } else if let Some(size) = sizes.split('x').next() {
                 if let Ok(px) = size.parse::<f32>() {
-                    let bonus: f32 = px.log2().min(12.0);
-                    priority += bonus;
+                    if px > 0.0 {
+                        priority += px.log2().min(12.0);
+                    }
                 }
             }
         }
