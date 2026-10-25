@@ -26,6 +26,9 @@ pub(crate) fn text_similarity(text_a: &str, text_b: &str) -> f64 {
     let tokens_b: Vec<&str> = b.unicode_words().collect();
 
     let b_chars_total: usize = tokens_b.iter().map(|s| s.chars().count()).sum();
+    if b_chars_total == 0 {
+        return 0.0;
+    }
     let b_chars_unique: usize = tokens_b
         .iter()
         .filter(|&&s| !tokens_a.contains(s))
@@ -324,6 +327,13 @@ mod tests {
         let text_b = "DeepMind新电脑已可利用记忆自学 人工智能迈上新台阶";
         let similarity = text_similarity(text_a, text_b);
         assert!(1.0 - similarity < FLOAT_TOLERANCE);
+    }
+
+    #[test]
+    fn test_text_similarity_no_words() {
+        // `text_b` has no unicode words, so the char totals are zero.
+        let similarity = text_similarity("Some title", "...");
+        assert!(similarity < FLOAT_TOLERANCE);
     }
 
     #[test]
