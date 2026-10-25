@@ -183,6 +183,7 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
     false
 }
 
+// shortcut: cleaning is O(depth x depth) on deeply nested wrappers; cap depth or precompute subtree stats when parsing untrusted input.
 fn clean_conditionally(sel: &Selection, matcher: &Matcher, flags: &FlagSet<GrabFlags>) {
     if !flags.contains(GrabFlags::CleanConditionally) {
         return;

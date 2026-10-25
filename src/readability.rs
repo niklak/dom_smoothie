@@ -3,8 +3,6 @@ use dom_query::{Document, NodeRef, Selection};
 use foldhash::HashMap;
 use tendril::StrTendril;
 
-use crate::config::ParsePolicy;
-use crate::config::TextMode;
 #[allow(clippy::wildcard_imports)]
 use crate::glob::*;
 #[allow(clippy::wildcard_imports)]
@@ -13,8 +11,7 @@ use crate::is_probably_readable;
 #[allow(clippy::wildcard_imports)]
 use crate::matching::*;
 use crate::url_helpers::{is_absolute_url, resolve_url, to_absolute_url};
-use crate::Config;
-use crate::ReadabilityError;
+use crate::{Config, ParsePolicy, ReadabilityError, TextMode};
 
 /// This struct represents the content of the article
 #[derive(Debug, Clone)]
@@ -521,6 +518,10 @@ impl Readability {
     /// - Post-processes the content
     /// - Returns the content and the metadata as an [`Article`] object
     ///
+    /// This method mutates the document. Calling it again on the same instance
+    /// nests the previously extracted article inside a new `<div>`; create a new
+    /// [`Readability`] to parse again.
+    ///
     /// # Returns
     ///
     /// An [`Article`] object containing the content and the metadata.
@@ -540,6 +541,9 @@ impl Readability {
     /// less memory because it does not need to keep the best attempt.
     /// If you need more precise results, use [`Readability::parse`],  
     /// as it sequentially applies all policies, from strict to raw.
+    ///
+    /// Like [`Readability::parse`], this method mutates the document; create a new
+    /// [`Readability`] to parse again.
     ///
     /// # Errors
     /// If `config.max_elements_to_parse` is > 0 and the document's number of element nodes exceeds this limit,
