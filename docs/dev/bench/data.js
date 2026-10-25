@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792866136546,
+  "lastUpdate": 1792927801942,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -6485,6 +6485,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 24607820,
             "range": "± 47387",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "distinct": true,
+          "id": "98269af77fd0b4083b92971c483f65571a313a57",
+          "message": "fix: end base URL origin at query or fragment\n\nA base URL without a path (e.g. https://example.com?x=1) was treated as\nthe whole origin, so relative links resolved to https://example.com?x=1/about.html.\nStop the authority search at '?' and '#' as well as '/'.",
+          "timestamp": "2026-10-25T11:54:50+02:00",
+          "tree_id": "201e63ceace2e2e955e6febf983104320fe2f652",
+          "url": "https://github.com/niklak/dom_smoothie/commit/98269af77fd0b4083b92971c483f65571a313a57"
+        },
+        "date": 1792927800999,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 1911818,
+            "range": "± 54011",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 9110695,
+            "range": "± 51769",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 31643088,
+            "range": "± 697939",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 1917746,
+            "range": "± 25158",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 7412694,
+            "range": "± 71189",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 31484159,
+            "range": "± 242383",
             "unit": "ns/iter"
           }
         ]
