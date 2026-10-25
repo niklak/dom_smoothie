@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792927801942,
+  "lastUpdate": 1792935852242,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -6545,6 +6545,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 31484159,
             "range": "± 242383",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "distinct": true,
+          "id": "eee4bb0699837d54cf1a0935f075e68be2227edc",
+          "message": "docs: note parse mutates the document and mark O(depth x depth) cleaning\n\nparse() reuses self.doc, so a second call nests the previous article in a\nnew <div> and returns different content. Document the one-shot behavior on\nparse().\n\nAlso mark clean_conditionally as the O(depth x depth) spot on deeply\nnested wrappers, per the audit note. No behavior change.",
+          "timestamp": "2026-10-25T15:04:11+02:00",
+          "tree_id": "f7a9ba55367867dfd8d33b21a83cc441fb7af2df",
+          "url": "https://github.com/niklak/dom_smoothie/commit/eee4bb0699837d54cf1a0935f075e68be2227edc"
+        },
+        "date": 1792935851558,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 1503279,
+            "range": "± 14308",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 7330299,
+            "range": "± 153407",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 24807143,
+            "range": "± 185046",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 1509884,
+            "range": "± 6846",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 5928328,
+            "range": "± 20742",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 24624563,
+            "range": "± 258257",
             "unit": "ns/iter"
           }
         ]
