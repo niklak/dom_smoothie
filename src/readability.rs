@@ -985,18 +985,20 @@ impl Readability {
             set_attr_absolute_url(media, "poster", &base_url);
 
             if let Some(srcset) = media.attr("srcset") {
-                let abs_srcset: Vec<String> = srcset
-                    .split(", ")
-                    .map(|s| {
-                        if let Some((src, cond)) = s.split_once(' ') {
-                            let abs_src = to_absolute_url(&base_url, src.trim());
-                            format!("{abs_src} {cond}")
+                let abs_srcset: Vec<String> = split_srcset(&srcset)
+                    .into_iter()
+                    .map(|(src, descriptor)| {
+                        let abs_src = to_absolute_url(&base_url, src);
+                        if descriptor.is_empty() {
+                            abs_src.into_owned()
                         } else {
-                            to_absolute_url(&base_url, s.trim()).into()
+                            format!("{abs_src} {descriptor}")
                         }
                     })
                     .collect();
-                media.set_attr("srcset", abs_srcset.join(", ").as_str());
+                if !abs_srcset.is_empty() {
+                    media.set_attr("srcset", abs_srcset.join(", ").as_str());
+                }
             }
         }
     }
@@ -1023,6 +1025,32 @@ fn set_attr_absolute_url(node: &NodeRef, attr_key: &str, base_uri: &str) {
     };
     let abs_url = to_absolute_url(base_uri, &attr);
     node.set_attr(attr_key, &abs_url);
+}
+
+/// Splits a `srcset` value into `(url, descriptor)` candidates, keeping commas
+/// inside URLs (e.g. `data:`) and ending a candidate at a comma after the URL or descriptor.
+fn split_srcset(srcset: &str) -> Vec<(&str, &str)> {
+    let mut out = Vec::new();
+    let mut rest = srcset;
+    while {
+        rest = rest.trim_start_matches(|c: char| c == ',' || c.is_ascii_whitespace());
+        !rest.is_empty()
+    } {
+        let (url, tail) = rest
+            .split_once(|c: char| c.is_ascii_whitespace())
+            .unwrap_or((rest, ""));
+        if url.ends_with(',') {
+            out.push((url.trim_end_matches(','), ""));
+            rest = tail;
+        } else {
+            // shortcut: commas inside parenthesized descriptors are not handled,
+            // upgrade if a future srcset syntax relies on them.
+            let (desc, tail) = tail.split_once(',').unwrap_or((tail, ""));
+            out.push((url, desc.trim()));
+            rest = tail;
+        }
+    }
+    out
 }
 
 fn fix_links(root_sel: &Selection) {
@@ -1454,6 +1482,40 @@ mod tests {
         );
         let got_video = ra.doc.select("video source").attr("src").unwrap();
         assert_eq!(&got_video, "https://example.com/clip.mp4");
+    }
+
+    #[test]
+    fn test_fix_relative_uris_srcset_candidates() {
+        let contents = r#"
+        <!DOCTYPE html>
+        <html>
+            <head><base href="https://example.com/"></head>
+            <body>
+                <img srcset="img/a.jpg 1x,img/b.jpg 2x">
+                <img srcset="data:image/gif;base64,R0lGOD 1x,img/c.jpg 2x">
+                <img srcset="img/d.jpg,
+                             img/e.jpg 2x">
+            </body>
+        </html>"#;
+        let ra = Readability::new(contents, None, None).unwrap();
+        let body = ra.doc.select("body");
+
+        ra.fix_relative_uris(&body);
+        let got_srcset: Vec<String> = ra
+            .doc
+            .select("img")
+            .nodes()
+            .iter()
+            .map(|n| n.attr("srcset").unwrap().to_string())
+            .collect();
+        assert_eq!(
+            got_srcset,
+            [
+                "https://example.com/img/a.jpg 1x, https://example.com/img/b.jpg 2x",
+                "data:image/gif;base64,R0lGOD 1x, https://example.com/img/c.jpg 2x",
+                "https://example.com/img/d.jpg, https://example.com/img/e.jpg 2x",
+            ]
+        );
     }
 
     #[test]
