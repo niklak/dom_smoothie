@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792935852242,
+  "lastUpdate": 1792944580299,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -6605,6 +6605,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 24624563,
             "range": "± 258257",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "distinct": true,
+          "id": "a909a6fec9616e11657bc986a294aee62b5e1bef",
+          "message": "perf: store node scores bit-exact via itoa\n\nset_node_score now serializes f32 as its u32 bit pattern with itoa\n(instead of decimal float formatting into a String) and reads it back\nwith parse::<u32>() + f32::from_bits. This avoids float parsing loss\n(including NaN payloads and subnormals) and keeps the ~3-6% parse\nspeedup without the ScoreBuf code.\n\nAdds test_set_get_node_score_round_trip covering 0.0, negatives,\nf32::MAX/MIN/MIN_POSITIVE/EPSILON, +/-inf and NaN.",
+          "timestamp": "2026-10-25T18:07:01+02:00",
+          "tree_id": "9430f857e4fa778529438fd623de8cf14b8865a7",
+          "url": "https://github.com/niklak/dom_smoothie/commit/a909a6fec9616e11657bc986a294aee62b5e1bef"
+        },
+        "date": 1792944579261,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 1810025,
+            "range": "± 12057",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 8830857,
+            "range": "± 228985",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 32267120,
+            "range": "± 315473",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 1848529,
+            "range": "± 26862",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 7282728,
+            "range": "± 51646",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 31740120,
+            "range": "± 216272",
             "unit": "ns/iter"
           }
         ]
