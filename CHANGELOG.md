@@ -9,6 +9,8 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 - `colspan` values are clamped to the HTML limit of 1000 and summed with saturation, so hostile or corrupt values no longer panic debug builds or skew table classification.
 - Relative links in documents whose base URL has no path (e.g. `https://example.com?x=1`) are no longer resolved against the query as part of the origin.
 - `Readability::fix_relative_uris` now splits `srcset` candidates on any comma, not only `, `, so URLs after separators like `1x,b.jpg` and in multi-line lists are resolved; commas inside URLs such as `data:` are preserved.
+- Favicon priority no longer applies the size bonus to non-positive `sizes` values (e.g. `sizes="-1x1"`): `log2` returned `NaN`, which `min` turned into the maximum bonus, so such icons outranked valid ones.
+- `text_similarity` returns `0.0` instead of `NaN` when the compared text contains no words, so title and heading similarity checks get a defined result.
 
 ### Changed
 - Drop `once_cell` dependency (clippy suggestion).
