@@ -35,7 +35,9 @@ fn test_favicon_engadget() {
     test_favicon(
         "./test-pages/ok/engadget",
         Some("http://fakehost/test/"),
-        Some("https://s.blogsmithmedia.com/www.engadget.com/assets-h159e8c9b49d08fd74b1f658dac6e12df/images/favicon-160x160.png?h=1638b0a8bbe7effa8f85c3ecabb63620")
+        Some(
+            "https://s.blogsmithmedia.com/www.engadget.com/assets-h159e8c9b49d08fd74b1f658dac6e12df/images/favicon-160x160.png?h=1638b0a8bbe7effa8f85c3ecabb63620",
+        ),
     );
 }
 
@@ -71,7 +73,9 @@ fn test_favicon_schema_org_context() {
     test_favicon(
         "./test-pages/readability/schema-org-context-object",
         Some("http://fakehost/test/"),
-        Some("https://nodeassets.nbcnews.com/cdnassets/projects/ramen/favicon/nbcnews/all-other-sizes-PNG.ico/favicon-96x96.png")
+        Some(
+            "https://nodeassets.nbcnews.com/cdnassets/projects/ramen/favicon/nbcnews/all-other-sizes-PNG.ico/favicon-96x96.png",
+        ),
     );
 }
 
@@ -81,6 +85,21 @@ fn test_favicon_topicseed_1() {
         "./test-pages/readability/topicseed-1",
         Some("http://fakehost/test/"),
         Some("http://fakehost/icons-5f7390f8df97283d5b517dead9b4a9d5/favicon-32x32.png"),
+    );
+}
+
+#[test]
+fn test_favicon_invalid_sizes_ignored() {
+    // Non-positive `sizes` yields NaN from `log2`, which `min` turns into the maximum bonus.
+    let contents = r#"<html><head>
+        <link rel="icon" href="/invalid.png" sizes="-1x1">
+        <link rel="icon" href="/valid.png" sizes="32x32">
+    </head><body><p>Some text.</p></body></html>"#;
+    let ra = dom_smoothie::Readability::new(contents, Some("http://fakehost/test/"), None).unwrap();
+    let metadata = ra.get_article_metadata(None);
+    assert_eq!(
+        metadata.favicon.as_deref(),
+        Some("http://fakehost/valid.png")
     );
 }
 
