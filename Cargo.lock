@@ -388,6 +388,7 @@ dependencies = [
  "foldhash",
  "gjson",
  "html-escape",
+ "itoa",
  "phf",
  "serde",
  "serde_json",
@@ -539,9 +540,9 @@ dependencies = [
 
 [[package]]
 name = "itoa"
-version = "1.0.15"
+version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c"
+checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 
 [[package]]
 name = "js-sys"

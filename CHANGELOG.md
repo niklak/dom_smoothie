@@ -22,6 +22,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 - refactor code for rust 1.85 compatibility
 - `Readability::parse` lowers its peak memory: each extraction attempt now runs on the parsed document's spare node capacity instead of doubling the node array of a fresh clone (#222).
 - Precompiled the selectors used inside per-node loops of the cleanup pass; `Readability::parse` is slightly faster (#225).
+- `set_node_score` stores scores bit-exact via `itoa` instead of formatting floats into a `String`; `Readability::parse` keeps the ~3-6% speedup without float parsing loss.
 
 ## [0.18.2] - 2026-09-21
 
