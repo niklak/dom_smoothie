@@ -74,7 +74,7 @@ pub(crate) fn resolve_url<'a>(base: &'a str, relative: &'a str) -> Cow<'a, str> 
     // 3. Find the end of origin (scheme://authority)
     let origin_end = base.find("://").map_or(scheme_end + 1, |pos| {
         base[pos + 3..]
-            .find('/')
+            .find(['/', '?', '#'])
             .map_or(base.len(), |p| p + pos + 3)
     });
     let origin = &base[..origin_end];
@@ -194,6 +194,11 @@ mod tests {
             "?b=2",
             "http://example.com/path/page.html?b=2",
             ),
+
+            ("https://example.com?x=1", "about.html", "https://example.com/about.html"),
+            ("https://example.com?x=1", "/about.html", "https://example.com/about.html"),
+            ("https://example.com#top", "../about.html", "https://example.com/about.html"),
+            ("https://example.com?x=1", "?b=2", "https://example.com?b=2"),
         ];
 
         for (base, relative, expected) in tests {
