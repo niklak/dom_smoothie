@@ -68,7 +68,8 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
     let weight = get_class_weight(node, flags.contains(GrabFlags::WeightClasses));
 
     if weight < 0.0 {
-        return true;
+        // Utility classes (`scroll-mt-2`, `md:hidden`) must not drop code wrappers.
+        return !node.descendants_it().any(|n| n.has_name("pre"));
     }
 
     let node_text = node.text();
@@ -540,6 +541,29 @@ mod tests {
                     .to_string(),
                 real,
                 "<img {attrs}>"
+            );
+        }
+    }
+
+    #[test]
+    fn test_should_clean_conditionally_keeps_pre() {
+        let flags = FlagSet::full();
+        for class in ["scroll-mt-2", "md:hidden", "overflow-hidden"] {
+            let html = format!(r#"<div class="{class}"><pre><code>cargo test</code></pre></div>"#);
+            let doc = Document::from(html.as_str());
+            let pre_wrapper = doc.select("div").nodes()[0];
+            assert!(
+                !should_clean_conditionally(&pre_wrapper, &flags),
+                "class={class:?} with <pre>"
+            );
+
+            let html =
+                format!(r##"<div class="{class}"><a href="#">one</a><a href="#">two</a></div>"##);
+            let doc = Document::from(html.as_str());
+            let clutter = doc.select("div").nodes()[0];
+            assert!(
+                should_clean_conditionally(&clutter, &flags),
+                "class={class:?} without <pre>"
             );
         }
     }
