@@ -48,6 +48,22 @@ fn clean_styles(n: &NodeRef) {
     }
 }
 
+/// Returns true when a `MATCHER_TEXTISH` descendant contains non-whitespace text.
+/// Equivalent to `text_density(node, &MATCHER_TEXTISH, Some(1)) > 0.0`, without rescanning nested matches.
+fn has_textish_text(node: &NodeRef) -> bool {
+    let mut stack: Vec<(NodeRef, bool)> =
+        node.children_it(true).map(|child| (child, false)).collect();
+
+    while let Some((child, in_textish)) = stack.pop() {
+        let in_textish = in_textish || child.is_match(&MATCHER_TEXTISH);
+        if in_textish && child.is_nonempty_text() {
+            return true;
+        }
+        stack.extend(child.children_it(true).map(|node| (node, in_textish)));
+    }
+    false
+}
+
 fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> bool {
     let sel = Selection::from(*node);
     // keep element if it has a data tables
@@ -157,7 +173,7 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
                 return true;
             }
 
-            if img == 0 && text_density(node, &MATCHER_TEXTISH, Some(char_count)) == 0.0 {
+            if img == 0 && !has_textish_text(node) {
                 return true;
             }
             false
@@ -565,6 +581,26 @@ mod tests {
                 should_clean_conditionally(&clutter, &flags),
                 "class={class:?} without <pre>"
             );
+        }
+    }
+
+    #[test]
+    fn test_has_textish_text() {
+        let cases = [
+            ("direct text", false),
+            ("<div></div>", false),
+            ("<p>text</p>", true),
+            ("<span>text</span>", true),
+            ("<span><p>text</p></span>", true),
+            (r##"<a href="#">text</a>"##, false),
+            ("<p> </p>", false),
+        ];
+
+        for (inner, expected) in cases {
+            let html = format!(r#"<div id="node">{inner}</div>"#);
+            let doc = Document::from(html.as_str());
+            let node = doc.select("#node").nodes()[0];
+            assert_eq!(has_textish_text(&node), expected, "inner={inner:?}");
         }
     }
 
