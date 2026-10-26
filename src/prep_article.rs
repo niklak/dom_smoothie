@@ -122,8 +122,7 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
         let tag = qual_name.local.as_ref();
         let mut is_list = matches!(tag, "ul" | "ol");
         if !is_list {
-            let list_density = text_density(node, &MATCHER_UL_OL, Some(char_count));
-            is_list = list_density > 0.9;
+            is_list = text_density_gt(node, &MATCHER_UL_OL, char_count, 0.9);
         }
 
         let img = node.find_descendants("img").len();

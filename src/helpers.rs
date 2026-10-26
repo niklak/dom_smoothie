@@ -97,6 +97,28 @@ pub(crate) fn text_density(node: &NodeRef, matcher: &Matcher, char_count: Option
     children_length / text_length
 }
 
+/// Returns whether `text_density` exceeds `threshold`, stopping as soon as it does.
+pub(crate) fn text_density_gt(
+    node: &NodeRef,
+    matcher: &Matcher,
+    char_count: usize,
+    threshold: f32,
+) -> bool {
+    let text_length = char_count as f32;
+    if text_length == 0.0 {
+        return false;
+    }
+
+    let mut children_length = 0.0;
+    for descendant in Selection::from(*node).select_matcher_iter(matcher) {
+        children_length += descendant.normalized_char_count() as f32;
+        if children_length / text_length > threshold {
+            return true;
+        }
+    }
+    false
+}
+
 pub(crate) fn normalize_spaces(text: &str) -> String {
     let mut result = String::with_capacity(text.len());
     let mut iter = text.split_whitespace();
@@ -342,6 +364,47 @@ mod tests {
         let normalized_text = normalize_spaces(text);
         let expected = "The quick brown fox jumps over the lazy dog.";
         assert_eq!(expected, normalized_text);
+    }
+
+    #[test]
+    fn test_text_density_gt() {
+        use crate::glob::MATCHER_UL_OL;
+        use dom_query::Document;
+
+        let doc = Document::from(
+            r#"<div id="list"><ul><li>one two</li></ul></div>
+               <div id="mixed"><ul><li>one two</li></ul>three four</div>
+               <div id="text">plain text</div>
+               <div id="empty"></div>"#,
+        );
+
+        for node in doc.select("div").nodes() {
+            let char_count = node.normalized_char_count();
+            let density = text_density(node, &MATCHER_UL_OL, Some(char_count));
+            for threshold in [0.0, 0.1, 0.5, 0.9, 1.0, 2.0] {
+                assert_eq!(
+                    text_density_gt(node, &MATCHER_UL_OL, char_count, threshold),
+                    density > threshold,
+                    "id={:?}, density={density}, threshold={threshold}",
+                    node.attr_or("id", "")
+                );
+            }
+        }
+
+        let list = doc.select("#list").nodes()[0];
+        let mixed = doc.select("#mixed").nodes()[0];
+        assert!(text_density_gt(
+            &list,
+            &MATCHER_UL_OL,
+            list.normalized_char_count(),
+            0.9
+        ));
+        assert!(!text_density_gt(
+            &mixed,
+            &MATCHER_UL_OL,
+            mixed.normalized_char_count(),
+            0.9
+        ));
     }
 
     #[test]
