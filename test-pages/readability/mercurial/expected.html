@@ -155,6 +155,86 @@ added 1 changesets with 1 changes to 1 files
 </pre>
                 </div>
             </div>
+            <div id="example-1-amend-a-shared-changeset">
+                <h3>
+                    <a href="#id8">Example 1: Amend a shared changeset</a><a href="#example-1-amend-a-shared-changeset" title="Permalink to this headline">¶</a>
+                </h3>
+                <p>
+                    Everything you learned in the <a href="http://fakehost/test/user-guide.html">user guide</a> applies to work done in <tt><span>dev-repo</span></tt>. You can commit, amend, uncommit, evolve, and so forth just as before.
+                </p>
+                <p>
+                    Things get different when you push changesets to <tt><span>test-repo</span></tt>. Or rather, things stay the same, which <em>is</em> different: because we configured <tt><span>test-repo</span></tt> to be non-publishing, draft changesets stay draft when we push them to <tt><span>test-repo</span></tt>. Importantly, they’re also draft (mutable) in <tt><span>test-repo</span></tt>.
+                </p>
+                <p>
+                    Let’s commit a preliminary change and push it to <tt><span>test-repo</span></tt> for testing.
+                </p>
+                <div>
+                    <pre>$ echo 'fix fix fix' &gt; file1
+$ hg commit -m 'prelim change'
+$ hg push ../test-repo
+</pre>
+                </div>
+                <p>
+                    At this point, <tt><span>dev-repo</span></tt> and <tt><span>test-repo</span></tt> have the same changesets in the same phases:
+                </p>
+                <blockquote>
+                    <p>
+                        [figure SG01: rev 0:0dc9 public, rev 1:f649 draft, same on both repos]
+                    </p>
+                </blockquote>
+                <p>
+                    (You may notice a change in notation from the user guide: now changesets are labelled with their revision number and the first four digits of the 40-digit hexadecimal changeset ID. Mercurial revision numbers are never stable when working across repositories, especially when obsolescence is involved. We’ll see why shortly.)
+                </p>
+                <p>
+                    Now let’s switch to <tt><span>test-repo</span></tt> to test our change:
+                </p>
+                <div>
+                    <pre>$ cd ../test-repo
+$ hg update
+</pre>
+                </div>
+                <p>
+                    Don’t forget to <tt><span>hg</span> <span>update</span></tt>! Pushing only adds changesets to a remote repository; it does not update the working directory (unless you have a hook that updates for you).
+                </p>
+                <p>
+                    Now let’s imagine the tests failed because we didn’t use proper punctuation and capitalization (oops). Let’s amend our preliminary fix (and fix the lame commit message while we’re at it):
+                </p>
+                <div>
+                    <pre>$ echo 'Fix fix fix.' &gt; file1
+$ hg amend -m 'fix bug 37'
+</pre>
+                </div>
+                <p>
+                    Now we’re in a funny intermediate state (figure 2): revision 1:f649 is obsolete in <tt><span>test-repo</span></tt>, having been replaced by revision 3:60ff (revision 2:2a03 is another one of those temporary amend commits that we saw in the user guide)—but <tt><span>dev-repo</span></tt> knows nothing of these recent developments.
+                </p>
+                <blockquote>
+                    <p>
+                        [figure SG02: test-repo has rev 0:0dc9 public, rev 1:f649, 2:2a03 obsolete, rev 3:60ff draft; dev-repo same as in SG01]
+                    </p>
+                </blockquote>
+                <p>
+                    Let’s resynchronize:
+                </p>
+                <div>
+                    <pre>$ cd ../dev-repo
+$ hg pull -u
+[...]
+added 1 changesets with 1 changes to 1 files (+1 heads)
+1 files updated, 0 files merged, 0 files removed, 0 files unresolved
+</pre>
+                </div>
+                <p>
+                    As seen in figure 3, this transfers the new changeset <em>and</em> the obsolescence marker for revision 1. However, it does <em>not</em> transfer the temporary amend commit, because it is hidden. Push and pull transfer obsolescence markers between repositories, but they do not transfer hidden changesets.
+                </p>
+                <blockquote>
+                    <p>
+                        [figure SG03: dev-repo grows new rev 2:60ff, marks 1:f649 obsolete]
+                    </p>
+                </blockquote>
+                <p>
+                    Because of this deliberately incomplete synchronization, revision numbers in <tt><span>test-repo</span></tt> and <tt><span>dev-repo</span></tt> are no longer consistent. We <em>must</em> use changeset IDs.
+                </p>
+            </div>
             <div id="example-2-amend-again-locally">
                 <h3>
                     <a href="#id9">Example 2: Amend again, locally</a><a href="#example-2-amend-again-locally" title="Permalink to this headline">¶</a>

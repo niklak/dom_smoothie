@@ -34,7 +34,7 @@ fn test_preserve_classes_with_css_special_chars() {
 #[test]
 fn test_colspan_overflow_does_not_panic() {
     let max = usize::MAX.to_string();
-    let cases = [ "1", &max, "99999999999999999999999"];
+    let cases = ["1", &max, "99999999999999999999999"];
     for case in cases {
         let html = format!(
             r#"<html><body><article>
@@ -46,5 +46,54 @@ fn test_colspan_overflow_does_not_panic() {
         let mut ra = Readability::new(html.as_str(), None, Some(Config::default())).unwrap();
         assert!(ra.parse().is_ok());
     }
-    
+}
+
+/// A wrapper's class must not decide the fate of the `<pre>` it holds (issue #226).
+#[test]
+fn test_pre_in_utility_class_wrapper_survives_cleaning() {
+    let p = "<p>This paragraph is long enough to count as article text, with several commas, \
+             clauses, and details, so that the scoring treats the container as the main content \
+             of the page rather than as navigation.</p>";
+    for class in ["", "group", "scroll-mt-2", "md:hidden", "overflow-hidden"] {
+        let attr = if class.is_empty() {
+            String::new()
+        } else {
+            format!(r#"class="{class}""#)
+        };
+        let html = format!(
+            "<html><body><article><h1>Title</h1>{p}{p}\
+             <div {attr}><pre><code>sudo apt install x</code></pre></div>\
+             {p}{p}</article></body></html>"
+        );
+        let mut ra = Readability::new(html.as_str(), None, Some(Config::default())).unwrap();
+        let article = ra.parse().unwrap();
+        assert!(
+            article.content.contains("sudo apt install x"),
+            "<pre> dropped for {attr}"
+        );
+    }
+}
+
+/// Keeping `<pre>` wrappers must not resurrect elements hidden by an attribute or an inline style:
+/// those are stripped before scoring.
+#[test]
+fn test_hidden_pre_wrapper_is_dropped() {
+    let p = "<p>This paragraph is long enough to count as article text, with several commas, \
+             clauses, and details, so that the scoring treats the container as the main content \
+             of the page rather than as navigation.</p>";
+    let wrappers = [
+        "<div hidden><pre><code>sudo apt install x</code></pre></div>",
+        r#"<div style="display:none"><pre><code>sudo apt install x</code></pre></div>"#,
+    ];
+    for wrapper in wrappers {
+        let html = format!(
+            "<html><body><article><h1>Title</h1>{p}{p}{wrapper}{p}{p}</article></body></html>"
+        );
+        let mut ra = Readability::new(html.as_str(), None, Some(Config::default())).unwrap();
+        let article = ra.parse().unwrap();
+        assert!(
+            !article.content.contains("sudo apt install x"),
+            "hidden <pre> kept for {wrapper}"
+        );
+    }
 }
