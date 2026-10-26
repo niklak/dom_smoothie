@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use dom_query::{Matcher, NodeRef, Selection};
 use flagset::FlagSet;
 
@@ -49,7 +51,7 @@ fn clean_styles(n: &NodeRef) {
 }
 
 /// Returns true when a `MATCHER_TEXTISH` descendant contains non-whitespace text.
-/// Equivalent to `text_density(node, &MATCHER_TEXTISH, Some(1)) > 0.0`, without rescanning nested matches.
+/// Equivalent to `text_density_cmp(node, &MATCHER_TEXTISH, 1, 0.0, Ordering::Greater)`, without rescanning nested matches.
 fn has_textish_text(node: &NodeRef) -> bool {
     let mut stack: Vec<(NodeRef, bool)> =
         node.children_it(true).map(|child| (child, false)).collect();
@@ -122,7 +124,7 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
         let tag = qual_name.local.as_ref();
         let mut is_list = matches!(tag, "ul" | "ol");
         if !is_list {
-            is_list = text_density_gt(node, &MATCHER_UL_OL, char_count, 0.9);
+            is_list = text_density_cmp(node, &MATCHER_UL_OL, char_count, 0.9, Ordering::Greater);
         }
 
         let img = node.find_descendants("img").len();
@@ -156,7 +158,7 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
                 && char_count < 25
                 && (img == 0 || img > 2)
                 && link_density > 0.0
-                && text_density(node, &MATCHER_H1_H6, Some(char_count)) < 0.9
+                && text_density_cmp(node, &MATCHER_H1_H6, char_count, 0.9, Ordering::Less)
             {
                 return true;
             }
