@@ -11,6 +11,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 - `Readability::fix_relative_uris` now splits `srcset` candidates on any comma, not only `, `, so URLs after separators like `1x,b.jpg` and in multi-line lists are resolved; commas inside URLs such as `data:` are preserved.
 - Favicon priority no longer applies the size bonus to non-positive `sizes` values (e.g. `sizes="-1x1"`): `log2` returned `NaN`, which `min` turned into the maximum bonus, so such icons outranked valid ones.
 - `text_similarity` returns `0.0` instead of `NaN` when the compared text contains no words, so title and heading similarity checks get a defined result.
+- Removed the `should_clean_conditionally` guard that skipped elements inside `<code>`: block markup there (`div`, `table`, `ul` in `<code>`) is invalid, obsolete or malformed, so such elements are good candidates for removal.
 
 ### Changed
 - Drop `once_cell` dependency (clippy suggestion).
