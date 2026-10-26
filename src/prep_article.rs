@@ -65,11 +65,6 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
         return false;
     }
 
-    // TODO: This is a rare case, probably it should be `pre` instead of `code`.
-    if has_ancestor(node, Some(0), |n| n.has_name("code")) {
-        return false;
-    }
-
     let weight = get_class_weight(node, flags.contains(GrabFlags::WeightClasses));
 
     if weight < 0.0 {
