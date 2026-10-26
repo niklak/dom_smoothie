@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792944580299,
+  "lastUpdate": 1793029942173,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -6665,6 +6665,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 31740120,
             "range": "± 216272",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "distinct": true,
+          "id": "325553bdee1cd102d9eb74d4fa3d881f88bfb7df",
+          "message": "fix: remove useless code-ancestor check in should_clean_conditionally",
+          "timestamp": "2026-10-26T17:45:05+02:00",
+          "tree_id": "3e0f63769b3753cc03a9fec76aa3babfefcdb7af",
+          "url": "https://github.com/niklak/dom_smoothie/commit/325553bdee1cd102d9eb74d4fa3d881f88bfb7df"
+        },
+        "date": 1793029941348,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 1840306,
+            "range": "± 20067",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 8563190,
+            "range": "± 227670",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 30229342,
+            "range": "± 732275",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 1865293,
+            "range": "± 27844",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 7097794,
+            "range": "± 52402",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 30087865,
+            "range": "± 260364",
             "unit": "ns/iter"
           }
         ]
