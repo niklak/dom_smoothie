@@ -25,6 +25,11 @@ jobs:
       # Cache dependencies to speed up build
       - uses: Swatinem/rust-cache@v2
 
+      # rust-cache's save-step cleanup deletes files inside target/criterion but keeps
+      # the dirs, so Criterion later fails to load base/sample.json from a stale baseline.
+      - name: Clear stale Criterion data
+        run: rm -rf target/criterion
+
       # Run benchmark
       - name: Run benchmark
         run: cargo bench -p dom-smoothie-bench --bench parse -- --output-format bencher --save-baseline base | tee benchmark-results.txt
