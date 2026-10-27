@@ -1,10 +1,9 @@
-use std::cmp::Ordering;
 use std::collections::HashSet;
 
 use foldhash::HashMap;
 use unicode_segmentation::UnicodeSegmentation;
 
-use dom_query::{Matcher, NodeId, NodeRef, Selection};
+use dom_query::{NodeId, NodeRef};
 
 use tendril::StrTendril;
 
@@ -76,30 +75,6 @@ where
 {
     let max_depth = max_depth.map(|max_depth| if max_depth == 0 { 3 } else { max_depth });
     node.ancestors_it(max_depth).any(|a| filter_fn(&a))
-}
-
-/// Compares the text density of `matcher` matches against `threshold`, stopping early when possible.
-/// Once the running density exceeds `threshold` the comparison is settled, so the scan ends there.
-pub(crate) fn text_density_cmp(
-    node: &NodeRef,
-    matcher: &Matcher,
-    char_count: usize,
-    threshold: f32,
-    ordering: Ordering,
-) -> bool {
-    if char_count == 0 {
-        return 0.0_f32.partial_cmp(&threshold) == Some(ordering);
-    }
-
-    let text_length = char_count as f32;
-    let mut children_length = 0usize;
-    for descendant in Selection::from(*node).select_matcher_iter(matcher) {
-        children_length += descendant.normalized_char_count();
-        if children_length as f32 / text_length > threshold {
-            return ordering == Ordering::Greater;
-        }
-    }
-    (children_length as f32 / text_length).partial_cmp(&threshold) == Some(ordering)
 }
 
 pub(crate) fn normalize_spaces(text: &str) -> String {
@@ -347,83 +322,6 @@ mod tests {
         let normalized_text = normalize_spaces(text);
         let expected = "The quick brown fox jumps over the lazy dog.";
         assert_eq!(expected, normalized_text);
-    }
-
-    #[test]
-    fn test_text_density_cmp() {
-        use crate::glob::MATCHER_UL_OL;
-        use dom_query::Document;
-
-        // Reference: the full density `text_density_cmp` short-circuits instead of computing.
-        let density = |node: &NodeRef, char_count: usize| {
-            let children: usize = Selection::from(*node)
-                .select_matcher(&MATCHER_UL_OL)
-                .nodes()
-                .iter()
-                .map(|n| n.normalized_char_count())
-                .sum();
-            if char_count == 0 || children == 0 {
-                0.0
-            } else {
-                children as f32 / char_count as f32
-            }
-        };
-
-        let doc = Document::from(
-            r#"<div id="list"><ul><li>one two</li></ul></div>
-               <div id="mixed"><ul><li>one two</li></ul>three four</div>
-               <div id="text">plain text</div>
-               <div id="exact"><ul><li>abcdefghi</li></ul>x</div>
-               <div id="empty"></div>"#,
-        );
-
-        for node in doc.select("div").nodes() {
-            let char_count = node.normalized_char_count();
-            let density = density(node, char_count);
-            for threshold in [0.0, 0.1, 0.5, 0.9, 1.0, 2.0] {
-                for ordering in [Ordering::Less, Ordering::Greater] {
-                    assert_eq!(
-                        text_density_cmp(node, &MATCHER_UL_OL, char_count, threshold, ordering),
-                        density.partial_cmp(&threshold) == Some(ordering),
-                        "id={:?}, density={density}, threshold={threshold}, ordering={ordering:?}",
-                        node.attr_or("id", "")
-                    );
-                }
-            }
-        }
-
-        let list = doc.select("#list").nodes()[0];
-        let mixed = doc.select("#mixed").nodes()[0];
-        let exact = doc.select("#exact").nodes()[0];
-        assert!(text_density_cmp(
-            &list,
-            &MATCHER_UL_OL,
-            list.normalized_char_count(),
-            0.9,
-            Ordering::Greater
-        ));
-        assert!(!text_density_cmp(
-            &mixed,
-            &MATCHER_UL_OL,
-            mixed.normalized_char_count(),
-            0.9,
-            Ordering::Greater
-        ));
-        // Density is exactly 0.9: neither `<` nor `>` holds.
-        let exact_char_count = exact.normalized_char_count();
-        assert_eq!(
-            density(&exact, exact_char_count).partial_cmp(&0.9),
-            Some(Ordering::Equal)
-        );
-        for ordering in [Ordering::Less, Ordering::Greater] {
-            assert!(!text_density_cmp(
-                &exact,
-                &MATCHER_UL_OL,
-                exact_char_count,
-                0.9,
-                ordering
-            ));
-        }
     }
 
     #[test]
