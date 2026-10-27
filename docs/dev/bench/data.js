@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793029942173,
+  "lastUpdate": 1793090522187,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -6725,6 +6725,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 30087865,
             "range": "± 260364",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "903155dc72179a90f940c19f7697babca757707a",
+          "message": "perf: replace text density scan with linear textish check (#242)\n\n* perf: replace text density scan with linear textish check\n\nDeeply nested divs made should_clean_conditionally recompute text density for every nested textish descendant (O(n^3)). The zero-density check only needs to know whether any textish descendant has text.",
+          "timestamp": "2026-10-27T10:39:33+02:00",
+          "tree_id": "a4c427b5dcc35690bf1d23ce3a53a0615c46c691",
+          "url": "https://github.com/niklak/dom_smoothie/commit/903155dc72179a90f940c19f7697babca757707a"
+        },
+        "date": 1793090521573,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 1873748,
+            "range": "± 45696",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 8355103,
+            "range": "± 52311",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 30823359,
+            "range": "± 1406915",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 1878394,
+            "range": "± 13362",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 7023892,
+            "range": "± 27725",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 30652611,
+            "range": "± 91315",
             "unit": "ns/iter"
           }
         ]
