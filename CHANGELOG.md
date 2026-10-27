@@ -25,6 +25,8 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 - `Readability::parse` lowers its peak memory: each extraction attempt now runs on the parsed document's spare node capacity instead of doubling the node array of a fresh clone (#222).
 - Precompiled the selectors used inside per-node loops of the cleanup pass; `Readability::parse` is slightly faster (#225).
 - `set_node_score` stores scores bit-exact via `itoa` instead of formatting floats into a `String`; `Readability::parse` keeps the ~3-6% speedup without float parsing loss.
+- `should_clean_conditionally` decides text-ish content with the short-circuiting `text_density_cmp` instead of a full density scan, removing an O(n^3) path on deeply nested documents (the 2,000-level example drops from ~16 s to ~0.5 s).
+- The list-density check in `should_clean_conditionally` stops at the 0.9 threshold instead of summing every `<ul>`/`<ol>` descendant, so deeply nested lists no longer hit the same O(n^3) path (an 800-level list example drops from ~1.2 s to ~0.12 s).
 
 ## [0.18.2] - 2026-09-21
 
