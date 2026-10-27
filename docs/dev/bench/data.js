@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793090522187,
+  "lastUpdate": 1793094747199,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -6785,6 +6785,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 30652611,
             "range": "± 91315",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "committer": {
+            "email": "gnk667@proton.me",
+            "name": "Mykola Humanov",
+            "username": "niklak"
+          },
+          "distinct": true,
+          "id": "15ac6b5c16b3cc5c7c33100ebcf78eafee6ed7ba",
+          "message": "ci: clear stale Criterion data before benchmarking\n\nrust-cache's save-step cleanup strips files from target/criterion while\nleaving the directories, so the restored base/ baseline is empty on later\nruns. Criterion then fails to read base/sample.json, and the error line\nbreaks the bencher output that github-action-benchmark parses.",
+          "timestamp": "2026-10-27T11:50:38+02:00",
+          "tree_id": "a6c71aea99f50315d6e22148c7ac11631062e7c3",
+          "url": "https://github.com/niklak/dom_smoothie/commit/15ac6b5c16b3cc5c7c33100ebcf78eafee6ed7ba"
+        },
+        "date": 1793094746416,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 1060845,
+            "range": "± 42704",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 5035977,
+            "range": "± 154813",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 18437674,
+            "range": "± 899103",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 1079911,
+            "range": "± 64483",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 4270357,
+            "range": "± 336256",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 18804882,
+            "range": "± 1337963",
             "unit": "ns/iter"
           }
         ]
