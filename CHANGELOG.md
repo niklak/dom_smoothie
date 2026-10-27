@@ -2,7 +2,7 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
-## [Unreleased]
+## [0.19.0] - 2026-10-27
 
 ### Fixed
 - **cli**: `-f metadata` JSON now includes `image` and `favicon`, matching the fields available on `Article`.
