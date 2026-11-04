@@ -1,5 +1,5 @@
 use dom_query::local_name;
-use dom_query::{Document, NodeRef, Selection};
+use dom_query::{Document, NodeId, NodeRef, Selection};
 use foldhash::HashMap;
 use tendril::StrTendril;
 
@@ -103,6 +103,34 @@ impl Metadata {
         decode_opt_html_entities(&mut self.modified_time);
         decode_opt_html_entities(&mut self.image);
         decode_opt_html_entities(&mut self.favicon);
+    }
+}
+
+/// The processed DOM, content root and metadata returned by [`Readability::extract`].
+pub struct Extracted {
+    /// The processed document that owns `root`.
+    pub document: Document,
+    /// The content root node inside `document`.
+    pub root: NodeId,
+    /// Article metadata, including adjustments made during extraction.
+    pub metadata: Metadata,
+}
+
+impl Extracted {
+    /// The content root node.
+    ///
+    /// # Panics
+    /// Panics if `root` no longer belongs to `document` after caller modifications.
+    pub fn root(&self) -> NodeRef<'_> {
+        self.document
+            .tree
+            .get(&self.root)
+            .expect("the extracted root belongs to the returned document")
+    }
+
+    /// The content root as a selection.
+    pub fn selection(&self) -> Selection<'_> {
+        Selection::from(self.root())
     }
 }
 
@@ -426,7 +454,10 @@ impl Readability {
         }
     }
 
-    fn parse_impl(&mut self, policy: Option<ParsePolicy>) -> Result<Article, ReadabilityError> {
+    fn extract_impl(
+        &mut self,
+        policy: Option<ParsePolicy>,
+    ) -> Result<(Metadata, NodeId), ReadabilityError> {
         self.verify_doc()?;
 
         let ld_meta = if self.config.disable_json_ld {
@@ -481,7 +512,13 @@ impl Readability {
             // the procedure is far from perfect and requires improvement.
             metadata.excerpt = extract_excerpt(&root_sel);
         }
+        let root_id = root_node.id;
+        Ok((metadata, root_id))
+    }
 
+    fn parse_impl(&mut self, policy: Option<ParsePolicy>) -> Result<Article, ReadabilityError> {
+        let (metadata, root_id) = self.extract_impl(policy)?;
+        let root_node = NodeRef::new(root_id, &self.doc.tree);
         let text_content = match self.config.text_mode {
             TextMode::Raw => root_node.text(),
             TextMode::Formatted => root_node.formatted_text(),
@@ -494,7 +531,7 @@ impl Readability {
             byline: metadata.byline,
             dir: metadata.dir,
             lang: metadata.lang,
-            content: root_sel.html(),
+            content: root_node.html(),
             text_content,
             length: text_length,
             excerpt: metadata.excerpt,
@@ -551,6 +588,19 @@ impl Readability {
     /// If the document fails to extract the content, a [`ReadabilityError::GrabFailed`] error is returned.
     pub fn parse_with_policy(&mut self, policy: ParsePolicy) -> Result<Article, ReadabilityError> {
         self.parse_impl(Some(policy))
+    }
+
+    /// Consumes `self` to extract the processed DOM and metadata without serializing content.
+    ///
+    /// # Errors
+    /// Returns the same extraction errors as [`Self::parse`].
+    pub fn extract(mut self) -> Result<Extracted, ReadabilityError> {
+        let (metadata, root) = self.extract_impl(None)?;
+        Ok(Extracted {
+            document: self.doc,
+            root,
+            metadata,
+        })
     }
 
     /// This method will search for a JSON-LD block in the page and

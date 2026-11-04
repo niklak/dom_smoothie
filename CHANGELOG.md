@@ -2,6 +2,11 @@
 
 All notable changes to the `dom_smoothie` crate will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- `Readability::extract` returns the processed DOM, content root and metadata without serializing the article body; `dom_query` is re-exported for DOM access.
+
 ## [0.19.0] - 2026-10-27
 
 ### Fixed

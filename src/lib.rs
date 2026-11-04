@@ -16,7 +16,9 @@ mod url_helpers;
 mod ac_automat;
 
 pub use config::{CandidateSelectMode, Config, ParsePolicy, TextMode};
+pub use dom_query;
 pub use readability::Article;
+pub use readability::Extracted;
 pub use readability::Metadata;
 pub use readability::Readability;
 pub use readable::is_probably_readable;
