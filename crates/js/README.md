@@ -16,6 +16,7 @@
 | readable_min_content_length| `number`                  | `140`                              | Minimum content length for readability check |
 | candidate_select_mode      | `'Readability' \| 'DomSmoothie'` | `'Readability'`                 | Candidate selection mode |
 | text_mode                  | `'Raw' \| 'Formatted' \| 'Markdown'`    | `'Raw'`                            | Text output mode, either raw, formatted or Markdown |
+| strict_visibility          | `boolean`                 | `false`                            | Remove text hidden by inline styles, screen-reader-only classes or fallback markup |
 
 ### Example Object with Default Parameters
 
@@ -30,7 +31,8 @@ const config = {
   readable_min_score: 20.0,
   readable_min_content_length: 140,
   candidate_select_mode: 'Readability',
-  text_mode: 'Raw'
+  text_mode: 'Raw',
+  strict_visibility: false
 };
 ```
 
