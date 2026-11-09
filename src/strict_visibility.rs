@@ -224,9 +224,9 @@ fn is_tiny_length(value: &str) -> bool {
 /// Percentages are left alone: `top: -100%` is a tooltip just above its parent.
 fn is_far_offset(value: &str) -> bool {
     parse_length(value).is_some_and(|(n, unit)| match unit {
-        "" | "px" | "pt" => n <= -999.0,
-        "em" | "rem" | "vw" | "vh" => n <= -100.0,
-        _ => false,
+        "" | "px" => n <= -999.0,
+        "%" => false,
+        _ => n <= -100.0,
     })
 }
 
@@ -314,6 +314,12 @@ mod tests {
             "position: absolute; top: -999pt",
             "position: fixed; top: -100vh",
             "position: absolute; left: -100em",
+            "position: absolute; left: -100ch",
+            "position: absolute; left: -100vmax",
+            "position: absolute; left: -100cqw",
+            "position: absolute; top: -100mm",
+            "position: absolute; top: -800pt",
+            "position: absolute; left: -100foo",
             "position: absolute; inset: 0 auto auto -999",
             "overflow: hidden; width: 1px; height: 1px",
             "overflow: clip; width: 0; height: 0",
@@ -365,6 +371,7 @@ mod tests {
             "position: absolute; clip-path: circle(0)",
             "position: absolute; left: -998px",
             "position: absolute; top: -99vh",
+            "position: absolute; left: -99ch",
             "position: absolute; top: -100%",
             "position: absolute; bottom: -9999%",
             "position: fixed; top: -100px",
