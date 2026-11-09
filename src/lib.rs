@@ -10,6 +10,7 @@ mod readable;
 mod score;
 #[cfg(feature = "serde")]
 mod serde_helpers;
+mod strict_visibility;
 mod url_helpers;
 
 #[cfg(feature = "aho-corasick")]

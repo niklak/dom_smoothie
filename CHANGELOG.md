@@ -6,6 +6,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ### Added
 - `Readability::extract` returns the processed DOM, content root and metadata without serializing the article body; `dom_query` is re-exported for DOM access (by @szdytom in #246).
+- `Config::strict_visibility` (off by default) removes text hidden by inline styles, screen-reader-only classes or unrendered fallback markup, and strips BOMs and stray tag characters.
 
 ## [0.19.0] - 2026-10-27
 

@@ -59,6 +59,10 @@ pub struct Config {
     pub candidate_select_mode: CandidateSelectMode,
     /// Allows to set the text mode, whether it should be raw (as-is), formatted or markdown
     pub text_mode: TextMode,
+    /// Removes text hidden by inline styles, screen-reader-only classes or unrendered fallback markup,
+    /// and strips BOMs and stray tag characters. Off by default.
+    /// A best-effort cleanup, not a security boundary: `<style>` rules and external stylesheets are not read.
+    pub strict_visibility: bool,
 }
 
 impl Default for Config {
@@ -75,6 +79,7 @@ impl Default for Config {
             readable_min_content_length: MIN_CONTENT_LENGTH,
             candidate_select_mode: CandidateSelectMode::Readability,
             text_mode: TextMode::Raw,
+            strict_visibility: false,
         }
     }
 }
