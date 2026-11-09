@@ -18,23 +18,18 @@ pub(crate) fn is_invisible_style(node: &NodeRef) -> bool {
 }
 
 fn style_has_kv(style: &str, key: &str, val: &str) -> bool {
-    if let Some(pos) = style.find(key) {
-        let mut rest = &style[pos..];
-        if let Some(pos) = rest.find(':') {
-            rest = &rest[pos + 1..];
-        } else {
-            return false;
-        }
-        if let Some(pos) = rest.find(';') {
-            rest = &rest[..pos];
-        }
-        rest = rest.trim_start();
-        if let Some(pos) = rest.find(char::is_whitespace) {
-            rest = &rest[..pos];
-        }
-        return rest.trim_end() == val;
-    }
-    false
+    // `key` must be a whole property name, not the tail of `backface-visibility` or a word in a value.
+    style
+        .match_indices(key)
+        .filter(|(pos, _)| !style[..*pos].ends_with('-'))
+        .find_map(|(pos, _)| style[pos + key.len()..].trim_start().strip_prefix(':'))
+        .and_then(|v| {
+            v.split(';')
+                .next()?
+                .split(|c: char| c.is_whitespace() || c == '!')
+                .find(|w| !w.is_empty())
+        })
+        == Some(val)
 }
 
 pub(crate) fn strip_cdata(content: &StrTendril) -> &str {
@@ -350,5 +345,22 @@ mod tests {
         // Test missing base64 marker
         let src = "data:image/gif,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
         assert!(split_base64_url(src).is_none());
+    }
+
+    #[test]
+    fn test_is_invisible_style() {
+        let invisible = |style: &str| {
+            let doc = dom_query::Document::from(format!(r#"<div style="{style}"></div>"#));
+            is_invisible_style(&doc.select("div").nodes()[0])
+        };
+        assert!(invisible("display:none;color:red"));
+        assert!(invisible("color: red; DISPLAY : NONE"));
+        assert!(invisible("visibility: hidden"));
+        assert!(invisible("display: none !important"));
+        assert!(invisible("display: none!important"));
+        assert!(invisible("content-visibility: auto; visibility: hidden"));
+        assert!(invisible("/* note: x */ display:none"));
+        assert!(!invisible("backface-visibility: hidden"));
+        assert!(!invisible("transition: visibility 0s; overflow: hidden"));
     }
 }

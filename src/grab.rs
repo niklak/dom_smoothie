@@ -684,7 +684,7 @@ mod tests {
                  <p aria-hidden="true">This paragraph should be hidden.</p>
                  <p style="display:none">This paragraph should be hidden.</p>
                  <p style="display: none !important">This paragraph should be hidden.</p>
-                 <p style="display: none!important">This paragraph should be visible.</p>
+                 <p style="display: none!important">This paragraph should be hidden.</p>
                  <p style="display:">This paragraph should be visible.</p>
                  <p style="display">This paragraph should be visible.</p>
                  <p style=":">This paragraph should be visible.</p>
@@ -700,7 +700,7 @@ mod tests {
         let doc = Document::from(contents);
         let body = doc.body().unwrap();
         collect_elements_to_score(&body, true, &Metadata::default());
-        assert_eq!(6, doc.select("p").length());
+        assert_eq!(5, doc.select("p").length());
     }
 
     #[test]
