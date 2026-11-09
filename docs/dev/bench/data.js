@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793869521963,
+  "lastUpdate": 1794252592764,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -6965,6 +6965,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 23762334,
             "range": "± 136426",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "3262610+emschwartz@users.noreply.github.com",
+            "name": "Evan Schwartz",
+            "username": "emschwartz"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2f0508090f2a337948868f994e1aa8e4b4d780f9",
+          "message": "feat: add opt-in strict visibility filtering (#247)\n\n* feat: add opt-in strict visibility filtering\n\n`is_probably_visible` only checks `hidden`, `aria-hidden=\"true\"` and\ninline `display:none`/`visibility:hidden`, so text hidden by other inline\nstyles, screen-reader-only classes or unrendered fallback markup reaches\n`content` and `text_content` (niklak/dom_query#394).\n\n`Config::strict_visibility`, off by default, adds one linear pass to\n`prepare` that removes it and strips BOMs and tag characters, keeping\nonly the three RGI subdivision flags. Output with the flag off is\nunchanged.\n\n\n* feat: add strict_visibility to the CLI and Lua bindings\n\nThe Lua binding reads options field by field and the CLI builds\n`Config` from its own flags, so neither could turn the new option on.\nAdd `--strict-visibility` and the Lua `strict_visibility` option, and\nlist the field in the JS config table (JS already picks it up through\nserde).\n\n* fix(strict_visibility): catch clip-path, relative offsets and one-axis overflow\n\n- Check an empty `clip-path: inset()` on every element; far offsets also hide `position: relative` boxes.\n- `overflow: hidden|clip` with a 0-1px height (or width) hides the box unless vertical (or horizontal) padding opens a strip, so the padding-bottom aspect-ratio embed stays visible.\n- Give the zero-size and content-visibility test spans `display:inline-block`.\n\n\n* fix(strict_visibility): treat far offsets in any length unit as hidden\n\nOnly px, pt, em, rem, vw and vh were checked, so `left: -200ch` or\n`top: -300mm` kept the text. Unitless and px offsets still need -999;\nevery other unit, including pt and the absolute print units, now hides\nat -100. Percentages are still left alone.\n\n* docs: state the limits of strict_visibility\n\nThe option reads inline styles, attributes and class names only, so text\nhidden by a `<style>` rule or an external stylesheet is kept. Say so on\n`Config::strict_visibility` and in the JS option table, and add a \"Hidden\ntext\" entry to the README's list of differences from Readability.js,\nwhich also covers what the default path treats as hidden.\n\n---------\n\nCo-authored-by: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-11-09T21:27:54+02:00",
+          "tree_id": "6213667678d65a15fd11e6d088a3d39030d1f25f",
+          "url": "https://github.com/niklak/dom_smoothie/commit/2f0508090f2a337948868f994e1aa8e4b4d780f9"
+        },
+        "date": 1794252592116,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 1466754,
+            "range": "± 19414",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 6837075,
+            "range": "± 36546",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 24475981,
+            "range": "± 206041",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 1469930,
+            "range": "± 22321",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 5570801,
+            "range": "± 57894",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 24079220,
+            "range": "± 76482",
             "unit": "ns/iter"
           }
         ]
