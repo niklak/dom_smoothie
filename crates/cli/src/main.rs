@@ -88,6 +88,9 @@ struct Cli {
     // Use alternative (dom_smoothie) mode for finding common top candidate.
     #[clap(long, value_parser, default_value = "false")]
     alt_mode: bool,
+    /// Removes text hidden by inline styles, screen-reader-only classes or fallback markup
+    #[clap(long, value_parser)]
+    strict_visibility: bool,
 }
 
 /// This struct represents the metadata from the [`dom_smoothie::Article`]
@@ -181,6 +184,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         char_threshold: cli.char_threshold,
         candidate_select_mode,
         text_mode,
+        strict_visibility: cli.strict_visibility,
         ..Default::default()
     };
 

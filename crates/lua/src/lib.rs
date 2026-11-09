@@ -84,6 +84,9 @@ fn dom_smoothie_module(lua: &'_ Lua) -> LuaResult<LuaTable> {
                 if let Some(val) = opts.get::<Option<LuaValue>>("text_mode")? {
                     cfg.text_mode = lua_vm.from_value(val)?;
                 }
+                if let Some(v) = opts.get::<Option<bool>>("strict_visibility")? {
+                    cfg.strict_visibility = v;
+                }
             }
 
             let readability = dom_smoothie::Readability::new(html, doc_url.as_deref(), Some(cfg))

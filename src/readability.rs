@@ -10,6 +10,7 @@ use crate::helpers::*;
 use crate::is_probably_readable;
 #[allow(clippy::wildcard_imports)]
 use crate::matching::*;
+use crate::strict_visibility::remove_hidden_content;
 use crate::url_helpers::{is_absolute_url, resolve_url, to_absolute_url};
 use crate::{Config, ParsePolicy, ReadabilityError, TextMode};
 
@@ -220,7 +221,7 @@ impl Readability {
     ///
     /// 1. Remove empty images
     /// 2. Unwrap images inside `noscript` tags
-    /// 3. Remove `script` tags
+    /// 3. Remove `script` tags, and hidden text if [`Config::strict_visibility`] is set
     /// 4. Remove `style` tags
     /// 5. Replace multiple `br` tags with a single `br` tag
     /// 6. Replace `font` tags with `span` tags
@@ -232,6 +233,10 @@ impl Readability {
 
         // remove scripts
         self.doc.select_matcher(&MATCHER_SCRIPT).remove();
+
+        if self.config.strict_visibility {
+            remove_hidden_content(&self.doc);
+        }
 
         // remove styles
         self.doc.select_matcher(&MATCHER_STYLE).remove();

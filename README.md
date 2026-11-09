@@ -393,6 +393,10 @@ This can speed up the parsing by 5-10% in some cases, at the cost of slightly hi
 unless explicitly allowed via `Config.classes_to_preserve`.
 - `Readability.js` preserves it across the document.
 
+### Hidden text
+- `Readability.js` treats an element as hidden only by its `hidden` attribute, `aria-hidden="true"`, or an inline `display: none` or `visibility: hidden`, so text hidden any other way stays in the output. `dom_smoothie` does the same by default.
+- `dom_smoothie` adds `Config::strict_visibility` (off by default), which also removes text hidden by other inline styles, screen-reader-only classes and unrendered fallback markup. It is a best-effort cleanup, not a security boundary: `<style>` rules and external stylesheets are not read.
+
 
 ### Filtering order differences
 
