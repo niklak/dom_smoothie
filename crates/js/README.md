@@ -16,7 +16,7 @@
 | readable_min_content_length| `number`                  | `140`                              | Minimum content length for readability check |
 | candidate_select_mode      | `'Readability' \| 'DomSmoothie'` | `'Readability'`                 | Candidate selection mode |
 | text_mode                  | `'Raw' \| 'Formatted' \| 'Markdown'`    | `'Raw'`                            | Text output mode, either raw, formatted or Markdown |
-| strict_visibility          | `boolean`                 | `false`                            | Remove text hidden by inline styles, screen-reader-only classes or fallback markup |
+| strict_visibility          | `boolean`                 | `false`                            | Remove text hidden by inline styles, screen-reader-only classes or fallback markup (best effort: stylesheets are not read) |
 
 ### Example Object with Default Parameters
 

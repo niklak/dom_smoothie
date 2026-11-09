@@ -61,6 +61,7 @@ pub struct Config {
     pub text_mode: TextMode,
     /// Removes text hidden by inline styles, screen-reader-only classes or unrendered fallback markup,
     /// and strips BOMs and stray tag characters. Off by default.
+    /// A best-effort cleanup, not a security boundary: `<style>` rules and external stylesheets are not read.
     pub strict_visibility: bool,
 }
 
