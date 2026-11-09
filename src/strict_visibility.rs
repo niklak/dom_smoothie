@@ -97,18 +97,41 @@ fn hides_subtree(node: &NodeRef, style: &str) -> bool {
         return true;
     }
     let get = |name| style_value(style, name);
-    let positioned = matches!(get("position"), "absolute" | "fixed");
+    let position = get("position");
     let offscreen = ["left", "top", "right", "bottom", "inset"]
         .iter()
         .any(|n| get(n).split_ascii_whitespace().any(is_far_offset));
     get("display") == "none"
         || matches!(get("visibility"), "hidden" | "collapse")
         || get("content-visibility") == "hidden"
-        || (positioned
-            && (offscreen || is_zero_clip(get("clip")) || is_empty_inset(get("clip-path"))))
+        || is_empty_inset(get("clip-path"))
+        || (matches!(position, "absolute" | "fixed" | "relative") && offscreen)
+        || (matches!(position, "absolute" | "fixed") && is_zero_clip(get("clip")))
         || (matches!(get("overflow"), "hidden" | "clip")
-            && is_tiny_length(get("width"))
-            && is_tiny_length(get("height")))
+            && ((is_tiny_length(get("height")) && !has_padding(style, true))
+                || (is_tiny_length(get("width")) && !has_padding(style, false))))
+}
+
+/// Whether vertical (or horizontal) padding opens a visible strip in a box clipped to zero height (or width).
+fn has_padding(style: &str, vertical: bool) -> bool {
+    let shorthand: Vec<&str> = style_value(style, "padding")
+        .split_ascii_whitespace()
+        .collect();
+    let (sides, indices): ([&str; 2], &[usize]) = match (vertical, shorthand.len()) {
+        (true, 1 | 2) => (["padding-top", "padding-bottom"], &[0]),
+        (true, 3 | 4) => (["padding-top", "padding-bottom"], &[0, 2]),
+        (true, _) => (["padding-top", "padding-bottom"], &[]),
+        (false, 1) => (["padding-left", "padding-right"], &[0]),
+        (false, 2 | 3) => (["padding-left", "padding-right"], &[1]),
+        (false, 4) => (["padding-left", "padding-right"], &[1, 3]),
+        (false, _) => (["padding-left", "padding-right"], &[]),
+    };
+    let opens = |v: &str| !is_tiny_length(v) && !v.starts_with('-') && parse_length(v).is_some();
+    sides
+        .iter()
+        .map(|side| style_value(style, side))
+        .chain(indices.iter().map(|&i| shorthand[i]))
+        .any(opens)
 }
 
 /// A variant class next to the hiding one (`sr-only focus:not-sr-only`) may reveal it.
@@ -294,6 +317,22 @@ mod tests {
             "position: absolute; inset: 0 auto auto -999",
             "overflow: hidden; width: 1px; height: 1px",
             "overflow: clip; width: 0; height: 0",
+            "clip-path: inset(50%)",
+            "position: relative; left: -9999px",
+            "overflow: hidden; height: 0",
+            "overflow: hidden; width: 0",
+            "overflow: hidden; width: 1px; height: 2px",
+            "overflow: hidden; height: 1px; padding: 0",
+            "overflow: hidden; height: 0; padding: 0 10px",
+            "overflow: hidden; height: 0; padding: 0 10px 0 10px",
+            "overflow: hidden; height: 0; padding: 1px 1px 1px 1px 1px",
+            "overflow: hidden; height: 0; padding-left: 10px; padding-top: 1px",
+            "overflow: hidden; height: 0; padding-bottom: -5px",
+            "overflow: hidden; height: 0; padding-bottom: auto",
+            "overflow: hidden; width: 0; padding: 10px 0",
+            "overflow: hidden; width: 0; padding: 0 0 10px",
+            "overflow: hidden; width: 0; padding: 10px 0 10px 0",
+            "overflow: hidden; width: 0; padding: 2px 2px 2px 2px 2px",
         ] {
             assert!(style_hides(style), "{style}");
         }
@@ -317,7 +356,6 @@ mod tests {
             "position: absolute; clip: rect(0 100px 100px 0)",
             "position: absolute; clip: rect(0 0 0)",
             "position: absolute; clip: auto",
-            "clip-path: inset(50%)",
             "position: absolute; clip-path: inset(49.9%)",
             "position: absolute; clip-path: inset(50% 0 0 0)",
             "position: absolute; clip-path: inset(0 49% 0 50%)",
@@ -325,7 +363,6 @@ mod tests {
             "position: absolute; clip-path: inset(50px)",
             "position: absolute; clip-path: inset(50% 50% 50% 50% 50%)",
             "position: absolute; clip-path: circle(0)",
-            "position: relative; left: -9999px",
             "position: absolute; left: -998px",
             "position: absolute; top: -99vh",
             "position: absolute; top: -100%",
@@ -333,10 +370,22 @@ mod tests {
             "position: fixed; top: -100px",
             "left: -9999px",
             "overflow: hidden",
-            "overflow: hidden; height: 0",
             "overflow: hidden; height: 0; padding-bottom: 56.25%",
+            "overflow: hidden; height: 0; padding-top: 2px",
+            "overflow: hidden; height: 0; padding: 10px",
+            "overflow: hidden; height: 0; padding: 10px 0",
+            "overflow: hidden; height: 0; padding: 0 0 5px",
+            "overflow: hidden; height: 0; padding: 0 0 5px 0",
+            "overflow: hidden; width: 0; padding: 10px",
+            "overflow: hidden; width: 0; padding: 0 10px",
+            "overflow: hidden; width: 0; padding: 0 10px 0",
+            "overflow: hidden; width: 0; padding: 0 10px 0 0",
+            "overflow: hidden; width: 0; padding: 0 0 0 10px",
+            "overflow: hidden; width: 0; padding-left: 2px",
+            "overflow: hidden; width: 0; padding-right: 2px",
+            "position: sticky; left: -9999px",
+            "position: relative; left: -10px",
             "overflow: visible; width: 0; height: 0",
-            "overflow: hidden; width: 1px; height: 2px",
             "overflow: hidden; width: -1px; height: -1px",
         ] {
             assert!(!style_hides(style), "{style}");

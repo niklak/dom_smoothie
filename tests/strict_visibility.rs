@@ -39,11 +39,11 @@ static HIDDEN: &[(&str, &str)] = &[
     ),
     (
         "H_zero_size",
-        r#"<span style="width:0;height:0;overflow:hidden">H_zero_size</span>"#,
+        r#"<span style="display:inline-block;width:0;height:0;overflow:hidden">H_zero_size</span>"#,
     ),
     (
         "H_content_visibility",
-        r#"<span style="visibility:visible;content-visibility:hidden">H_content_visibility</span>"#,
+        r#"<span style="display:inline-block;visibility:visible;content-visibility:hidden">H_content_visibility</span>"#,
     ),
     ("H_sr_only", r#"<span class="sr-only">H_sr_only</span>"#),
     (
