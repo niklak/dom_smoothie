@@ -10,6 +10,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 
 ### Fixed
 - Common-ancestor candidate selection: `find_common_candidate_alt` now picks the qualifying ancestor shared by the most top candidates (ties go to the closest) instead of the one with the highest `NodeId`, and `find_common_candidate` promotes a shared ancestor when exactly `MIN_COMMON_ANCESTORS` alternative candidates share it (#249).
+- `"scroll"` is no longer a negative class pattern: on modern sites it matches utility and layout classes such as `scroll_photo_view`, `overflow-x-scroll` and `scroll-mt-2`, so it penalised containers that hold the article text and did more harm than good (#250).
 
 ## [0.19.0] - 2026-10-27
 

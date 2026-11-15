@@ -97,3 +97,25 @@ fn test_hidden_pre_wrapper_is_dropped() {
         );
     }
 }
+
+/// Class names that merely contain `scroll` (`scroll_photo_view`, `overflow-x-scroll`, `scroll-mt-2`)
+/// are layout utilities, not boilerplate: a container with such a class keeps its article text.
+#[test]
+fn test_scroll_container_is_kept() {
+    let p = "<p>The committee reviewed the proposal over three sessions, weighing the costs against \
+             the expected benefits for local residents, and finally agreed to fund the new library \
+             wing, the reading garden, and the evening programs for children.</p>";
+    let quote = "The final report was published inside the scroll container.";
+    for class in ["scroll_photo_view", "overflow-x-scroll", "scroll-mt-2"] {
+        let html = format!(
+            "<html><body><div id=\"content\"><h1>Title</h1>\
+             <div class=\"{class}\"><p>{quote}</p>{p}</div>{p}{p}{p}</div></body></html>"
+        );
+        let mut ra = Readability::new(html.as_str(), None, Some(Config::default())).unwrap();
+        let article = ra.parse().unwrap();
+        assert!(
+            article.content.contains(quote),
+            "text inside class {class:?} was dropped"
+        );
+    }
+}
