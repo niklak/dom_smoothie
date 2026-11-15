@@ -895,7 +895,7 @@ mod tests {
     }
 
     #[test]
-    fn test_find_common_candidate_alt_prefers_most_shared_then_closest_ancestor() {
+    fn test_find_common_candidate_alt() {
         let block = "<p>Seven words, with two commas, and enough characters to score.</p>\
                      <p>Another line, with two commas, and enough characters to score.</p>";
         // `#inner-box` is shared by only 1 alternative candidate (`#c2`), while both
@@ -928,7 +928,7 @@ mod tests {
     }
 
     #[test]
-    fn test_find_common_candidate_promotes_with_exactly_three_alternatives() {
+    fn test_find_common_candidate_three_ancestors() {
         let block = "<p>Seven words, with two commas, and enough characters to score.</p>\
                      <p>Another line, with two commas, and enough characters to score.</p>";
         // Four equal-scoring candidates (`#c1`..`#c4`) yield `top_candidate` (`#c1`) plus
