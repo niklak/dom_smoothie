@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794252592764,
+  "lastUpdate": 1794817837410,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -7025,6 +7025,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 24079220,
             "range": "± 76482",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "sandeepmudhiraj7500@gmail.com",
+            "name": "Sandeep369",
+            "username": "SandeepAi369"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0d5d4fa022fd749db74b86ca2c745c2b45f5d1b7",
+          "message": "fix: choose most-shared qualifying ancestor in common candidate search (#249)\n\n* fix: select shared ancestor by most-shared count in common candidate search\n\nfind_common_candidate_alt picked the ancestor with the highest NodeId and only then checked its score,\nso a deep, low-count ancestor could win and a better shared ancestor was never considered.\nFilter to qualifying ancestors (shared by >= MIN_COMMON_ANCESTORS candidates or score > top/3)\nand choose the most shared, breaking ties by closeness to the top candidate.\nfind_common_candidate now promotes with exactly MIN_COMMON_ANCESTORS alternatives (>= instead of >).",
+          "timestamp": "2026-11-16T10:28:55+02:00",
+          "tree_id": "0e3baeec5bd952e6271096904e1bc45087958656",
+          "url": "https://github.com/niklak/dom_smoothie/commit/0d5d4fa022fd749db74b86ca2c745c2b45f5d1b7"
+        },
+        "date": 1794817836642,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 1036335,
+            "range": "± 17712",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 4736287,
+            "range": "± 43089",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 17687304,
+            "range": "± 385757",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 1039341,
+            "range": "± 8633",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 4025913,
+            "range": "± 37303",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 17531049,
+            "range": "± 129360",
             "unit": "ns/iter"
           }
         ]
