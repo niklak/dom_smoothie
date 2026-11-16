@@ -210,7 +210,7 @@ pub(crate) static SHARE_WORDS: &[&str] = &["share", "sharedaddy"];
 #[rustfmt::skip]
 pub(crate) static CLASSES_NEGATIVE: &[&str] = &[
     "-ad-", "hidden", "banner", "combx", "comment", "com-", "contact", "footer",
-    "gdpr", "masthead", "media", "meta", "outbrain", "promo", "related", "scroll",
+    "gdpr", "masthead", "media", "meta", "outbrain", "promo", "related",
     "share", "shoutbox", "sidebar", "skyscraper", "sponsor", "shopping", "tags",
     "widget"
 ];
