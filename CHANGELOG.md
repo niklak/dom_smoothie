@@ -9,6 +9,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 - `Config::strict_visibility` (off by default) removes text hidden by inline styles, screen-reader-only classes or unrendered fallback markup, and strips BOMs and stray tag characters.
 
 ### Fixed
+- Inline `display` and `visibility` checks now match the whole property name, so `backface-visibility: hidden` or `transition: visibility 0s; overflow: hidden` no longer drops a visible element, and `content-visibility: auto; visibility: hidden` no longer keeps a hidden one. `content-visibility: hidden` is no longer read as `visibility: hidden`, and `display: none!important` (no space before `!`) now counts as hidden.
 - Common-ancestor candidate selection: `find_common_candidate_alt` now picks the qualifying ancestor shared by the most top candidates (ties go to the closest) instead of the one with the highest `NodeId`, and `find_common_candidate` promotes a shared ancestor when exactly `MIN_COMMON_ANCESTORS` alternative candidates share it (#249).
 - `"scroll"` is no longer a negative class pattern: on modern sites it matches utility and layout classes such as `scroll_photo_view`, `overflow-x-scroll` and `scroll-mt-2`, so it penalised containers that hold the article text and did more harm than good (#250).
 
