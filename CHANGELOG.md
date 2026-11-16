@@ -8,6 +8,9 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 - `Readability::extract` returns the processed DOM, content root and metadata without serializing the article body; `dom_query` is re-exported for DOM access (by @szdytom in #246).
 - `Config::strict_visibility` (off by default) removes text hidden by inline styles, screen-reader-only classes or unrendered fallback markup, and strips BOMs and stray tag characters.
 
+### Fixed
+- Common-ancestor candidate selection: `find_common_candidate_alt` now picks the qualifying ancestor shared by the most top candidates (ties go to the closest) instead of the one with the highest `NodeId`, and `find_common_candidate` promotes a shared ancestor when exactly `MIN_COMMON_ANCESTORS` alternative candidates share it (#249).
+
 ## [0.19.0] - 2026-10-27
 
 ### Fixed

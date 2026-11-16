@@ -396,7 +396,7 @@ fn find_common_candidate<'a>(
     // we would need at least three other candidates.
     // Currently, I consider this approach to be flawed...
 
-    if alternative_candidate_ancestors.len() > MIN_COMMON_ANCESTORS {
+    if alternative_candidate_ancestors.len() >= MIN_COMMON_ANCESTORS {
         let mut parent_of_top_candidate = tc.parent();
         while let Some(ref tc_parent) = parent_of_top_candidate {
             if tc_parent.has_name("body") {
@@ -455,18 +455,20 @@ fn find_common_candidate_alt<'a>(
     }
 
     let mut require_adjustment = true;
-    // choosing the best candidate by how close it to the top candidate,
-    // and then by how many common ancestors it has across all other candidates
-    if let Some(best_candidate_id) = ancestor_match_counter
+    let score_threshold = tc_score / 3.0;
+    // Choose the qualifying ancestor shared across the most top candidates,
+    // breaking ties by closeness to `top_candidate` (larger `NodeId`).
+    if let Some((best_candidate, _)) = ancestor_match_counter
         .into_iter()
-        .max_by(|x, y| x.0.cmp(&y.0).then(x.1.cmp(&y.1)))
-        .map(|n| n.0)
+        .filter_map(|(id, count)| {
+            let candidate = NodeRef::new(id, tc.tree);
+            (count >= MIN_COMMON_ANCESTORS || get_node_score(&candidate) > score_threshold)
+                .then_some((candidate, count))
+        })
+        .max_by(|x, y| x.1.cmp(&y.1).then(x.0.id.cmp(&y.0.id)))
     {
-        let best_candidate = NodeRef::new(best_candidate_id, tc.tree);
-        if get_node_score(&best_candidate) > tc_score / 3.0 {
-            top_candidate = best_candidate;
-            require_adjustment = false;
-        }
+        top_candidate = best_candidate;
+        require_adjustment = false;
     }
 
     if require_adjustment {
@@ -890,5 +892,67 @@ mod tests {
         let body = doc.body().unwrap();
         collect_elements_to_score(&body, true, &Metadata::default());
         assert!(doc.select("a.banner").exists());
+    }
+
+    #[test]
+    fn test_find_common_candidate_alt() {
+        let block = "<p>Seven words, with two commas, and enough characters to score.</p>\
+                     <p>Another line, with two commas, and enough characters to score.</p>";
+        // `#inner-box` is shared by only 1 alternative candidate (`#c2`), while both
+        // `#outer-wrap` and `#shared-article` are shared by 3 (`#c2`, `#c3`, `#c4`).
+        // `find_common_candidate_alt` must prefer count=3 over count=1 (`#inner-box`),
+        // and break the count=3 tie in favor of the deeper ancestor (`#shared-article`).
+        let contents = format!(
+            r#"<!DOCTYPE html><html><head><title>Test</title></head><body>
+            <div id="outer-wrap">
+                <main id="shared-article">
+                    <div id="inner-box">
+                        <div id="c1">{block}</div>
+                        <div><div id="c2">{block}</div></div>
+                    </div>
+                    <div><div><div id="c3">{block}</div></div></div>
+                    <div><div><div id="c4">{block}</div></div></div>
+                </main>
+            </div>
+            </body></html>"#
+        );
+        let doc = Document::from(contents.as_str());
+        let body = doc.body().unwrap();
+        let elements = collect_elements_to_score(&body, true, &Metadata::default());
+        let cfg = Config::default();
+        let flags: FlagSet<GrabFlags> = FlagSet::full();
+        let top = score_elements(&elements, body.tree, &cfg, &flags);
+
+        let chosen = find_common_candidate_alt(top[0], &top, true);
+        assert_eq!(chosen.attr_or("id", "").as_ref(), "shared-article");
+    }
+
+    #[test]
+    fn test_find_common_candidate_three_ancestors() {
+        let block = "<p>Seven words, with two commas, and enough characters to score.</p>\
+                     <p>Another line, with two commas, and enough characters to score.</p>";
+        // Four equal-scoring candidates (`#c1`..`#c4`) yield `top_candidate` (`#c1`) plus
+        // exactly 3 (`MIN_COMMON_ANCESTORS`) alternative candidates sharing `#shared-main`.
+        // Each candidate is wrapped in two nested `<div>`s so `adjust_top_candidate_by_parent`
+        // alone cannot reach `#shared-main`.
+        let contents = format!(
+            r#"<!DOCTYPE html><html><head><title>Test</title></head><body>
+            <main id="shared-main">
+                <div><div><div id="c1">{block}</div></div></div>
+                <div><div><div id="c2">{block}</div></div></div>
+                <div><div><div id="c3">{block}</div></div></div>
+                <div><div><div id="c4">{block}</div></div></div>
+            </main>
+            </body></html>"#
+        );
+        let doc = Document::from(contents.as_str());
+        let body = doc.body().unwrap();
+        let elements = collect_elements_to_score(&body, true, &Metadata::default());
+        let cfg = Config::default();
+        let flags: FlagSet<GrabFlags> = FlagSet::full();
+        let top = score_elements(&elements, body.tree, &cfg, &flags);
+
+        let chosen = find_common_candidate(top[0], &top, true);
+        assert_eq!(chosen.attr_or("id", "").as_ref(), "shared-main");
     }
 }
