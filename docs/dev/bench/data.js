@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794822244738,
+  "lastUpdate": 1794825097496,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -7145,6 +7145,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 31242414,
             "range": "± 126151",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "3262610+emschwartz@users.noreply.github.com",
+            "name": "Evan Schwartz",
+            "username": "emschwartz"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2e1f6df944a209872896c7c8f46da9dc1a7c98b4",
+          "message": "fix: match inline display and visibility by whole property name (#248)\n\n`style_has_kv` found the property with a substring search, so the inline\nstyle check read the tail of a longer property name, or the name inside\nanother property's value, as the property itself:\n- `backface-visibility: hidden` read as `visibility: hidden`, dropping a\n  visible element;\n- `transition: visibility 0s; overflow: hidden` read the next property's\n  value, dropping a visible element;\n- `content-visibility: auto; visibility: hidden` stopped at `auto`,\n  keeping a hidden element.\n\nA hit now counts only where it starts a declaration: at the start of the\nstyle, after `;`, or after a comment or `*` hack, and followed by its\ncolon. The first such hit decides, as the first hit did before. The value\nalso ends at `!`, so `display: none!important` counts as hidden, as it\ndoes in a browser.\n\nCo-authored-by: Claude Fable 5.1 <noreply@anthropic.com>",
+          "timestamp": "2026-11-16T12:29:31+02:00",
+          "tree_id": "e441033339b09bb45efad744f971b917d245c324",
+          "url": "https://github.com/niklak/dom_smoothie/commit/2e1f6df944a209872896c7c8f46da9dc1a7c98b4"
+        },
+        "date": 1794825097078,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 1410063,
+            "range": "± 8438",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 6084386,
+            "range": "± 21095",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 23901844,
+            "range": "± 151143",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 1429533,
+            "range": "± 18600",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 5242127,
+            "range": "± 16549",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 24053096,
+            "range": "± 137052",
             "unit": "ns/iter"
           }
         ]
