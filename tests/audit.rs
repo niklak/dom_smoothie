@@ -97,3 +97,21 @@ fn test_hidden_pre_wrapper_is_dropped() {
         );
     }
 }
+
+/// Commas in `<pre>` are code syntax, not prose clauses: a comma-heavy code sample must not
+/// outscore the article and pull its container into the extracted content.
+#[test]
+fn test_skip_pre_comma_scoring() {
+    let p = "<p>The committee reviewed the proposal over three sessions and agreed to fund the new \
+             library wing. The vote passed with a clear majority, and work will start next spring.</p>";
+    let items: Vec<String> = (0..120).map(|i| format!("item{i}")).collect();
+    let code = format!("const sample = [{}];", items.join(", "));
+    let html = format!(
+        "<html><body><div id=\"page\"><div id=\"story\"><h1>Title</h1>{p}{p}{p}</div>\
+         <div class=\"demo\"><div><pre>{code}</pre></div></div></div></body></html>"
+    );
+    let mut ra = Readability::new(html.as_str(), None, Some(Config::default())).unwrap();
+    let article = ra.parse().unwrap();
+    assert!(article.content.contains("The vote passed with a clear majority"));
+    assert!(!article.content.contains("const sample"));
+}

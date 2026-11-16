@@ -252,7 +252,11 @@ fn score_elements<'a>(
 
         // Count commas in the element's text content without allocating a new StrTendril.
         // Equivalent to `1 + element.text().split(COMMAS).count()`, but more efficient.
-        let mut content_score = 2 + score_text_content(element);
+        // Skip comma counting for `<pre>` elements where commas are code syntax, not prose clauses.
+        let mut content_score = 2;
+        if !element.has_name("pre") {
+            content_score += score_text_content(element);
+        }
         content_score += std::cmp::min(content_len / 100, 3);
         for (level, ancestor) in ancestors.iter().enumerate() {
             if !ancestor.is_element() || ancestor.parent().is_none() {
