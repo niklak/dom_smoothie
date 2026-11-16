@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794817837410,
+  "lastUpdate": 1794822244738,
   "repoUrl": "https://github.com/niklak/dom_smoothie",
   "entries": {
     "Rust Benchmark": [
@@ -7085,6 +7085,66 @@ window.BENCHMARK_DATA = {
             "name": "dom_smoothie/parse/large, min score to adjust 10",
             "value": 17531049,
             "range": "± 129360",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "sandeepmudhiraj7500@gmail.com",
+            "name": "Sandeep369",
+            "username": "SandeepAi369"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "022459057a5ef449f5fd87a034ada9fac0ac58b9",
+          "message": "fix: remove \"scroll\" from CLASSES_NEGATIVE (#250)\n\nClass names such as scroll_photo_view, overflow-x-scroll and scroll-mt-2 matched the substring\n\"scroll\" and received a negative class weight, causing containers with article text to be pruned.",
+          "timestamp": "2026-11-16T11:41:55+02:00",
+          "tree_id": "7101696d1c37a0983959aa5d72a35c5882849c5b",
+          "url": "https://github.com/niklak/dom_smoothie/commit/022459057a5ef449f5fd87a034ada9fac0ac58b9"
+        },
+        "date": 1794822244003,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "dom_smoothie/parse/small",
+            "value": 1890638,
+            "range": "± 21139",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium",
+            "value": 8824981,
+            "range": "± 67829",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large",
+            "value": 31475949,
+            "range": "± 433085",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/small, min score to adjust 10",
+            "value": 1897442,
+            "range": "± 16386",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/medium, min score to adjust 10",
+            "value": 7234319,
+            "range": "± 64449",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dom_smoothie/parse/large, min score to adjust 10",
+            "value": 31242414,
+            "range": "± 126151",
             "unit": "ns/iter"
           }
         ]
