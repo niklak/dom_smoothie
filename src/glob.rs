@@ -127,11 +127,14 @@ pub(crate) static PRESENTATIONAL_ATTRIBUTES: &[&str] = &[
     "frame", "hspace", "rules", "style", "valign", "vspace",
 ];
 
+/// Note: patterns are matched as substrings of the `class` + `id` string, so `"linkback"` also
+/// matches e.g. `mw-linkback-text` (the `↑` / numbered back-reference markers in Wikipedia
+/// reference lists) and `crawler-linkback-list` (Discourse "incoming links" lists).
 #[rustfmt::skip]
 pub(crate) static UNLIKELY_CANDIDATES: &[&str] = &[
     "-ad-", "ai2html", "banner", "breadcrumbs", "combx", "comment", "community",
-    "cover-wrap", "disqus", "extra", "footer", "gdpr", "header", "legends", "menu",
-    "related", "remark", "replies", "rss", "shoutbox", "sidebar", "skyscraper",
+    "cover-wrap", "disqus", "extra", "footer", "gdpr", "header", "legends", "linkback",
+    "menu", "related", "remark", "replies", "rss", "shoutbox", "sidebar", "skyscraper",
     "social", "sponsor", "supplemental", "ad-break", "agegate", "pagination", 
     "pager", "popup", "yom-remote",
 ];
