@@ -230,6 +230,7 @@ impl Readability {
         self.remove_empty_imgs();
 
         self.unwrap_noscript_images();
+        self.unwrap_noscript_content();
 
         // remove scripts
         self.doc.select_matcher(&MATCHER_SCRIPT).remove();
@@ -456,6 +457,53 @@ impl Readability {
                 }
             }
             prev_img.replace_with(new_img);
+        }
+    }
+
+    fn unwrap_noscript_content(&self) {
+        let noscript_sel = self.doc.select("body noscript");
+        if noscript_sel.is_empty() {
+            return;
+        }
+
+        let min_chars = self.config.char_threshold.min(200);
+        let mut candidates = Vec::new();
+        let mut noscript_p_chars = 0;
+
+        for noscript_node in noscript_sel.nodes() {
+            let p_chars: usize = Selection::from(*noscript_node)
+                .select_matcher(&MATCHER_P)
+                .nodes()
+                .iter()
+                .map(|n| n.normalized_char_count())
+                .sum();
+            noscript_p_chars += p_chars;
+            if p_chars >= min_chars {
+                candidates.push(*noscript_node);
+            }
+        }
+
+        if candidates.is_empty() {
+            return;
+        }
+
+        let total_p_chars: usize = self
+            .doc
+            .select_matcher(&MATCHER_P)
+            .nodes()
+            .iter()
+            .map(|n| n.normalized_char_count())
+            .sum();
+
+        if total_p_chars.saturating_sub(noscript_p_chars) >= self.config.char_threshold {
+            return;
+        }
+
+        for noscript_node in candidates {
+            for child in noscript_node.children() {
+                noscript_node.insert_before(&child);
+            }
+            noscript_node.remove_from_parent();
         }
     }
 
