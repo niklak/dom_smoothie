@@ -31,6 +31,29 @@ fn test_preserve_classes_with_css_special_chars() {
     );
 }
 
+/// `<math>` elements with a non-empty `<annotation encoding="application/x-tex">` replace their
+/// inner presentation children with the `$...$` (inline) or `$$...$$` (`display="block"`) LaTeX
+/// source instead of concatenating the presentation tokens and annotation text together.
+#[test]
+fn test_math_tex_annotation() {
+    let p = "<p>The committee reviewed the proposal over three sessions, weighing the costs against \
+             the expected benefits for local residents, and finally agreed to fund the new library \
+             wing, the reading garden, and the evening programs for children.</p>";
+    let html = format!(
+        r#"<html><body><article><h1>Title</h1>{p}{p}
+        <p>The hidden state <math display="inline"><semantics><msub><mi>h</mi><mi>t</mi></msub><annotation encoding="application/x-tex">h_{{t}}</annotation></semantics></math>
+        depends on <math><mi>x</mi><annotation encoding="application/x-tex">   </annotation></math>.</p>
+        <p><math display="block"><semantics><mrow><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">E = mc^2</annotation></semantics></math></p>
+        {p}</article></body></html>"#
+    );
+    let mut ra = Readability::new(html.as_str(), None, Some(Config::default())).unwrap();
+    let article = ra.parse().unwrap();
+    assert!(article.text_content.contains("hidden state $h_{t}$"));
+    assert!(!article.text_content.contains("hth_{t}"));
+    assert!(article.text_content.contains("$$E = mc^2$$"));
+    assert!(article.text_content.contains("depends on x."));
+}
+
 #[test]
 fn test_colspan_overflow_does_not_panic() {
     let max = usize::MAX.to_string();

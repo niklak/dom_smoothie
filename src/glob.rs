@@ -68,6 +68,8 @@ pub(crate) static MATCHER_EMBEDS: Lazy<Matcher> = lazy_matcher!("object,embed,if
 pub(crate) static MATCHER_IMG_EMBEDS: Lazy<Matcher> = lazy_matcher!("img,object,embed,iframe");
 pub(crate) static MATCHER_CLEAN: Lazy<Matcher> =
     lazy_matcher!("object,embed,footer,link,aside,iframe,input,textarea,select,button");
+pub(crate) static MATCHER_MATH_TEX: Lazy<Matcher> =
+    lazy_matcher!(r#"math > semantics > annotation[encoding="application/x-tex"], math > annotation[encoding="application/x-tex"]"#);
 pub(crate) static MATCHER_DATA_TABLE: Lazy<Matcher> =
     lazy_matcher!("table[data-readability-table]");
 pub(crate) static MATCHER_TABLE: Lazy<Matcher> = lazy_matcher!("table");
