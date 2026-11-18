@@ -2,7 +2,7 @@ use dom_query::Tree;
 use foldhash::{HashMap, HashSet};
 use std::vec;
 
-use dom_query::{Document, NodeId, NodeRef};
+use dom_query::{Document, NodeId, NodeRef, Selection};
 use flagset::FlagSet;
 
 use crate::config::CandidateSelectMode;
@@ -175,12 +175,66 @@ fn is_unlikely_candidate(node: &NodeRef) -> bool {
         return false;
     }
 
-    !has_ancestor(node, Some(0), |n| {
+    if has_ancestor(node, Some(0), |n| {
         let Some(qual_name) = n.qual_name_ref() else {
             return false;
         };
         matches!(qual_name.local.as_ref(), "table" | "code")
-    })
+    }) {
+        return false;
+    }
+
+    !is_section_header(node, &match_string)
+}
+
+/// Keeps `h2`/`h3` headings and single-heading `div` wrappers when `"header"` is their only
+/// unlikely match, provided they sit next to article paragraphs (not navigation or links).
+fn is_section_header(node: &NodeRef, match_string: &str) -> bool {
+    if !match_string.contains("header")
+        || match_string.contains("subheader")
+        || match_unlikely(&match_string.replace("header", ""))
+    {
+        return false;
+    }
+
+    if node.has_name("h2") || node.has_name("h3") {
+        return link_density(node, None) == 0.0
+            && node.parent().is_some_and(|p| {
+                p.element_children()
+                    .iter()
+                    .filter(|c| c.has_name("p"))
+                    .count()
+                    >= 2
+            });
+    }
+
+    if !node.has_name("div") || !node.has_attr("class") || node.has_attr("id") {
+        return false;
+    }
+
+    let mut heading_count = 0;
+    for desc in node.descendants_it().filter(NodeRef::is_element) {
+        if let Some(qn) = desc.qual_name_ref() {
+            if matches!(qn.local.as_ref(), "h2" | "h3" | "h4" | "h5" | "h6") {
+                heading_count += 1;
+            } else if matches!(
+                qn.local.as_ref(),
+                "h1" | "p" | "ul" | "ol" | "nav" | "form" | "a"
+            ) {
+                return false;
+            }
+        }
+    }
+
+    heading_count == 1
+        && node.parent().is_some_and(|parent| {
+            parent.element_children().iter().any(|sib| {
+                sib.id != node.id
+                    && Selection::from(*sib)
+                        .select_single_matcher(&MATCHER_P)
+                        .exists()
+            })
+        })
 }
 
 fn div_into_p(node: &NodeRef) {
