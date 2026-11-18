@@ -7,12 +7,12 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ### Added
 - `Readability::extract` returns the processed DOM, content root and metadata without serializing the article body; `dom_query` is re-exported for DOM access (by @szdytom in #246).
 - `Config::strict_visibility` (off by default) removes text hidden by inline styles, screen-reader-only classes or unrendered fallback markup, and strips BOMs and stray tag characters.
+- `Config::unwrap_noscript_if_small` (off by default) unwraps `<noscript>` elements that contain substantial paragraph prose when the rest of `<body>` falls below `char_threshold`, so SPA and forum pages (such as Discourse) that place their server-rendered article inside `<noscript>` can be extracted instead of failing with `GrabFailed`.
 
 ### Fixed
 - Inline `display` and `visibility` checks now match the whole property name, so `backface-visibility: hidden` or `transition: visibility 0s; overflow: hidden` no longer drops a visible element, and `content-visibility: auto; visibility: hidden` no longer keeps a hidden one. `content-visibility: hidden` is no longer read as `visibility: hidden`, and `display: none!important` (no space before `!`) now counts as hidden.
 - Common-ancestor candidate selection: `find_common_candidate_alt` now picks the qualifying ancestor shared by the most top candidates (ties go to the closest) instead of the one with the highest `NodeId`, and `find_common_candidate` promotes a shared ancestor when exactly `MIN_COMMON_ANCESTORS` alternative candidates share it (#249).
 - `"scroll"` is no longer a negative class pattern: on modern sites it matches utility and layout classes such as `scroll_photo_view`, `overflow-x-scroll` and `scroll-mt-2`, so it penalised containers that hold the article text and did more harm than good (#250).
-- `prepare` now unwraps `<noscript>` elements that contain substantial paragraph prose when the rest of `<body>` falls below `char_threshold`, so SPA and forum pages (such as Discourse) that place their server-rendered article inside `<noscript>` no longer fail with `GrabFailed`.
 
 ## [0.19.0] - 2026-10-27
 

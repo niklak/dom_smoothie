@@ -27,6 +27,7 @@ pub enum TextMode {
 }
 
 /// Configuration options for [`crate::Readability`]
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(default))]
@@ -63,6 +64,9 @@ pub struct Config {
     /// and strips BOMs and stray tag characters. Off by default.
     /// A best-effort cleanup, not a security boundary: `<style>` rules and external stylesheets are not read.
     pub strict_visibility: bool,
+    /// Unwraps `<noscript>` elements that contain substantial paragraph prose when the rest of `<body>`
+    /// falls below [`Config::char_threshold`]. Off by default.
+    pub unwrap_noscript_if_small: bool,
 }
 
 impl Default for Config {
@@ -80,6 +84,7 @@ impl Default for Config {
             candidate_select_mode: CandidateSelectMode::Readability,
             text_mode: TextMode::Raw,
             strict_visibility: false,
+            unwrap_noscript_if_small: false,
         }
     }
 }

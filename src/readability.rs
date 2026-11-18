@@ -230,7 +230,9 @@ impl Readability {
         self.remove_empty_imgs();
 
         self.unwrap_noscript_images();
-        self.unwrap_noscript_content();
+        if self.config.unwrap_noscript_if_small {
+            self.unwrap_noscript_content();
+        }
 
         // remove scripts
         self.doc.select_matcher(&MATCHER_SCRIPT).remove();
