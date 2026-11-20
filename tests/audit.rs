@@ -119,3 +119,55 @@ fn test_scroll_container_is_kept() {
         );
     }
 }
+
+/// When `Config::unwrap_noscript_if_small` is enabled and the page outside `<noscript>` has almost
+/// no prose (e.g. an SPA shell), a `<noscript>` block holding the server-rendered article is
+/// unwrapped, while `<noscript>` blocks on pages that already have a full article body (or when
+/// the option is disabled) remain ignored and removed.
+#[test]
+fn test_unwrap_noscript_content() {
+    let p = "<p>The steering council reviewed the proposal across three sessions, weighing the \
+             backward-compatibility requirements against the long-term maintenance cost for \
+             extension authors and library maintainers.</p>";
+    let spa_html = format!(
+        "<html><body>\
+         <noscript><style>body {{ color: black; }}</style></noscript>\
+         <div id=\"spa-root\"></div>\
+         <noscript><div id=\"main-outlet\" role=\"main\"><article><h1>Title</h1>{p}{p}{p}</article></div></noscript>\
+         <footer><p>Powered by Discourse, best viewed with JavaScript enabled</p></footer>\
+         </body></html>"
+    );
+    let cfg = Config {
+        unwrap_noscript_if_small: true,
+        ..Default::default()
+    };
+    let mut ra = Readability::new(spa_html.as_str(), None, Some(cfg.clone())).unwrap();
+    let article = ra.parse().unwrap();
+    assert!(article
+        .content
+        .contains("weighing the backward-compatibility requirements"));
+    assert!(!article.content.contains("color: black"));
+
+    let mut ra_default =
+        Readability::new(spa_html.as_str(), None, Some(Config::default())).unwrap();
+    let article_default = ra_default.parse().unwrap();
+    assert!(!article_default
+        .content
+        .contains("weighing the backward-compatibility requirements"));
+
+    let full_body_html = format!(
+        "<html><body><article><h1>Title</h1>{p}{p}{p}{p}</article>\
+         <noscript><div class=\"fallback\"><p>Duplicate noscript fallback paragraph that is long \
+         enough to exceed the minimum threshold on its own, with several clauses and commas, \
+         but should be dropped because the main body already has the full article.</p></div></noscript>\
+         </body></html>"
+    );
+    let mut ra = Readability::new(full_body_html.as_str(), None, Some(cfg)).unwrap();
+    let article = ra.parse().unwrap();
+    assert!(article
+        .content
+        .contains("weighing the backward-compatibility requirements"));
+    assert!(!article
+        .content
+        .contains("Duplicate noscript fallback paragraph"));
+}

@@ -7,6 +7,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ### Added
 - `Readability::extract` returns the processed DOM, content root and metadata without serializing the article body; `dom_query` is re-exported for DOM access (by @szdytom in #246).
 - `Config::strict_visibility` (off by default) removes text hidden by inline styles, screen-reader-only classes or unrendered fallback markup, and strips BOMs and stray tag characters.
+- `Config::unwrap_noscript_if_small` (off by default) unwraps `<noscript>` elements that contain substantial paragraph prose when the rest of `<body>` falls below `char_threshold`, so SPA and forum pages (such as Discourse) that place their server-rendered article inside `<noscript>` can be extracted instead of failing with `GrabFailed`.
 
 ### Changed
 - Update dependencies:
