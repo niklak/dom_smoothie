@@ -366,39 +366,70 @@ This can speed up the parsing by 5-10% in some cases, at the cost of slightly hi
 
 ## Differences from Mozilla/Readability.js
 
-### Absolute URL normalization
+<details>
+    <summary><b>Absolute URL normalization</b></summary>
+
 - `dom_smoothie` does not modify `href` attributes if they contain absolute URLs — they remain untouched.
 - `Readability.js` normalizes URLs — it may add a trailing slash and normalize text case.
 
 **Example:**
   
-  ```
-  https://fetch.spec.whatwg.org    // dom_smoothie
-  https://fetch.spec.whatwg.org/   // Readability.js
-  ```
+```
+https://fetch.spec.whatwg.org    // dom_smoothie
+https://fetch.spec.whatwg.org/   // Readability.js
+```
 
-### DOM simplification
+</details>
+
+<details>
+    <summary><b>DOM simplification</b></summary>
+
 - `dom_smoothie` more aggressively removes parent `<div>` elements when they contain only a single `<p>` or `<div>` element.
 
-### Attribute cleanup
+</details>
+
+<details>
+    <summary><b>Attribute cleanup</b></summary>
+
 - `dom_smoothie` removes all `font` attributes and converts `<font>` elements to `<span>`.
 - `Readability.js` converts `<font>` to `<span>` but preserves all attributes.
 
-### Empty links handling
+</details>
+
+<details>
+    <summary><b>Empty links handling</b></summary>
+
 - `dom_smoothie` removes `<a>` elements without an `href` attribute or without child nodes.
 - `Readability.js` keeps such elements.
 
-### Class preservation
+</details>
+
+<details>
+    <summary><b>Class preservation</b></summary>
+
 - In `dom_smoothie`, `class="page"` is preserved only for the article node (`id="readability-page-1"`),
 unless explicitly allowed via `Config.classes_to_preserve`.
 - `Readability.js` preserves it across the document.
 
-### Hidden text
+</details>
+
+<details>
+    <summary><b>Hidden text</b></summary>
+
 - `Readability.js` treats an element as hidden only by its `hidden` attribute, `aria-hidden="true"`, or an inline `display: none` or `visibility: hidden`, so text hidden any other way stays in the output. `dom_smoothie` does the same by default.
 - `dom_smoothie` adds `Config::strict_visibility` (off by default), which also removes text hidden by other inline styles, screen-reader-only classes and unrendered fallback markup. It is a best-effort cleanup, not a security boundary: `<style>` rules and external stylesheets are not read.
 
+</details>
 
-### Filtering order differences
+<details>
+    <summary><b>Negative classes for scoring</b></summary>
+
+- `dom_smoothie`: `scroll` is not treated as a negative class because it is widely used on modern websites.
+
+</details>
+
+<details>
+    <summary><b>Filtering order differences</b></summary>
 
 > **Note:** This behavior applies to versions ≤ 0.16.0.
 
@@ -414,6 +445,8 @@ This mostly affects elements that overlap with *UNLIKELY CANDIDATES*.
 In practice, this may result in duplicate headings (`<h1>`, `<h2>`) and byline elements.
 
 This happens because unlikely candidates may include containers that wrap such elements.
+
+</details>
 
 
 For convenience, all known cases of these differences are collected here:
