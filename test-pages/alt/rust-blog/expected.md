@@ -6,7 +6,7 @@ If you have a previous version of Rust installed via `rustup`, you can get 1.84.
 $ rustup update stable
 ```
 
-If you don't have it already, you can [get rustup](https://www.rust-lang.org/install.html) from the appropriate page on our website, and check out the [detailed release notes for 1.84.0](https://doc.rust-lang.org/stable/releases.html#version-1840-2025-01-09).
+If you don't have it already, you can [get `rustup`](https://www.rust-lang.org/install.html) from the appropriate page on our website, and check out the [detailed release notes for 1.84.0](https://doc.rust-lang.org/stable/releases.html#version-1840-2025-01-09).
 
 If you'd like to help us out by testing future releases, you might consider updating locally to use the beta channel (`rustup default beta`) or the nightly channel (`rustup default nightly`). Please [report](https://github.com/rust-lang/rust/issues/new/choose) any bugs you might come across!
 
@@ -16,7 +16,7 @@ If you'd like to help us out by testing future releases, you might consider upda
 
 1.84.0 stabilizes the minimum supported Rust version (MSRV) aware resolver, which prefers dependency versions compatible with the project's declared [MSRV](https://doc.rust-lang.org/cargo/reference/rust-version.html). With MSRV-aware version selection, the toil is reduced for maintainers to support older toolchains by not needing to manually select older versions for each dependency.
 
-You can opt-in to the MSRV-aware resolver via [.cargo/config.toml](https://doc.rust-lang.org/cargo/reference/config.html#resolverincompatible-rust-versions):
+You can opt-in to the MSRV-aware resolver via [`.cargo/config.toml`](https://doc.rust-lang.org/cargo/reference/config.html#resolverincompatible-rust-versions):
 
 ```
 [resolver]
@@ -44,7 +44,7 @@ $ CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS=allow cargo update
     Updating clap v4.0.32 -> v4.5.23
 ```
 
-You can also opt-in by setting [package.resolver = "3"](https://doc.rust-lang.org/cargo/reference/resolver.html#resolver-versions) in the Cargo.toml manifest file though that will require raising your MSRV to 1.84. The new resolver will be enabled by default for projects using the 2024 edition (which will stabilize in 1.85).
+You can also opt-in by setting [`package.resolver = "3"`](https://doc.rust-lang.org/cargo/reference/resolver.html#resolver-versions) in the Cargo.toml manifest file though that will require raising your MSRV to 1.84. The new resolver will be enabled by default for projects using the 2024 edition (which will stabilize in 1.85).
 
 This gives library authors more flexibility when deciding their policy on adopting new Rust toolchain features. Previously, a library adopting features from a new Rust toolchain would force downstream users of that library who have an older Rust version to either upgrade their toolchain or manually select an old version of the library compatible with their toolchain (and avoid running `cargo update`). Now, those users will be able to automatically use older library versions compatible with their older toolchain.
 
@@ -70,49 +70,49 @@ For more details, see the standard library [documentation on provenance](https:/
 
 ### Stabilized APIs
 
-- [Ipv6Addr::is\_unique\_local](https://doc.rust-lang.org/stable/core/net/struct.Ipv6Addr.html#method.is_unique_local)
-- [Ipv6Addr::is\_unicast\_link\_local](https://doc.rust-lang.org/stable/core/net/struct.Ipv6Addr.html#method.is_unicast_link_local)
-- [core::ptr::with\_exposed\_provenance](https://doc.rust-lang.org/stable/core/ptr/fn.with_exposed_provenance.html)
-- [core::ptr::with\_exposed\_provenance\_mut](https://doc.rust-lang.org/stable/core/ptr/fn.with_exposed_provenance_mut.html)
-- [\<ptr>::addr](https://doc.rust-lang.org/stable/core/primitive.pointer.html#method.addr)
-- [\<ptr>::expose\_provenance](https://doc.rust-lang.org/stable/core/primitive.pointer.html#method.expose_provenance)
-- [\<ptr>::with\_addr](https://doc.rust-lang.org/stable/core/primitive.pointer.html#method.with_addr)
-- [\<ptr>::map\_addr](https://doc.rust-lang.org/stable/core/primitive.pointer.html#method.map_addr)
-- [\<int>::isqrt](https://doc.rust-lang.org/stable/core/primitive.i32.html#method.isqrt)
-- [\<int>::checked\_isqrt](https://doc.rust-lang.org/stable/core/primitive.i32.html#method.checked_isqrt)
-- [\<uint>::isqrt](https://doc.rust-lang.org/stable/core/primitive.u32.html#method.isqrt)
-- [NonZero::isqrt](https://doc.rust-lang.org/stable/core/num/struct.NonZero.html#impl-NonZero%3Cu128%3E/method.isqrt)
-- [core::ptr::without\_provenance](https://doc.rust-lang.org/stable/core/ptr/fn.without_provenance.html)
-- [core::ptr::without\_provenance\_mut](https://doc.rust-lang.org/stable/core/ptr/fn.without_provenance_mut.html)
-- [core::ptr::dangling](https://doc.rust-lang.org/stable/core/ptr/fn.dangling.html)
-- [core::ptr::dangling\_mut](https://doc.rust-lang.org/stable/core/ptr/fn.dangling_mut.html)
-- [Pin::as\_deref\_mut](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.as_deref_mut)
+- [`Ipv6Addr::is_unique_local`](https://doc.rust-lang.org/stable/core/net/struct.Ipv6Addr.html#method.is_unique_local)
+- [`Ipv6Addr::is_unicast_link_local`](https://doc.rust-lang.org/stable/core/net/struct.Ipv6Addr.html#method.is_unicast_link_local)
+- [`core::ptr::with_exposed_provenance`](https://doc.rust-lang.org/stable/core/ptr/fn.with_exposed_provenance.html)
+- [`core::ptr::with_exposed_provenance_mut`](https://doc.rust-lang.org/stable/core/ptr/fn.with_exposed_provenance_mut.html)
+- [`<ptr>::addr`](https://doc.rust-lang.org/stable/core/primitive.pointer.html#method.addr)
+- [`<ptr>::expose_provenance`](https://doc.rust-lang.org/stable/core/primitive.pointer.html#method.expose_provenance)
+- [`<ptr>::with_addr`](https://doc.rust-lang.org/stable/core/primitive.pointer.html#method.with_addr)
+- [`<ptr>::map_addr`](https://doc.rust-lang.org/stable/core/primitive.pointer.html#method.map_addr)
+- [`<int>::isqrt`](https://doc.rust-lang.org/stable/core/primitive.i32.html#method.isqrt)
+- [`<int>::checked_isqrt`](https://doc.rust-lang.org/stable/core/primitive.i32.html#method.checked_isqrt)
+- [`<uint>::isqrt`](https://doc.rust-lang.org/stable/core/primitive.u32.html#method.isqrt)
+- [`NonZero::isqrt`](https://doc.rust-lang.org/stable/core/num/struct.NonZero.html#impl-NonZero%3Cu128%3E/method.isqrt)
+- [`core::ptr::without_provenance`](https://doc.rust-lang.org/stable/core/ptr/fn.without_provenance.html)
+- [`core::ptr::without_provenance_mut`](https://doc.rust-lang.org/stable/core/ptr/fn.without_provenance_mut.html)
+- [`core::ptr::dangling`](https://doc.rust-lang.org/stable/core/ptr/fn.dangling.html)
+- [`core::ptr::dangling_mut`](https://doc.rust-lang.org/stable/core/ptr/fn.dangling_mut.html)
+- [`Pin::as_deref_mut`](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.as_deref_mut)
 
 These APIs are now stable in const contexts
 
-- [AtomicBool::from\_ptr](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicBool.html#method.from_ptr)
-- [AtomicPtr::from\_ptr](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicPtr.html#method.from_ptr)
-- [AtomicU8::from\_ptr](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicU8.html#method.from_ptr)
-- [AtomicU16::from\_ptr](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicU16.html#method.from_ptr)
-- [AtomicU32::from\_ptr](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicU32.html#method.from_ptr)
-- [AtomicU64::from\_ptr](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicU64.html#method.from_ptr)
-- [AtomicUsize::from\_ptr](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicUsize.html#method.from_ptr)
-- [AtomicI8::from\_ptr](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicI8.html#method.from_ptr)
-- [AtomicI16::from\_ptr](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicI16.html#method.from_ptr)
-- [AtomicI32::from\_ptr](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicI32.html#method.from_ptr)
-- [AtomicI64::from\_ptr](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicI64.html#method.from_ptr)
-- [AtomicIsize::from\_ptr](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicIsize.html#method.from_ptr)
-- [\<ptr>::is\_null](https://doc.rust-lang.org/stable/core/primitive.pointer.html#method.is_null-1)
-- [\<ptr>::as\_ref](https://doc.rust-lang.org/stable/core/primitive.pointer.html#method.as_ref-1)
-- [\<ptr>::as\_mut](https://doc.rust-lang.org/stable/core/primitive.pointer.html#method.as_mut)
-- [Pin::new](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.new)
-- [Pin::new\_unchecked](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.new_unchecked)
-- [Pin::get\_ref](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.get_ref)
-- [Pin::into\_ref](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.into_ref)
-- [Pin::get\_mut](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.get_mut)
-- [Pin::get\_unchecked\_mut](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.get_unchecked_mut)
-- [Pin::static\_ref](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.static_ref)
-- [Pin::static\_mut](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.static_mut)
+* [`AtomicBool::from_ptr`](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicBool.html#method.from_ptr)
+* [`AtomicPtr::from_ptr`](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicPtr.html#method.from_ptr)
+* [`AtomicU8::from_ptr`](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicU8.html#method.from_ptr)
+* [`AtomicU16::from_ptr`](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicU16.html#method.from_ptr)
+* [`AtomicU32::from_ptr`](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicU32.html#method.from_ptr)
+* [`AtomicU64::from_ptr`](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicU64.html#method.from_ptr)
+* [`AtomicUsize::from_ptr`](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicUsize.html#method.from_ptr)
+* [`AtomicI8::from_ptr`](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicI8.html#method.from_ptr)
+* [`AtomicI16::from_ptr`](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicI16.html#method.from_ptr)
+* [`AtomicI32::from_ptr`](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicI32.html#method.from_ptr)
+* [`AtomicI64::from_ptr`](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicI64.html#method.from_ptr)
+* [`AtomicIsize::from_ptr`](https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicIsize.html#method.from_ptr)
+* [`<ptr>::is_null`](https://doc.rust-lang.org/stable/core/primitive.pointer.html#method.is_null-1)
+* [`<ptr>::as_ref`](https://doc.rust-lang.org/stable/core/primitive.pointer.html#method.as_ref-1)
+* [`<ptr>::as_mut`](https://doc.rust-lang.org/stable/core/primitive.pointer.html#method.as_mut)
+* [`Pin::new`](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.new)
+* [`Pin::new_unchecked`](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.new_unchecked)
+* [`Pin::get_ref`](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.get_ref)
+* [`Pin::into_ref`](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.into_ref)
+* [`Pin::get_mut`](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.get_mut)
+* [`Pin::get_unchecked_mut`](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.get_unchecked_mut)
+* [`Pin::static_ref`](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.static_ref)
+* [`Pin::static_mut`](https://doc.rust-lang.org/stable/core/pin/struct.Pin.html#method.static_mut)
 
 ### Other changes
 

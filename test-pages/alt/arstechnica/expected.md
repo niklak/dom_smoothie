@@ -10,7 +10,7 @@ Roman Zipp detailed his journey from incredulousness to grim resignation in [a b
 
 Ah, but that's because Zipp did not pay. If you head to Canon's site, provide a name and email, and manage to grab the EOS Webcam utility when Canon's servers are not failing, you can connect one camera, with one default scene, at 720p, 30 frames per second and adjust everything on the camera itself if you need to. Should you pay $5 per month, or $50 per year, you can unlock [EOS Webcam Utility Pro](file:///C:/Users/kspur/Downloads/How%20to%20Subscribe.pdf) (PDF link), which provides full 60 fps video and most of the features you'd expect out of a webcam that cost hundreds fewer dollars.
 
-[![](https://cdn.arstechnica.net/wp-content/uploads/2025/01/canon_webcam_features-640x430.png)](https://cdn.arstechnica.net/wp-content/uploads/2025/01/canon_webcam_features.png)
+[ ![](https://cdn.arstechnica.net/wp-content/uploads/2025/01/canon_webcam_features-640x430.png) ](https://cdn.arstechnica.net/wp-content/uploads/2025/01/canon_webcam_features.png)
 
 Comparison of webcam software features available to Canon's "PRO" and "Free" users.
 
