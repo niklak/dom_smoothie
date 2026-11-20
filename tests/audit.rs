@@ -48,6 +48,39 @@ fn test_colspan_overflow_does_not_panic() {
     }
 }
 
+/// `is_unlikely_candidate` exempts `<code>` elements and `<table>` elements whose only unlikely
+/// match is `"header"` (such as `ltx_guessed_headers`), while still stripping sidebar/navigation
+/// tables such as `table.sidebar`.
+#[test]
+fn test_header_class_table_is_kept() {
+    let p = "<p>The committee reviewed the proposal over three sessions, weighing the costs against \
+             the expected benefits for local residents, and finally agreed to fund the new library \
+             wing, the reading garden, and the evening programs for children.</p>";
+    let html = format!(
+        r#"<html><body><article><h1>Title</h1>{p}{p}
+        <table class="sidebar nomobile">
+          <tbody><tr><th><a href="/series">Sidebar Series</a></th></tr></tbody>
+        </table>
+        <figure class="ltx_table">
+          <table class="ltx_tabular ltx_guessed_headers">
+            <thead><tr><th>Model</th><th>BLEU EN-DE</th><th>BLEU EN-FR</th></tr></thead>
+            <tbody>
+              <tr><td>ByteNet</td><td>23.75</td><td>39.2</td></tr>
+              <tr><td>Transformer</td><td>28.40</td><td>41.8</td></tr>
+            </tbody>
+          </table>
+        </figure>
+        <p>Run <code class="menu-header-cmd">cargo test --all</code> to verify.</p>
+        {p}</article></body></html>"#
+    );
+    let mut ra = Readability::new(html.as_str(), None, Some(Config::default())).unwrap();
+    let article = ra.parse().unwrap();
+    assert!(article.content.contains("ByteNet"));
+    assert!(article.content.contains("Transformer"));
+    assert!(article.content.contains("cargo test --all"));
+    assert!(!article.content.contains("Sidebar Series"));
+}
+
 /// A wrapper's class must not decide the fate of the `<pre>` it holds (issue #226).
 #[test]
 fn test_pre_in_utility_class_wrapper_survives_cleaning() {

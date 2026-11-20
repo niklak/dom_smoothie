@@ -162,12 +162,20 @@ impl Readability {
 
 fn is_unlikely_candidate(node: &NodeRef) -> bool {
     // Assuming that `<body>` node can't can't reach this function
-    if node.has_name("a") {
+    if node.has_name("a") || node.has_name("code") {
         return false;
     }
 
     let match_string = get_node_matching_string(node);
     if match_string.is_empty() {
+        return false;
+    }
+
+    // A lone `header` (as in `ltx_guessed_headers`) does not make a table boilerplate.
+    if node.has_name("table")
+        && match_string.contains("header")
+        && !match_unlikely(&match_string.replace("header", ""))
+    {
         return false;
     }
 
