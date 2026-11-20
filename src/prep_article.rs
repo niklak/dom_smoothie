@@ -13,6 +13,33 @@ use crate::helpers::*;
 use crate::matching::*;
 use crate::score::get_class_weight;
 
+fn clean_math(root_sel: &Selection) {
+    for ann in root_sel.select_matcher(&MATCHER_MATH_TEX).nodes() {
+        let tex = ann.text();
+        let tex = tex.trim();
+        if tex.is_empty() {
+            ann.remove_from_parent();
+            continue;
+        }
+        let math_node = ann
+            .ancestors_it(Some(2))
+            .find(|n| n.has_name("math"))
+            .unwrap_or(*ann);
+        let is_block = math_node
+            .attr("display")
+            .is_some_and(|d| d.eq_ignore_ascii_case("block"));
+        let formatted = if is_block {
+            format!("$${tex}$$")
+        } else {
+            format!("${tex}$")
+        };
+        for child in math_node.children() {
+            child.remove_from_parent();
+        }
+        math_node.append_child(&math_node.tree.new_text(formatted));
+    }
+}
+
 fn clean(root_sel: &Selection) {
     for node in root_sel.select_matcher(&MATCHER_CLEAN).nodes() {
         // Allow youtube and vimeo videos through as people usually want to see those.
@@ -410,6 +437,7 @@ pub(crate) fn prep_article(article_node: &NodeRef, flags: &FlagSet<GrabFlags>, c
 
     // Clean out junk from the article content
     clean(&article_sel);
+    clean_math(&article_sel);
 
     clean_headers(&article_sel, flags);
 
