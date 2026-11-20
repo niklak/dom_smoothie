@@ -14,7 +14,7 @@ You can then `require()` it, or for web-based projects, load the `Readability.js
 
 ## Basic usage
 
-To parse a document, you must create a new `Readability` object from a DOM document object, and then call the [parse()](#parse) method. Here's an example:
+To parse a document, you must create a new `Readability` object from a DOM document object, and then call the [`parse()`](#parse) method. Here's an example:
 
 ```
 var article = new Readability(document).parse();
@@ -43,16 +43,16 @@ The `options` object accepts a number of properties, all optional:
 
 Returns an object containing the following properties:
 
-- `title`: article title;
-- `content`: HTML string of processed article content;
-- `textContent`: text content of the article, with all the HTML tags removed;
-- `length`: length of an article, in characters;
-- `excerpt`: article description, or short excerpt from the content;
-- `byline`: author metadata;
-- `dir`: content direction;
-- `siteName`: name of the site;
-- `lang`: content language;
-- `publishedTime`: published time;
+* `title`: article title;
+* `content`: HTML string of processed article content;
+* `textContent`: text content of the article, with all the HTML tags removed;
+* `length`: length of an article, in characters;
+* `excerpt`: article description, or short excerpt from the content;
+* `byline`: author metadata;
+* `dir`: content direction;
+* `siteName`: name of the site;
+* `lang`: content language;
+* `publishedTime`: published time;
 
 The `parse()` method works by modifying the DOM. This removes some elements in the web page, which may be undesirable. You can avoid this by passing the clone of the `document` object to the `Readability` constructor:
 

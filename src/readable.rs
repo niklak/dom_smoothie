@@ -55,9 +55,6 @@ pub fn is_probably_readable(
         }
 
         score += ((text_content_length - min_content_length) as f32).sqrt();
-        if score > min_score {
-            return true;
-        }
-        false
+        score > min_score
     })
 }
