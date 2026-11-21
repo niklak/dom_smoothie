@@ -119,3 +119,35 @@ fn test_scroll_container_is_kept() {
         );
     }
 }
+
+/// Section headings (`h2`–`h3`) and single-heading `div` wrappers whose class or id contains
+/// `"header"` (such as `header-anchor-post` or `section-header`) are kept when they accompany
+/// article paragraphs, while page-level header banners with links or navigation are still stripped.
+#[test]
+fn test_header_class_heading_is_kept() {
+    let p = "<p>The committee reviewed the proposal over three sessions, weighing the costs against \
+             the expected benefits for local residents, and finally agreed to fund the new library \
+             wing, the reading garden, and the evening programs for children.</p>";
+    let html = format!(
+        r#"<html><body>
+         <div class="site-header"><h2>Site Banner</h2><a href="/nav">Home</a></div>
+         <div id="section-header"><h2>Section Banner</h2></div>
+         <article><h1>Title</h1>
+           <h2 class="header-anchor-post"><a href="https://example.com/ad">Promo Heading</a></h2>
+           <h2 class="header-anchor-post">Initial Architecture</h2>{p}{p}{p}
+           <h3 class="header-anchor-post">Request Coalescing</h3>{p}{p}
+           <div class="section">
+             <div class="section-header"><div class="section-title"><h2>Treatment Plan</h2></div></div>
+             <div class="section-info">{p}{p}</div>
+           </div>
+         </article></body></html>"#
+    );
+    let mut ra = Readability::new(html.as_str(), None, Some(Config::default())).unwrap();
+    let article = ra.parse().unwrap();
+    assert!(article.content.contains("Initial Architecture"));
+    assert!(article.content.contains("Request Coalescing"));
+    assert!(article.content.contains("Treatment Plan"));
+    assert!(!article.content.contains("Site Banner"));
+    assert!(!article.content.contains("Section Banner"));
+    assert!(!article.content.contains("Promo Heading"));
+}
