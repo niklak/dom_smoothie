@@ -522,7 +522,7 @@ fn adjust_top_candidate_by_parent(
         if parent_score < score_threshold {
             break;
         }
-        if parent_score > last_score {
+        if parent_score > last_score || has_scored_same_class_sibling(tc_parent, last_score) {
             top_candidate = *tc_parent;
             break;
         }
@@ -530,6 +530,34 @@ fn adjust_top_candidate_by_parent(
         parent_of_top_candidate = tc_parent.parent();
     }
     top_candidate
+}
+
+/// Tells whether `node` (the parent of the current top candidate) looks like one item in a
+/// repeated list of items (forum posts, comments, ...), so that promoting to it lets
+/// `assign_article_node` merge the sibling items.
+///
+/// All of these must hold (the guardrails; tune here if needed):
+/// - `node` scores at least `0.75 * tc_score` (`PARENT_SCORE_RATIO` below).
+/// - `node` has a non-empty `class` attribute.
+/// - at least one sibling element of `node` has a `class` attribute that is *exactly equal*
+///   (`==` on the raw string) to the `class` of `node` and a score above `0.0`. Because the
+///   comparison is on the whole string, a sibling that differs by a single modifier class
+///   (or by class order) does not count; in that case the usual
+///   `parent_score > last_score` rule alone decides.
+fn has_scored_same_class_sibling(node: &NodeRef, tc_score: f32) -> bool {
+    /// Minimal parent score, relative to the top candidate, required for promotion.
+    const PARENT_SCORE_RATIO: f32 = 0.75;
+
+    let class = node.attr_or("class", "");
+    !class.is_empty()
+        && get_node_score(node) >= tc_score * PARENT_SCORE_RATIO
+        && node.parent().is_some_and(|parent| {
+            parent.element_children().iter().any(|sib| {
+                sib.id != node.id
+                    && sib.attr_or("class", "") == class
+                    && get_node_score(sib) > 0.0
+            })
+        })
 }
 
 /// Collecting nodes to score. Also, it removes unlikely candidates and elements without content.

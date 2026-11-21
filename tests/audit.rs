@@ -119,3 +119,66 @@ fn test_scroll_container_is_kept() {
         );
     }
 }
+
+/// When the top candidate is an inner body wrapper (`div.post`) inside a repeated item
+/// container (`div.topic-body.crawler-post`) that also holds post metadata and a linkback
+/// list, promoting to the item container lets `assign_article_node` merge sibling posts.
+#[test]
+fn test_promote_parent_with_same_class_siblings() {
+    let p = "<p>To format code in this forum, surround the code with three backticks, \
+             and specify the language name right after the opening backticks so the \
+             syntax highlighter can pick the right grammar for the snippet.</p>";
+    let reply_body = "<p>Thanks for pinning this guide, it is very helpful for new users, \
+                      and covers the CommonMark fenced code block syntax clearly.</p>";
+    let html = format!(
+        "<html><body><div id=\"thread\">\
+         <div id=\"post_1\" class=\"topic-body crawler-post\">\
+           <div class=\"crawler-post-meta\"><span>author</span></div>\
+           <div class=\"post\">{p}{p}{p}</div>\
+           <div class=\"crawler-linkback-list\">\
+             <div><a href=\"https://example.com/1\">Incoming linkback thread one with long title</a></div>\
+             <div><a href=\"https://example.com/2\">Incoming linkback thread two with long title</a></div>\
+             <div><a href=\"https://example.com/3\">Incoming linkback thread three with long title</a></div>\
+           </div>\
+         </div>\
+         <div id=\"post_2\" class=\"topic-body crawler-post\">\
+           <div class=\"crawler-post-meta\"><span>reply1</span></div>\
+           <div class=\"post\">{reply_body}</div>\
+         </div>\
+         </div></body></html>"
+    );
+    let mut ra = Readability::new(html.as_str(), None, Some(Config::default())).unwrap();
+    let article = ra.parse().unwrap();
+    assert!(article.content.contains("surround the code with three backticks"));
+    assert!(article.content.contains("Thanks for pinning this guide"));
+    assert!(!article.content.contains("Incoming linkback thread"));
+}
+
+/// A card grid whose wrappers share a class must not drag its sibling cards into the article:
+/// the card wrappers hold only link teasers, so they must stay out of the extracted content.
+#[test]
+fn test_same_class_card_grid_is_not_over_captured() {
+    let p = "<p>The steering council reviewed the proposal across three sessions, weighing the \
+             backward-compatibility requirements against the long-term maintenance cost for \
+             extension authors and library maintainers, and published its decision.</p>";
+    let card = |n: u32| {
+        format!(
+            "<div class=\"card\"><a href=\"https://example.com/{n}\">Related teaser number {n} \
+             with a fairly long clickable headline</a><span>Read more</span></div>"
+        )
+    };
+    let html = format!(
+        "<html><body><div class=\"layout\">\
+         <div class=\"block\"><div class=\"story\"><h1>Decision announced</h1>{p}{p}{p}</div></div>\
+         <div class=\"block\">{}{}{}{}</div>\
+         </div></body></html>",
+        card(1),
+        card(2),
+        card(3),
+        card(4)
+    );
+    let mut ra = Readability::new(html.as_str(), None, Some(Config::default())).unwrap();
+    let article = ra.parse().unwrap();
+    assert!(article.content.contains("weighing the backward-compatibility requirements"));
+    assert!(!article.content.contains("Related teaser number"));
+}
