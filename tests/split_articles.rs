@@ -20,10 +20,11 @@ fn part(ps: std::ops::Range<usize>) -> String {
     )
 }
 
-/// A figure with a short caption, its image in a wrapper with a negative class (`media`).
+/// A figure with a short caption, its image and caption in wrappers with negative classes
+/// (`media`, `meta`).
 fn figure(src: &str) -> String {
     format!(
-        r#"<figure class="leading-0 w-full"><div class="acf-media"><div class="relative"><img src="https://example.org/{src}.webp"></div></div><figcaption><div class="attribution"><p>Mark Belan</p></div></figcaption></figure>"#
+        r#"<figure class="leading-0 w-full"><div class="acf-media"><div class="relative"><img src="https://example.org/{src}.webp"></div></div><figcaption><div class="image__meta"><div class="acf-media__caption"><p>Caption of {src}</p></div><div class="attribution"><p>Mark Belan</p></div></div></figcaption></figure>"#
     )
 }
 
@@ -73,6 +74,9 @@ fn test_figures_between_parts_of_an_article_are_kept() {
             "https://example.org/minors.webp"
         ]
     );
+    for src in ["graph", "minors"] {
+        assert!(text.contains(&format!("Caption of {src}")), "caption of {src} missing");
+    }
 }
 
 #[cfg_attr(not(target_arch = "wasm32"), test)]
@@ -119,4 +123,26 @@ fn test_alternative_candidate_that_holds_the_top_one_is_the_common_ancestor() {
     let text = doc.text();
     assert!(text.contains("Paragraph 0 ") && text.contains("Paragraph 17 "));
     assert!(!text.contains("Get highlights"), "{text}");
+}
+
+/// A caption in a wrapper of its own whose class reads negative (`media`), outside any
+/// `<figure>`, as The Verge sets them; a related story's linked title in the same kind of
+/// wrapper still goes.
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn test_caption_in_a_negatively_weighted_wrapper_is_kept() {
+    let ps: String = (0..6).map(prose).collect();
+    let html = format!(
+        r#"<html><body><article><div class="article-body">{ps}
+        <div class="duet--media--image"><img src="https://example.org/portrait.jpg"></div>
+        <div class="duet--media--caption"><figcaption><em>The doctor had the idea first.</em></figcaption> <cite>Photo: Jo Ng</cite></div>
+        {}
+        <div class="duet--media--caption"><figcaption><a href="https://example.org/other">Another story entirely</a></figcaption> <cite>Photo</cite></div>
+        </div></article></body></html>"#,
+        prose(6)
+    );
+    let text = parse(&html).text();
+    assert!(text.contains("The doctor had the idea first."), "{text}");
+    assert!(text.contains("Photo: Jo Ng"), "{text}");
+    assert!(!text.contains("Another story entirely"), "{text}");
 }

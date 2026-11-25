@@ -7,6 +7,7 @@ All notable changes to the `dom_smoothie` crate will be documented in this file.
 ### Fixed
 - Sibling joining keeps a `<figure>` with an image that lies between two joined siblings: a figure's score comes only from its caption, so one with a short caption fell under the threshold and was dropped from the middle of an article split into parts. Joined `<figure>`s stay figures instead of becoming `<div>`s, and `clean_conditionally` keeps a negatively weighted wrapper (such as `acf-media`) that holds a figure's image. The `lazy-image-1`, `medium-1` and `quanta-1` reference outputs now keep such figures.
 - `find_common_candidate` counts an alternative candidate that holds the top candidate as an ancestor they share, and no longer lets candidates inside the top candidate vote, so a page whose article container is itself a candidate no longer yields the whole `<main>`.
+- `clean_conditionally` keeps a kept figure's caption whose wrappers have negative classes (`image__meta`, `acf-media__caption`), and a wrapper holding nothing but a `<figcaption>` and its `<cite>` credit (`duet--media--caption`), unless its text is mostly links or it holds a whole `<figure>`.
 - `Config::strict_visibility` keeps a screen-reader-only element that repeats the text of an `aria-hidden` sibling, such as the second copy of a drop cap, which was otherwise lost from the text.
 
 ## [0.20.0] - 2026-11-21

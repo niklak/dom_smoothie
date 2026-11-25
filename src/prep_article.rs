@@ -94,12 +94,18 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
     let weight = get_class_weight(node, flags.contains(GrabFlags::WeightClasses));
 
     if weight < 0.0 {
-        // Utility classes (`scroll-mt-2`, `md:hidden`) must not drop code wrappers,
-        // nor a class like `acf-media` the image of a figure that was kept.
-        return !node.descendants_it().any(|n| {
-            n.has_name("pre")
-                || (n.has_name("img") || n.has_name("picture")) && is_figure_child(node)
-        });
+        // Utility classes (`scroll-mt-2`, `md:hidden`) must not drop code wrappers, nor
+        // classes like `acf-media` or `image__meta` the image or caption of a kept figure,
+        // or a caption's own wrapper (`duet--media--caption`).
+        if is_figure_child(node) && (has_ancestor(node, None, |n| n.has_name("figcaption"))
+            || node.descendants_it().any(|n| n.has_name("img") || n.has_name("picture")))
+        {
+            return false;
+        }
+        if is_caption_wrapper(node) {
+            return false;
+        }
+        return !node.descendants_it().any(|n| n.has_name("pre"));
     }
 
     let node_text = node.text();
@@ -206,6 +212,26 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
         return have_to_remove;
     }
     false
+}
+
+/// A wrapper with nothing in it but a `<figcaption>` and its credit (`<cite>`), outside the
+/// figure, whose text is not mostly links (a related story's title). A wrapper holding a whole
+/// `<figure>` is judged as before: a video player's, say, is left with only its caption.
+fn is_caption_wrapper(node: &NodeRef) -> bool {
+    if node.descendants_it().any(|n| n.has_name("figure")) {
+        return false;
+    }
+    let is_caption = |n: &NodeRef| n.has_name("figcaption") || n.has_name("cite");
+    let mut has_caption = false;
+    for text in node.descendants_it().filter(|n| n.is_nonempty_text()) {
+        if !has_ancestor(&text, None, |a| a.id != node.id && is_caption(&a)) {
+            return false;
+        }
+        has_caption = true;
+    }
+    has_caption
+        && node.descendants_it().any(|n| n.has_name("figcaption"))
+        && link_density(node, None) <= 0.5
 }
 
 fn is_figure_child(node: &NodeRef) -> bool {
