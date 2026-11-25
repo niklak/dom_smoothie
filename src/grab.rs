@@ -324,6 +324,7 @@ fn assign_article_node(tc: &NodeRef, article_content: &NodeRef) {
 
     let tc_class = tc.attr_or("class", "");
     let siblings: Vec<NodeRef> = tc_parent.element_children();
+    let mut appends = Vec::with_capacity(siblings.len());
     for sibling in &siblings {
         let mut append = false;
         if sibling.id == tc.id {
@@ -356,6 +357,22 @@ fn assign_article_node(tc: &NodeRef, article_content: &NodeRef) {
             }
         }
 
+        appends.push(append);
+    }
+
+    // A figure has little text of its own to score, so one with a short caption falls under
+    // the threshold even where it illustrates the article, between parts of it that were kept.
+    let first = appends.iter().position(|&a| a);
+    let last = appends.iter().rposition(|&a| a);
+    if let (Some(first), Some(last)) = (first, last) {
+        for i in first + 1..last {
+            if !appends[i] && is_figure_with_image(&siblings[i]) {
+                appends[i] = true;
+            }
+        }
+    }
+
+    for (sibling, append) in siblings.iter().zip(appends) {
         //appending sibling
         if append {
             if !node_name_in(sibling, &ALTER_TO_DIV_EXCEPTIONS) {
@@ -367,6 +384,23 @@ fn assign_article_node(tc: &NodeRef, article_content: &NodeRef) {
         }
     }
     tc_parent.append_child(article_content);
+}
+
+/// A `<figure>` (or a wrapper holding nothing but one) with an image in it.
+fn is_figure_with_image(node: &NodeRef) -> bool {
+    let mut node = *node;
+    loop {
+        if node.has_name("figure") {
+            return node
+                .descendants_it()
+                .any(|n| n.has_name("img") || n.has_name("picture"));
+        }
+        let children = node.element_children();
+        match children.as_slice() {
+            [only] if node.normalized_char_count() == only.normalized_char_count() => node = *only,
+            _ => return false,
+        }
+    }
 }
 
 /// Find a better top candidate across other candidates in a way that `mozilla/readability` does.
@@ -381,7 +415,15 @@ fn find_common_candidate<'a>(
     let mut alternative_candidate_ancestors = vec![];
     for alt in top_candidates.iter().skip(1) {
         if get_node_score(alt) / tc_score >= 0.75 {
-            alternative_candidate_ancestors.push(alt.ancestors(Some(0)));
+            let ancestors = alt.ancestors(Some(0));
+            // A candidate inside the top candidate is part of it already, not more content
+            // elsewhere for a common ancestor to take in.
+            if ancestors.iter().any(|a| a.id == tc.id) {
+                continue;
+            }
+            // A candidate is on its own list: when it holds the top candidate, it is the
+            // ancestor they share.
+            alternative_candidate_ancestors.push([vec![*alt], ancestors].concat());
         }
     }
     // MIN_COMMON_ANCESTORS (in mozilla/readability.js -- MINIMUM_TOPCANDIDATES)

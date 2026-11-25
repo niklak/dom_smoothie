@@ -142,3 +142,17 @@ fn test_strict_visibility_keeps_body() {
         );
     }
 }
+
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn test_strict_visibility_keeps_text_alternative_of_aria_hidden_sibling() {
+    // A drop cap: the styled letter is hidden from screen readers, which get it from `sr-only`.
+    let snippet = r#"<span aria-hidden="true"><span class="drop-cap">A</span></span><span class="sr-only">A</span><span> hulking gray giant</span>"#;
+    for strict_visibility in [false, true] {
+        let text = text_content("", snippet, strict_visibility);
+        assert!(
+            text.contains("A hulking gray giant"),
+            "{strict_visibility}: {text}"
+        );
+    }
+}

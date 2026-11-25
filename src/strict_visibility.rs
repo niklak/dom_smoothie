@@ -93,7 +93,7 @@ fn hides_subtree(node: &NodeRef, style: &str) -> bool {
     if aria_hidden && !MINI_FALLBACK_IMG.match_node(node) {
         return true;
     }
-    if node.class().is_some_and(|c| has_screen_reader_class(&c)) {
+    if node.class().is_some_and(|c| has_screen_reader_class(&c)) && !repeats_hidden_sibling(node) {
         return true;
     }
     let get = |name| style_value(style, name);
@@ -132,6 +132,27 @@ fn has_padding(style: &str, vertical: bool) -> bool {
         .map(|side| style_value(style, side))
         .chain(indices.iter().map(|&i| shorthand[i]))
         .any(opens)
+}
+
+/// Whether a screen-reader-only element repeats the text of an `aria-hidden` sibling next to it,
+/// as in a drop cap: `<span aria-hidden="true">A</span><span class="sr-only">A</span>`. The text
+/// is visible; it is hidden from screen readers only so they don't read it twice, and the
+/// `aria-hidden` copy is removed, so this one is the only copy left. A label that differs from
+/// what it stands for (`★★★★☆` and "4 out of 5 stars") is not visible text, and goes.
+fn repeats_hidden_sibling(node: &NodeRef) -> bool {
+    let text = normalize(&node.text());
+    let is_hidden_copy = |n: NodeRef| {
+        n.attr("aria-hidden")
+            .is_some_and(|a| a.trim().eq_ignore_ascii_case("true"))
+            && !text.is_empty()
+            && normalize(&n.text()) == text
+    };
+    node.prev_element_sibling().is_some_and(is_hidden_copy)
+        || node.next_element_sibling().is_some_and(is_hidden_copy)
+}
+
+fn normalize(text: &str) -> String {
+    text.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
 /// A variant class next to the hiding one (`sr-only focus:not-sr-only`) may reveal it.

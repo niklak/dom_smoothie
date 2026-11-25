@@ -94,8 +94,12 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
     let weight = get_class_weight(node, flags.contains(GrabFlags::WeightClasses));
 
     if weight < 0.0 {
-        // Utility classes (`scroll-mt-2`, `md:hidden`) must not drop code wrappers.
-        return !node.descendants_it().any(|n| n.has_name("pre"));
+        // Utility classes (`scroll-mt-2`, `md:hidden`) must not drop code wrappers,
+        // nor a class like `acf-media` the image of a figure that was kept.
+        return !node.descendants_it().any(|n| {
+            n.has_name("pre")
+                || (n.has_name("img") || n.has_name("picture")) && is_figure_child(node)
+        });
     }
 
     let node_text = node.text();
@@ -138,7 +142,7 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
         let img = node.find_descendants("img").len();
         let img_f32 = img as f32;
         let should_remove = || {
-            let is_figure_child = has_ancestor(node, None, |n| n.has_name("figure"));
+            let is_figure_child = is_figure_child(node);
             let p = node.find_descendants("p").len() as f32;
 
             if !is_figure_child && img_f32 > 1.0 && p / img_f32 < 0.5 {
@@ -202,6 +206,10 @@ fn should_clean_conditionally(node: &NodeRef, flags: &FlagSet<GrabFlags>) -> boo
         return have_to_remove;
     }
     false
+}
+
+fn is_figure_child(node: &NodeRef) -> bool {
+    has_ancestor(node, None, |n| n.has_name("figure"))
 }
 
 // shortcut: cleaning is O(depth x depth) on deeply nested wrappers; cap depth or precompute subtree stats when parsing untrusted input.
