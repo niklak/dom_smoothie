@@ -226,7 +226,7 @@ pub(crate) static CLASSES_NEGATIVE_WORDS: &[&str] = &["hid"];
 // ---phf sets ---
 
 pub(crate) static ALTER_TO_DIV_EXCEPTIONS: phf::Set<&'static str> =
-    phf_set!("article", "section", "p", "ol", "ul");
+    phf_set!("article", "section", "p", "ol", "ul", "figure");
 pub(crate) static DEFAULT_TAGS_TO_SCORE: phf::Set<&'static str> =
     phf_set!("section", "h2", "h3", "h4", "h5", "h6", "p", "td", "pre");
 pub(crate) static TAGS_WITH_CONTENT: phf::Set<&'static str> =
